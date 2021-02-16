@@ -52,7 +52,7 @@
     nanmax(a, b) = ifelse(a > b, a, b)
     nanmax(a, b::AbstractFloat) = ifelse(a==a, ifelse(b > a, b, a), b)
     nanmax(a::Vec{N,<:Integer}, b::Vec{N,<:Integer}) where N = ifelse(a > b, a, b)
-    nanmax(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(isnan(a), b, ifelse(b > a, b, a))
+    nanmax(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(isnan(a), b, ifelse((b < a) | isnan(b), a, b))
     export nanmax
 
     """
@@ -64,7 +64,7 @@
     nanmin(a, b) = ifelse(a < b, a, b)
     nanmin(a, b::AbstractFloat) = ifelse(a==a, ifelse(b < a, b, a), b)
     nanmin(a::Vec{N,<:Integer}, b::Vec{N,<:Integer}) where N = ifelse(a < b, a, b)
-    nanmin(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(isnan(a), b, ifelse(b < a, b, a))
+    nanmin(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(isnan(a), b, ifelse((b > a) | isnan(b), a, b))
     export nanmin
 
 ## --- Percentile statistics, excluding NaNs

@@ -1,11 +1,12 @@
 module NaNStatistics
 
+    # AVX vectorziation tools
+    using IfElse: ifelse
+    using LoopVectorization
+    using VectorizationBase: Vec
+
     using Statistics
     using StatsBase: percentile, mean, std, ProbabilityWeights
-
-    # AVX vectorziation tools
-    using LoopVectorization
-    using VectorizationBase
 
     include("ArrayStats.jl")
 
