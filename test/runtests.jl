@@ -1,6 +1,4 @@
 using NaNStatistics
-using Test
+using Test, Statistics
 
-@testset "NaNStatistics.jl" begin
-    # Write your tests here.
-end
+@testset "ArrayStats" begin include("testArrayStats.jl") end
