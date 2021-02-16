@@ -19,7 +19,7 @@
 [docs-stable-url]: https://brenhinkeller.github.io/NaNStatistics.jl/stable
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
 [docs-dev-url]: https://brenhinkeller.github.io/NaNStatistics.jl/dev
-[ci-img]: https://github.com/brenhinkeller/StatGeochem.jl/workflows/CI/badge.svg
-[ci-url]: https://github.com/brenhinkeller/StatGeochem.jl/actions?query=workflow%3ACI
-[codecov-img]: http://codecov.io/github/brenhinkeller/StatGeochem.jl/coverage.svg?branch=main
-[codecov-url]: http://codecov.io/github/brenhinkeller/StatGeochem.jl?branch=main
+[ci-img]: https://github.com/brenhinkeller/NaNStatistics.jl/workflows/CI/badge.svg
+[ci-url]: https://github.com/brenhinkeller/NaNStatistics.jl/actions?query=workflow%3ACI
+[codecov-img]: http://codecov.io/github/brenhinkeller/NaNStatistics.jl/coverage.svg?branch=main
+[codecov-url]: http://codecov.io/github/brenhinkeller/NaNStatistics.jl?branch=main
