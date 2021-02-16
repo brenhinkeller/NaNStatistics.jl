@@ -212,7 +212,7 @@
     __nanminimum(A, dims, dim) = _nanminimum(A, dim) |> vec
     __nanminimum(A, dims, ::Colon) = _nanminimum(A, dims)
     _nanminimum(A, region) = reduce(nanmin, A, dims=region, init=float(eltype(A))(NaN))
-    _nanminimum(A::AbstractArray{<:Number}, ::Colon) = vreduce(nanmin, A)
+    _nanminimum(A::Array{<:Number}, ::Colon) = vreduce(nanmin, A)
     export nanminimum
 
 
@@ -227,7 +227,7 @@
     __nanmaximum(A, dims, dim) = _nanmaximum(A, dim) |> vec
     __nanmaximum(A, dims, ::Colon) = _nanmaximum(A, dims)
     _nanmaximum(A, region) = reduce(nanmax, A, dims=region, init=float(eltype(A))(NaN))
-    _nanmaximum(A::AbstractArray{<:Number}, ::Colon) = vreduce(nanmax, A)
+    _nanmaximum(A::Array{<:Number}, ::Colon) = vreduce(nanmax, A)
     export nanmaximum
 
 
