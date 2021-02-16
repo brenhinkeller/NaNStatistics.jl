@@ -34,7 +34,7 @@
     function zeronan!(A::Array)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            A[i] *= (Aᵢ == Aᵢ)
+            A[i] = ifelse(isnan(Aᵢ), 0, Aᵢ)
         end
         return A
     end
@@ -51,8 +51,8 @@
     """
     nanmax(a, b) = ifelse(a > b, a, b)
     nanmax(a, b::AbstractFloat) = ifelse(a==a, ifelse(b > a, b, a), b)
-    nanmax(a::Vec{N,<:Integer}, b::Vec{N,<:Integer}) where N = vifelse(a > b, a, b)
-    nanmax(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = vifelse(a==a, vifelse(b > a, b, a), b)
+    nanmax(a::Vec{N,<:Integer}, b::Vec{N,<:Integer}) where N = ifelse(a > b, a, b)
+    nanmax(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(isnan(a), b, ifelse(b > a, b, a))
     export nanmax
 
     """
@@ -63,8 +63,8 @@
     """
     nanmin(a, b) = ifelse(a < b, a, b)
     nanmin(a, b::AbstractFloat) = ifelse(a==a, ifelse(b < a, b, a), b)
-    nanmin(a::Vec{N,<:Integer}, b::Vec{N,<:Integer}) where N = vifelse(a < b, a, b)
-    nanmin(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = vifelse(a==a, vifelse(b < a, b, a), b)
+    nanmin(a::Vec{N,<:Integer}, b::Vec{N,<:Integer}) where N = ifelse(a < b, a, b)
+    nanmin(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(isnan(a), b, ifelse(b < a, b, a))
     export nanmin
 
 ## --- Percentile statistics, excluding NaNs
@@ -191,10 +191,11 @@
         return m
     end
     function _nansum(A::AbstractArray{<:AbstractFloat},::Colon)
-        m = zero(eltype(A))
+        T = eltype(A)
+        m = zero(T)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            m += Aᵢ * (Aᵢ==Aᵢ)
+            m += ifelse(isnan(Aᵢ), zero(T), Aᵢ)
         end
         return m
     end
@@ -291,12 +292,13 @@
     # Optimized AVX version for floats
     function _nanmean(A::AbstractArray{<:AbstractFloat}, ::Colon)
         n = 0
-        m = zero(eltype(A))
+        T = eltype(A)
+        m = zero(T)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            t = Aᵢ == Aᵢ
-            n += t
-            m += Aᵢ * t
+            t = isnan(Aᵢ)
+            n += !t
+            m += ifelse(t, zero(T), Aᵢ)
         end
         return m / n
     end
@@ -334,14 +336,16 @@
     end
     # Optimized AVX method for floats
     function _nanmean(A::AbstractArray{<:AbstractFloat}, W, ::Colon)
-        n = zero(eltype(W))
-        m = zero(promote_type(eltype(W), eltype(A)))
+        T1 = eltype(W)
+        T2 = promote_type(eltype(W), eltype(A))
+        n = zero(T1)
+        m = zero(T2)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
             Wᵢ = W[i]
-            t = Aᵢ == Aᵢ
-            n += Wᵢ * t
-            m += Wᵢ * Aᵢ * t
+            t = isnan(Aᵢ)
+            n += ifelse(t, zero(T1), Wᵢ)
+            m += ifelse(t, zero(T2), Wᵢ * Aᵢ)
         end
         return m / n
     end
@@ -505,7 +509,7 @@
         d = A .- s # Subtract mean, using broadcasting
         @avx for i ∈ eachindex(d)
             dᵢ = d[i]
-            d[i] = (dᵢ * dᵢ) * mask[i]
+            d[i] = ifelse(mask[i], dᵢ * dᵢ, 0)
         end
         s .= sum(d, dims=region)
         @avx for i ∈ eachindex(s)
@@ -533,18 +537,19 @@
     end
     function _nanstd(A::AbstractArray{<:AbstractFloat}, ::Colon)
         n = 0
-        m = zero(eltype(A))
+        T = eltype(A)
+        m = zero(T)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            t = Aᵢ == Aᵢ # False for NaNs
-            n += t
-            m += Aᵢ * t
+            t = isnan(Aᵢ)
+            n += !t
+            m += ifelse(t, zero(T), Aᵢ)
         end
         mu = m / n
         s = zero(typeof(mu))
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            d = (Aᵢ - mu) * (Aᵢ == Aᵢ)# zero if Aᵢ is NaN
+            d = ifelse(isnan(Aᵢ), 0, Aᵢ - mu)
             s += d * d
         end
         return sqrt(s / max((n-1), 0))
@@ -592,22 +597,25 @@
     end
     function _nanstd(A::AbstractArray{<:AbstractFloat}, W, ::Colon)
         n = 0
-        w = zero(eltype(W))
-        m = zero(promote_type(eltype(W), eltype(A)))
+        Tw = eltype(W)
+        Tm = promote_type(eltype(W), eltype(A))
+        w = zero(Tw)
+        m = zero(Tm)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
             Wᵢ = W[i]
-            t = Aᵢ == Aᵢ
-            n += t
-            w += Wᵢ * t
-            m += Wᵢ * Aᵢ * t
+            t = isnan(Aᵢ)
+            n += !t
+            w += ifelse(t, zero(Tw), Wᵢ)
+            m += ifelse(t, zero(Tm), Wᵢ * Aᵢ)
         end
         mu = m / w
-        s = zero(typeof(mu))
+        Tmu = typeof(mu)
+        s = zero(Tmu)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
             d = Aᵢ - mu
-            s += (d * d * W[i]) * (Aᵢ == Aᵢ) # Zero if Aᵢ is NaN
+            s += ifelse(isnan(Aᵢ), zero(Tmu), d * d * W[i])
         end
         return sqrt(s / w * n / (n-1))
     end
