@@ -5,11 +5,9 @@ module NaNStatistics
 
     # AVX vectorziation tools
     using LoopVectorization
-    using SIMDPirates: vifelse, verf
-    using VectorizationBase: SVec
+    using VectorizationBase: Vec
 
-    import SpecialFunctions.erf
-    erf(x::SVec) = verf(x)
+
 
     include("ArrayStats.jl")
 
