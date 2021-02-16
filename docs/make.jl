@@ -20,4 +20,5 @@ makedocs(;
 
 deploydocs(;
     repo="github.com/brenhinkeller/NaNStatistics.jl",
+    devbranch = "main",
 )
