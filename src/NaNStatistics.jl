@@ -5,9 +5,7 @@ module NaNStatistics
 
     # AVX vectorziation tools
     using LoopVectorization
-    using VectorizationBase: Vec
-
-
+    using VectorizationBase
 
     include("ArrayStats.jl")
 
