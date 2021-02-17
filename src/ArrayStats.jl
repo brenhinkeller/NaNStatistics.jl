@@ -793,8 +793,10 @@
         m = Array{float(eltype(x))}(undef,size(x))
         ind = 1:length(x)
         @inbounds for i in ind
-            t .= ceil(i-halfspan) .<= ind .<= ceil(i+halfspan)
-            m[i] = nanmean(x[t])
+            l = ceil(i-halfspan)
+            u = ceil(i+halfspan)
+            @avx @. t = l <= ind <= u
+            m[i] = nanmean(view(x, t))
         end
         return m
     end
@@ -805,10 +807,12 @@
         iind = repeat(1:size(x,1), 1, size(x,2))
         jind = repeat((1:size(x,2))', size(x,1), 1)
         @inbounds for k = 1:length(x)
-            i = iind[k]
-            j = jind[k]
-            t .= ((i-halfspan) .<= iind .<= (i+halfspan)) .& ((j-halfspan) .<= jind .<= (j+halfspan))
-            m[i,j] = nanmean(x[t])
+            il = (iind[k]-halfspan)
+            iu = (iind[k]+halfspan)
+            jl = (jind[k]-halfspan)
+            ju = (jind[k]+halfspan)
+            @avx @. t = (il <= iind <= iu) & (jl <= jind <= ju)
+            m[i,j] = nanmean(view(x, t))
         end
         return m
     end
