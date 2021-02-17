@@ -807,10 +807,12 @@
         iind = repeat(1:size(x,1), 1, size(x,2))
         jind = repeat((1:size(x,2))', size(x,1), 1)
         @inbounds for k = 1:length(x)
-            il = (iind[k]-halfspan)
-            iu = (iind[k]+halfspan)
-            jl = (jind[k]-halfspan)
-            ju = (jind[k]+halfspan)
+            i = iind[k]
+            j = jind[k]
+            il = (i-halfspan)
+            iu = (i+halfspan)
+            jl = (i-halfspan)
+            ju = (i+halfspan)
             @avx @. t = (il <= iind <= iu) & (jl <= jind <= ju)
             m[i,j] = nanmean(view(x, t))
         end
