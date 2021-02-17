@@ -4,6 +4,10 @@
 [![Build Status][ci-img]][ci-url]
 [![codecov.io][codecov-img]][codecov-url]
 
+Fast summary statistics, histograms, and binning – ignoring NaNs
+
+
+
 
 
 
