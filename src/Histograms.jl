@@ -4,8 +4,9 @@ function histcounts(x::AbstractArray, xmin, xmax, nbins; T=Int64)
     return N
 end
 function histcounts(x::AbstractArray, xedges::AbstractRange; T=Int64)
+    nbins = length(xedges)-1
     N = fill(zero(T), nbins)
-    histcounts!(N, x, minimum(xedges), maximum(xedges), length(xedges)-1)
+    histcounts!(N, x, minimum(xedges), maximum(xedges), nbins)
     return N
 end
 export histcounts
