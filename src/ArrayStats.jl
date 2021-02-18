@@ -17,7 +17,7 @@
     """
     function nanmask!(mask, A)
         @avx for i=1:length(A)
-            mask[i] = !isnan(A[i])
+            mask[i] = A[i]==A[i]
         end
         return mask
     end
@@ -34,7 +34,7 @@
     function zeronan!(A::Array)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            A[i] = ifelse(isnan(Aᵢ), 0, Aᵢ)
+            A[i] = ifelse(Aᵢ==Aᵢ, 0, Aᵢ)
         end
         return A
     end
@@ -52,7 +52,7 @@
     nanmax(a, b) = ifelse(a > b, a, b)
     nanmax(a, b::AbstractFloat) = ifelse(a==a, ifelse(b > a, b, a), b)
     nanmax(a::Vec{N,<:Integer}, b::Vec{N,<:Integer}) where N = ifelse(a > b, a, b)
-    nanmax(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(isnan(a), b, ifelse((b < a) | isnan(b), a, b))
+    nanmax(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(a==a, ifelse(b > a, b, a), b)
     export nanmax
 
     """
@@ -64,7 +64,7 @@
     nanmin(a, b) = ifelse(a < b, a, b)
     nanmin(a, b::AbstractFloat) = ifelse(a==a, ifelse(b < a, b, a), b)
     nanmin(a::Vec{N,<:Integer}, b::Vec{N,<:Integer}) where N = ifelse(a < b, a, b)
-    nanmin(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(isnan(a), b, ifelse((b > a) | isnan(b), a, b))
+    nanmin(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(a==a, ifelse(b < a, b, a), b)
     export nanmin
 
 ## --- Percentile statistics, excluding NaNs
@@ -195,7 +195,7 @@
         m = zero(T)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            m += ifelse(isnan(Aᵢ), zero(T), Aᵢ)
+            m += ifelse(Aᵢ==Aᵢ, Aᵢ, zero(T))
         end
         return m
     end
@@ -296,9 +296,9 @@
         m = zero(T)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            t = isnan(Aᵢ)
-            n += !t
-            m += ifelse(t, zero(T), Aᵢ)
+            t = Aᵢ==Aᵢ
+            n += t
+            m += ifelse(t, Aᵢ, zero(T))
         end
         return m / n
     end
@@ -343,9 +343,9 @@
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
             Wᵢ = W[i]
-            t = isnan(Aᵢ)
-            n += ifelse(t, zero(T1), Wᵢ)
-            m += ifelse(t, zero(T2), Wᵢ * Aᵢ)
+            t = Aᵢ==Aᵢ
+            n += ifelse(t, Wᵢ, zero(T1))
+            m += ifelse(t, Wᵢ * Aᵢ, zero(T2))
         end
         return m / n
     end
@@ -541,15 +541,15 @@
         m = zero(T)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            t = isnan(Aᵢ)
-            n += !t
-            m += ifelse(t, zero(T), Aᵢ)
+            t = Aᵢ==Aᵢ
+            n += t
+            m += ifelse(t, Aᵢ, zero(T))
         end
         mu = m / n
         s = zero(typeof(mu))
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            d = ifelse(isnan(Aᵢ), 0, Aᵢ - mu)
+            d = ifelse(Aᵢ==Aᵢ, Aᵢ - mu, 0)
             s += d * d
         end
         return sqrt(s / max((n-1), 0))
@@ -604,10 +604,10 @@
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
             Wᵢ = W[i]
-            t = isnan(Aᵢ)
-            n += !t
-            w += ifelse(t, zero(Tw), Wᵢ)
-            m += ifelse(t, zero(Tm), Wᵢ * Aᵢ)
+            t = Aᵢ==Aᵢ
+            n += t
+            w += ifelse(t, Wᵢ,  zero(Tw))
+            m += ifelse(t, Wᵢ * Aᵢ, zero(Tm))
         end
         mu = m / w
         Tmu = typeof(mu)
@@ -615,7 +615,7 @@
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
             d = Aᵢ - mu
-            s += ifelse(isnan(Aᵢ), zero(Tmu), d * d * W[i])
+            s += ifelse(Aᵢ==Aᵢ, d * d * W[i], zero(Tmu))
         end
         return sqrt(s / w * n / (n-1))
     end
