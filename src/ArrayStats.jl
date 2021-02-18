@@ -34,7 +34,7 @@
     function zeronan!(A::Array)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
-            A[i] = ifelse(Aᵢ==Aᵢ, 0, Aᵢ)
+            A[i] = ifelse(Aᵢ==Aᵢ, Aᵢ, 0)
         end
         return A
     end
