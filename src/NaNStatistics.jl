@@ -9,5 +9,6 @@ module NaNStatistics
     using StatsBase: percentile, mean, std, ProbabilityWeights
 
     include("ArrayStats.jl")
+    include("Histograms.jl")
 
 end
