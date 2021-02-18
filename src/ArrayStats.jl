@@ -51,8 +51,7 @@
     """
     nanmax(a, b) = ifelse(a > b, a, b)
     nanmax(a, b::AbstractFloat) = ifelse(a==a, ifelse(b > a, b, a), b)
-    nanmax(a::Vec{N,<:Integer}, b::Vec{N,<:Integer}) where N = ifelse(a > b, a, b)
-    nanmax(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(a==a, ifelse(b > a, b, a), b)
+    nanmax(a, b::Vec{N,<:AbstractFloat}) where N = ifelse(a==a, ifelse(b > a, b, a), b)
     export nanmax
 
     """
@@ -63,8 +62,7 @@
     """
     nanmin(a, b) = ifelse(a < b, a, b)
     nanmin(a, b::AbstractFloat) = ifelse(a==a, ifelse(b < a, b, a), b)
-    nanmin(a::Vec{N,<:Integer}, b::Vec{N,<:Integer}) where N = ifelse(a < b, a, b)
-    nanmin(a::Vec{N,<:AbstractFloat}, b::Vec{N,<:AbstractFloat}) where N = ifelse(a==a, ifelse(b < a, b, a), b)
+    nanmin(a, b::Vec{N,<:AbstractFloat}) where N = ifelse(a==a, ifelse(b < a, b, a), b)
     export nanmin
 
 ## --- Percentile statistics, excluding NaNs
@@ -133,6 +131,7 @@
     ```
     Add the non-NaN elements of A and B, treating NaNs as zeros
     """
+    nanadd(a,b) = ifelse(a==a, a, zero(typeof(a))) + ifelse(b==b, b, zero(typeof(b)))
     function nanadd(A::AbstractArray, B::AbstractArray)
         result_type = promote_type(eltype(A), eltype(B))
         result = similar(A, result_type)
@@ -183,19 +182,19 @@
         end
         return m
     end
-    function _nansum(A::Array{<:Integer},::Colon)
-        m = zero(eltype(A))
-        @avx for i ∈ eachindex(A)
-            m += A[i]
-        end
-        return m
-    end
-    function _nansum(A::AbstractArray{<:AbstractFloat},::Colon)
+    function _nansum(A::Array,::Colon)
         T = eltype(A)
         m = zero(T)
         @avx for i ∈ eachindex(A)
             Aᵢ = A[i]
             m += ifelse(Aᵢ==Aᵢ, Aᵢ, zero(T))
+        end
+        return m
+    end
+    function _nansum(A::Array{<:Integer},::Colon)
+        m = zero(eltype(A))
+        @avx for i ∈ eachindex(A)
+            m += A[i]
         end
         return m
     end
