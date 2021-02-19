@@ -499,7 +499,7 @@
     Calculate the standard deviation (optionaly weighted), ignoring NaNs, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
     """
-    nanstd(A; dims=:) = possiblydropdims(_nanstd(A, dims), drop, dims)
+    nanstd(A; dims=:, drop=false) = possiblydropdims(_nanstd(A, dims), drop, dims)
     function _nanstd(A, region)
         mask = nanmask(A)
         N = sum(mask, dims=region)
@@ -553,7 +553,7 @@
         return sqrt(s / max((n-1), 0))
     end
 
-    nanstd(A, W; dims=:) = possiblydropdims(_nanstd(A, W, dims), drop, dims)
+    nanstd(A, W; dims=:, drop=false) = possiblydropdims(_nanstd(A, W, dims), drop, dims)
     function _nanstd(A, W, region)
         mask = nanmask(A)
         n = sum(mask, dims=region)
@@ -625,7 +625,7 @@
     Calculate the median, ignoring NaNs, of an indexable collection `A`,
     optionally along a dimension specified by `dims`.
     """
-    nanmedian(A; dims=:) = possiblydropdims(_nanmedian(A, dims), drop, dims)
+    nanmedian(A; dims=:, drop=false) = possiblydropdims(_nanmedian(A, dims), drop, dims)
     function _nanmedian(A, ::Colon)
         t = nanmask(A)
         return any(t) ? median(A[t]) : float(eltype(A))(NaN)
@@ -768,7 +768,7 @@
     indexable collection `A`, optionally along a dimension specified by `dims`.
     Note that for a Normal distribution, sigma = 1.253 * AAD
     """
-    nanaad(A; dims=:) = possiblydropdims(_nanmean(abs.(A .- _nanmean(A, dims)), dims), drop, dims)
+    nanaad(A; dims=:, drop=false) = possiblydropdims(_nanmean(abs.(A .- _nanmean(A, dims)), dims), drop, dims)
     export nanaad
 
 
