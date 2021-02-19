@@ -1,6 +1,6 @@
 ## --- Transformations of arrays with NaNs
 
-    function possiblydropdims(A::AbstractArray, drop::Bool, dims)
+    function possiblydropdims(A, drop::Bool, dims)
         if drop
             if ndims(A) > 1 && size(A,dims)==1
                 return dropdims(A,dims=dims)
@@ -9,7 +9,7 @@
             return A
         end
     end
-    function possiblydropdims(A::AbstractArray, drop::Bool, ::Colon)
+    function possiblydropdims(A, drop::Bool, ::Colon)
         return A
     end
 
