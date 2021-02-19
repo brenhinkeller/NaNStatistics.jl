@@ -136,25 +136,25 @@
     @test nanmedian(A, dims=1) == median(A, dims=1)
     @test nanmedian(A, dims=2) == median(A, dims=2)
     @test nanminimum(A, dims=1) == [1 101 201]
-    @test nanminimum(A, dims=2) == 1:100
+    @test dropdims(nanminimum(A, dims=2), dims=2) == 1:100
     @test nanmaximum(A, dims=1) == [100 200 300]
-    @test nanmaximum(A, dims=2) == 201:300
+    @test dropdims(nanmaximum(A, dims=2), dims=2) == 201:300
     @test nanmean(A, dims=1) == [50.5 150.5 250.5]
-    @test nanmean(A, dims=2) == 101:200
+    @test dropdims(nanmean(A, dims=2), dims=2) == 101:200
     @test nanmean(A, ones(size(A)), dims=1) == [50.5 150.5 250.5] # weighted
-    @test nanmean(A, ones(size(A)), dims=2) == 101:200 # weighted
+    @test dropdims(nanmean(A, ones(size(A)), dims=2), dims=2) == 101:200 # weighted
     @test nanstd(A, dims=1) ≈ fill(29.011491975882016, 1, 3)
-    @test nanstd(A, dims=2) ≈ fill(100, 100)
+    @test nanstd(A, dims=2) ≈ fill(100, 100, 1)
     @test nanstd(A, ones(size(A)), dims=1) ≈ fill(29.011491975882016, 1, 3) # weighted
-    @test nanstd(A, ones(size(A)), dims=2) ≈ fill(100, 100) # weighted
+    @test nanstd(A, ones(size(A)), dims=2) ≈ fill(100, 100, 1) # weighted
     @test nanmedian(A, dims=1) == [50.5 150.5 250.5]
-    @test nanmedian(A, dims=2) == 101:200
+    @test dropdims(nanmedian(A, dims=2), dims=2) == 101:200
     @test pctile(A, 10, dims=1) == [10.9 110.9 210.9]
     @test pctile(A, 10, dims=2) ≈ 21:120
     @test nanmad(A, dims=1) == [25.0 25.0 25.0]
-    @test nanmad(A, dims=2) == fill(100.0,100,1)
+    @test nanmad(A, dims=2) == fill(100.0, 100, 1)
     @test nanaad(A, dims=1) == [25.0 25.0 25.0]
-    @test nanaad(A, dims=2) ≈ fill(200/3,100,1)
+    @test nanaad(A, dims=2) ≈ fill(200/3, 100, 1)
 
 
     # Summary statistics: binning
