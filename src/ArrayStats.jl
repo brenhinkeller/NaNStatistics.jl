@@ -1,5 +1,18 @@
 ## --- Transformations of arrays with NaNs
 
+    function possiblydropdims(A::AbstractArray, drop::Bool, dims)
+        if drop
+            if ndims(A) > 1 && size(A,dims)==1
+                return dropdims(A,dims=dims)
+            end
+        else
+            return A
+        end
+    end
+    function possiblydropdims(A::AbstractArray, drop::Bool, ::Colon)
+        return A
+    end
+
     """
     ```julia
     nanmask(A)
@@ -76,7 +89,7 @@
 
     A valid percentile value must satisfy 0 <= `p` <= 100.
     """
-    pctile(A, p; dims=:) = _pctile(A, p, dims)
+    pctile(A, p; dims=:, drop=false) = possiblydropdims(_pctile(A, p, dims), drop, dims)
     function _pctile(A, p, ::Colon)
         t = nanmask(A)
         return any(t) ? percentile(A[t],p) : NaN
@@ -168,7 +181,7 @@
     Calculate the sum of an indexable collection `A`, ignoring NaNs, optionally
     along dimensions specified by `dims`.
     """
-    nansum(A; dims=:) = _nansum(A, dims)
+    nansum(A; dims=:, drop=false) = possiblydropdims(_nansum(A, dims), drop, dims)
     _nansum(A, region) = sum(A.*nanmask(A), dims=region)
     function _nansum(A,::Colon)
         m = zero(eltype(A))
@@ -203,7 +216,7 @@
     As `minimum` but ignoring `NaN`s: Find the smallest non-`NaN` value of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
     """
-    nanminimum(A; dims=:) = _nanminimum(A, dims)
+    nanminimum(A; dims=:, drop=false) = possiblydropdims(_nanminimum(A, dims), drop, dims)
     _nanminimum(A, region) = reduce(nanmin, A, dims=region, init=float(eltype(A))(NaN))
     _nanminimum(A::Array{<:Number}, ::Colon) = vreduce(nanmin, A)
     export nanminimum
@@ -216,7 +229,7 @@
     Find the largest non-NaN value of an indexable collection `A`, optionally
     along a dimension specified by `dims`.
     """
-    nanmaximum(A; dims=:) = _nanmaximum(A, dims)
+    nanmaximum(A; dims=:, drop=false) = possiblydropdims(_nanmaximum(A, dims), drop, dims)
     _nanmaximum(A, region) = reduce(nanmax, A, dims=region, init=float(eltype(A))(NaN))
     _nanmaximum(A::Array{<:Number}, ::Colon) = vreduce(nanmax, A)
     export nanmaximum
@@ -229,7 +242,7 @@
     Find the extrema (maximum & minimum) of an indexable collection `A`,
     ignoring NaNs, optionally along a dimension specified by `dims`.
     """
-    nanextrema(A; dims=:) = _nanextrema(A, dims)
+    nanextrema(A; dims=:, drop=false) = possiblydropdims(_nanextrema(A, dims), drop, dims)
     _nanextrema(A, region) = collect(zip(_nanminimum(A, region), _nanmaximum(A, region)))
     _nanextrema(A, ::Colon) = (_nanminimum(A, :), _nanmaximum(A, :))
     export nanextrema
@@ -242,7 +255,7 @@
     Calculate the range (maximum - minimum) of an indexable collection `A`,
     ignoring NaNs, optionally along a dimension specified by `dims`.
     """
-    nanrange(A; dims=:) = _nanmaximum(A, dims) - _nanminimum(A, dims)
+    nanrange(A; dims=:, drop=false) = possiblydropdims(_nanmaximum(A, dims) - _nanminimum(A, dims), drop, dims)
     export nanrange
 
 
@@ -253,7 +266,7 @@
     Ignoring NaNs, calculate the mean (optionally weighted) of an indexable
     collection `A`, optionally along dimensions specified by `dims`.
     """
-    nanmean(A; dims=:) = _nanmean(A, dims)
+    nanmean(A; dims=:, drop=false) = possiblydropdims(_nanmean(A, dims), drop, dims)
     function _nanmean(A, region)
         mask = nanmask(A)
         return sum(A.*mask, dims=region) ./ sum(mask, dims=region)
@@ -292,7 +305,7 @@
         return m / n
     end
 
-    nanmean(A, W; dims=:) = _nanmean(A, W, dims)
+    nanmean(A, W; dims=:, drop=false) = possiblydropdims(_nanmean(A, W, dims), drop, dims)
     function _nanmean(A, W, region)
         mask = nanmask(A)
         return sum(A.*W.*mask, dims=region) ./ sum(W.*mask, dims=region)
@@ -486,7 +499,7 @@
     Calculate the standard deviation (optionaly weighted), ignoring NaNs, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
     """
-    nanstd(A; dims=:) = _nanstd(A, dims)
+    nanstd(A; dims=:) = possiblydropdims(_nanstd(A, dims), drop, dims)
     function _nanstd(A, region)
         mask = nanmask(A)
         N = sum(mask, dims=region)
@@ -540,7 +553,7 @@
         return sqrt(s / max((n-1), 0))
     end
 
-    nanstd(A, W; dims=:) = _nanstd(A, W, dims)
+    nanstd(A, W; dims=:) = possiblydropdims(_nanstd(A, W, dims), drop, dims)
     function _nanstd(A, W, region)
         mask = nanmask(A)
         n = sum(mask, dims=region)
@@ -612,7 +625,7 @@
     Calculate the median, ignoring NaNs, of an indexable collection `A`,
     optionally along a dimension specified by `dims`.
     """
-    nanmedian(A; dims=:) = _nanmedian(A, dims)
+    nanmedian(A; dims=:) = possiblydropdims(_nanmedian(A, dims), drop, dims)
     function _nanmedian(A, ::Colon)
         t = nanmask(A)
         return any(t) ? median(A[t]) : float(eltype(A))(NaN)
@@ -755,7 +768,7 @@
     indexable collection `A`, optionally along a dimension specified by `dims`.
     Note that for a Normal distribution, sigma = 1.253 * AAD
     """
-    nanaad(A; dims=:) = _nanmean(abs.(A .- _nanmean(A, dims)), dims)
+    nanaad(A; dims=:) = possiblydropdims(_nanmean(abs.(A .- _nanmean(A, dims)), dims), drop, dims)
     export nanaad
 
 
