@@ -76,9 +76,7 @@
 
     A valid percentile value must satisfy 0 <= `p` <= 100.
     """
-    pctile(A, p; dims=:, dim=:) = __pctile(A, p, dims, dim)
-    __pctile(A, p, dims, dim) = _pctile(A, p, dim) |> vec
-    __pctile(A, p, dims, ::Colon) = _pctile(A, p, dims)
+    pctile(A, p; dims=:) = _pctile(A, p, dims)
     function _pctile(A, p, ::Colon)
         t = nanmask(A)
         return any(t) ? percentile(A[t],p) : NaN
@@ -170,9 +168,7 @@
     Calculate the sum of an indexable collection `A`, ignoring NaNs, optionally
     along dimensions specified by `dims`.
     """
-    nansum(A; dims=:, dim=:) = __nansum(A, dims, dim)
-    __nansum(A, dims, dim) = _nansum(A, dim) |> vec
-    __nansum(A, dims, ::Colon) = _nansum(A, dims)
+    nansum(A; dims=:) = _nansum(A, dims)
     _nansum(A, region) = sum(A.*nanmask(A), dims=region)
     function _nansum(A,::Colon)
         m = zero(eltype(A))
@@ -207,9 +203,7 @@
     As `minimum` but ignoring `NaN`s: Find the smallest non-`NaN` value of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
     """
-    nanminimum(A; dims=:, dim=:) = __nanminimum(A, dims, dim)
-    __nanminimum(A, dims, dim) = _nanminimum(A, dim) |> vec
-    __nanminimum(A, dims, ::Colon) = _nanminimum(A, dims)
+    nanminimum(A; dims=:) = _nanminimum(A, dims)
     _nanminimum(A, region) = reduce(nanmin, A, dims=region, init=float(eltype(A))(NaN))
     _nanminimum(A::Array{<:Number}, ::Colon) = vreduce(nanmin, A)
     export nanminimum
@@ -222,9 +216,7 @@
     Find the largest non-NaN value of an indexable collection `A`, optionally
     along a dimension specified by `dims`.
     """
-    nanmaximum(A; dims=:, dim=:) = __nanmaximum(A, dims, dim)
-    __nanmaximum(A, dims, dim) = _nanmaximum(A, dim) |> vec
-    __nanmaximum(A, dims, ::Colon) = _nanmaximum(A, dims)
+    nanmaximum(A; dims=:) = _nanmaximum(A, dims)
     _nanmaximum(A, region) = reduce(nanmax, A, dims=region, init=float(eltype(A))(NaN))
     _nanmaximum(A::Array{<:Number}, ::Colon) = vreduce(nanmax, A)
     export nanmaximum
@@ -261,9 +253,7 @@
     Ignoring NaNs, calculate the mean (optionally weighted) of an indexable
     collection `A`, optionally along dimensions specified by `dims`.
     """
-    nanmean(A; dims=:, dim=:) = __nanmean(A, dims, dim)
-    __nanmean(A, dims, dim) = _nanmean(A, dim) |> vec
-    __nanmean(A, dims, ::Colon) = _nanmean(A, dims)
+    nanmean(A; dims=:) = _nanmean(A, dims)
     function _nanmean(A, region)
         mask = nanmask(A)
         return sum(A.*mask, dims=region) ./ sum(mask, dims=region)
@@ -302,9 +292,7 @@
         return m / n
     end
 
-    nanmean(A, W; dims=:, dim=:) = __nanmean(A, W, dims, dim)
-    __nanmean(A, W, dims, dim) = _nanmean(A, W, dim) |> vec
-    __nanmean(A, W, dims, ::Colon) = _nanmean(A, W, dims)
+    nanmean(A, W; dims=:) = _nanmean(A, W, dims)
     function _nanmean(A, W, region)
         mask = nanmask(A)
         return sum(A.*W.*mask, dims=region) ./ sum(W.*mask, dims=region)
@@ -498,9 +486,7 @@
     Calculate the standard deviation (optionaly weighted), ignoring NaNs, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
     """
-    nanstd(A; dims=:, dim=:) = __nanstd(A, dims, dim)
-    __nanstd(A, dims, dim) = _nanstd(A, dim) |> vec
-    __nanstd(A, dims, ::Colon) = _nanstd(A, dims)
+    nanstd(A; dims=:) = _nanstd(A, dims)
     function _nanstd(A, region)
         mask = nanmask(A)
         N = sum(mask, dims=region)
@@ -554,9 +540,7 @@
         return sqrt(s / max((n-1), 0))
     end
 
-    nanstd(A, W; dims=:, dim=:) = __nanstd(A, W, dims, dim)
-    __nanstd(A, W, dims, dim) = _nanstd(A, W, dim) |> vec
-    __nanstd(A, W, dims, ::Colon) = _nanstd(A, W, dims)
+    nanstd(A, W; dims=:) = _nanstd(A, W, dims)
     function _nanstd(A, W, region)
         mask = nanmask(A)
         n = sum(mask, dims=region)
@@ -628,10 +612,7 @@
     Calculate the median, ignoring NaNs, of an indexable collection `A`,
     optionally along a dimension specified by `dims`.
     """
-    nanmedian(A; dims=:, dim=:) = _nanmedian(A, dims, dim)
-    _nanmedian(A, region, ::Colon) = _nanmedian(A, region)
-    _nanmedian(A, ::Colon, region) = _nanmedian(A, region) |> vec
-    _nanmedian(A, ::Colon, ::Colon) = _nanmedian(A, :)
+    nanmedian(A; dims=:) = _nanmedian(A, dims)
     function _nanmedian(A, ::Colon)
         t = nanmask(A)
         return any(t) ? median(A[t]) : float(eltype(A))(NaN)
