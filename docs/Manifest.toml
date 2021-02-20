@@ -141,9 +141,9 @@ version = "0.1.0"
 
 [[OffsetArrays]]
 deps = ["Adapt"]
-git-tree-sha1 = "76622f08645764e040b4d7e86d0ff471fd126ae4"
+git-tree-sha1 = "986e7c0a0ef1863be969d191957ac32cb17d0d79"
 uuid = "6fe1bfb0-de20-5000-8ca7-80f57d26f881"
-version = "1.5.3"
+version = "1.6.0"
 
 [[OrderedCollections]]
 git-tree-sha1 = "4fa2ba51070ec13fcc7517db714445b4ab986bdf"
@@ -241,6 +241,6 @@ uuid = "4ec0a83e-493e-50e2-b9ac-8f72acf5a8f5"
 
 [[VectorizationBase]]
 deps = ["ArrayInterface", "Hwloc", "IfElse", "Libdl", "LinearAlgebra"]
-git-tree-sha1 = "5ea10d050f8da86e80861dee26dba1b2339a4e78"
+git-tree-sha1 = "338930400f561a120b9b317a456c7c1cd62eac13"
 uuid = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
-version = "0.18.9"
+version = "0.18.10"
