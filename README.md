@@ -4,7 +4,7 @@
 [![Build Status][ci-img]][ci-url]
 [![codecov.io][codecov-img]][codecov-url]
 
-Fast ([LoopVectorization](https://github.com/chriselrod/LoopVectorization.jl)-based) summary statistics, histograms, and binning – ignoring NaNs
+Fast (often [LoopVectorization](https://github.com/chriselrod/LoopVectorization.jl)-based) summary statistics, histograms, and binning – ignoring NaNs
 
 ```
 julia> a = rand(100000);
