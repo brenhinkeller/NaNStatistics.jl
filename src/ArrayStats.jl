@@ -682,7 +682,7 @@
         binedges = range(xmin, xmax, length=nbins+1)
         t = Array{Bool}(undef, length(x))
         for i = 1:nbins
-            t .= (x.>binedges[i]) .& (x.<=binedges[i+1]) .& (y.==y)
+            t .= (binedges[i] .<= x .< binedges[i+1]) .& (y.==y)
             M[i] = any(t) ? median(y[t]) : float(eltype(A))(NaN)
         end
         return M
@@ -692,7 +692,7 @@
         t = Array{Bool}(undef, length(x))
         tj = Array{Bool}(undef, length(x))
         for i = 1:nbins
-            t .= (x.>binedges[i]) .& (x.<=binedges[i+1])
+            t .= binedges[i] .<= x .< binedges[i+1]
             for j = 1:size(y,2)
                 tj .= t .& .!isnan.(y[:,j])
                 M[i,j] = any(tj) ? median(y[tj,j]) : float(eltype(A))(NaN)
@@ -704,7 +704,7 @@
         binedges = range(xmin, xmax, length=nbins+1)
         t = Array{Bool}(undef, length(x))
         for i = 1:nbins
-            t .= (x.>binedges[i]) .& (x.<=binedges[i+1]) .& (y.==y)
+            t .= (binedges[i] .<= x .< binedges[i+1]) .& (y.==y)
             M[i] = any(t) ? median(y[t]) : float(eltype(A))(NaN)
             N[i] = count(t)
         end
@@ -715,7 +715,7 @@
         t = Array{Bool}(undef, length(x))
         tj = Array{Bool}(undef, length(x))
         for i = 1:nbins
-            t .= (x.>binedges[i]) .& (x.<=binedges[i+1])
+            t .= binedges[i] .<= x .< binedges[i+1]
             for j = 1:size(y,2)
                 tj .= t .& .!isnan.(y[:,j])
                 M[i,j] = any(tj) ? median(y[tj,j]) : float(eltype(A))(NaN)
