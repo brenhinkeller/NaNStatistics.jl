@@ -70,6 +70,31 @@ julia> @btime histcounts($b, 0:1:10)
   9822
 ```
 
+### Binning
+NaNStatistics also provides functions that will efficiently calculate the summary statistics of a given dependent variable `y` binned by an independent variable `x`. These currently include:
+* `nanbinmean` / `nanbinmean!`
+* `nanbinmedian` / `nanbinmedian!`
+```
+julia> x = 10 * rand(100000);
+
+julia> y = x.^2 .+ randn.();
+
+julia> xmin, xmax, nbins = 0, 10, 10;
+
+julia> @btime nanbinmean($x,$y,xmin,xmax,nbins)
+  364.082 μs (2 allocations: 320 bytes)
+10-element Vector{Float64}:
+  0.3421697507351903
+  2.3065542448799015
+  6.322448227456871
+ 12.340306767007629
+ 20.353233411797074
+ 30.347815506059405
+ 42.31866909140384
+ 56.32256214256441
+ 72.35387230251672
+ 90.35682945641588
+```
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://brenhinkeller.github.io/NaNStatistics.jl/stable/
