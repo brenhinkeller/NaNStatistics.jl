@@ -26,6 +26,37 @@ julia> @btime nanminimum($a)
 7.630517166790085e-6
 ```
 
+```
+julia> b = 10 * rand(100000);
+
+julia> using StatsBase
+
+julia> @btime fit(Histogram, $b, 0:1:10, closed=:right)
+  2.633 ms (2 allocations: 224 bytes)
+Histogram{Int64, 1, Tuple{StepRange{Int64, Int64}}}
+edges:
+  0:1:10
+weights: [10128, 10130, 10084, 9860, 9973, 10062, 10003, 10045, 9893, 9822]
+closed: right
+isdensity: false
+
+julia> using NaNStatistics
+
+julia> @btime histcounts($b, 0:1:10)
+  1.037 ms (1 allocation: 160 bytes)
+10-element Vector{Int64}:
+ 10128
+ 10130
+ 10084
+  9860
+  9973
+ 10062
+ 10003
+ 10045
+  9893
+  9822
+```
+
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://brenhinkeller.github.io/NaNStatistics.jl/stable/
