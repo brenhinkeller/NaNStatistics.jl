@@ -1,9 +1,8 @@
 # NaNStatistics
-*Because* `NaN` *is just* `missing` *with hardware support!*
-
 [![Dev][docs-dev-img]][docs-dev-url]
 [![Build Status][ci-img]][ci-url]
 [![codecov.io][codecov-img]][codecov-url]
+*Because* `NaN` *is just* `missing` *with hardware support!*
 
 Fast (often [LoopVectorization](https://github.com/chriselrod/LoopVectorization.jl)-based) summary statistics, histograms, and binning – ignoring NaNs
 
