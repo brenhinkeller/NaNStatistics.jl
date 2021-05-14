@@ -349,6 +349,7 @@
         end
         return m / n
     end
+    export nanmean
 
 
     """
@@ -510,7 +511,7 @@
         end
         return result
     end
-
+    export nanmedian
 
 
     """
