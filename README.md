@@ -28,7 +28,7 @@ julia> @btime nanminimum($a)
 7.630517166790085e-6
 ```
 ### Histograms
-The main histogram function is `histcounts`, and will (as you might expect for this package) ignore NaNs. However, it might be worth using for speed even if your data don't contain any NaNs:
+The main histogram function is `histcounts` (with an in-place variant `histcounts!`), and will, as you might expect for this package, ignore NaNs. However, it might be worth using for speed even if your data don't contain any NaNs:
 ```
 julia> b = 10 * rand(100000);
 
