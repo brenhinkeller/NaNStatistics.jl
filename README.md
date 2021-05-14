@@ -19,6 +19,7 @@ Summary statistics exported by NaNStatistics are generally named the same as the
 * `nanminimum`
 * `nanmaximum`
 * `nanextrema`
+* `nanrange`
 ```
 julia> a = rand(100000);
 
@@ -96,6 +97,8 @@ julia> @btime nanbinmean($x,$y,xmin,xmax,nbins)
  72.35387230251672
  90.35682945641588
 ```
+### To do:
+* Currently, `nanmedian`, `nanbinmedian`, etc. simply filter for `NaN`s and then fall back to `Statistics.median`. Similarly, `nanpctile` falls back to `StatsBase.percentile`. Fast native SIMD median and percentile implementations would allow for significant performance improvement.
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://brenhinkeller.github.io/NaNStatistics.jl/stable/
