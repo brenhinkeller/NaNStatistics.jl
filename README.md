@@ -1,5 +1,5 @@
 # NaNStatistics
-*Because `NaN` is just `missing` with hardware support*
+Because `NaN` is just `missing` with hardware support
 
 [![Dev][docs-dev-img]][docs-dev-url]
 [![Build Status][ci-img]][ci-url]
