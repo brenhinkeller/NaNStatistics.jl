@@ -10,5 +10,6 @@ module NaNStatistics
 
     include("ArrayStats.jl")
     include("Histograms.jl")
+    include("Binning.jl")
 
 end
