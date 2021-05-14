@@ -6,6 +6,8 @@
 
 Fast (often [LoopVectorization](https://github.com/chriselrod/LoopVectorization.jl)-based) summary statistics, histograms, and binning – ignoring NaNs
 
+### Summary statistics
+Summary statistics exported by NaNStatistics are generally named the same as their normal counterparts, but with "nan" in front of the name (e.g. `nanmean`, `nanmedian`, `nanminimum`, etc.), similar to the matlab and numpy conventions
 ```
 julia> a = rand(100000);
 
@@ -25,7 +27,7 @@ julia> @btime nanminimum($a)
   19.663 μs (0 allocations: 0 bytes)
 7.630517166790085e-6
 ```
-
+### Histograms
 ```
 julia> b = 10 * rand(100000);
 
