@@ -1,14 +1,23 @@
 # NaNStatistics
+*Because* `NaN` *is just* `missing` *with hardware support!*
+
 [![Dev][docs-dev-img]][docs-dev-url]
 [![Build Status][ci-img]][ci-url]
 [![codecov.io][codecov-img]][codecov-url]
 
-*Because* `NaN` *is just* `missing` *with hardware support!*
-
-Fast (often [LoopVectorization](https://github.com/chriselrod/LoopVectorization.jl)-based) summary statistics, histograms, and binning – ignoring NaNs
+Fast (often [LoopVectorization](https://github.com/JuliaSIMD/LoopVectorization.jl)-based) summary statistics, histograms, and binning – ignoring NaNs
 
 ### Summary statistics
-Summary statistics exported by NaNStatistics are generally named the same as their normal counterparts, but with "nan" in front of the name (e.g. `nanmean`, `nanmedian`, `nanminimum`, etc.), similar to the matlab and numpy conventions
+Summary statistics exported by NaNStatistics are generally named the same as their normal counterparts, but with "nan" in front of the name, similar to the matlab and numpy conventions. Options include:
+* `nansum`
+* `nanmean`
+* `nanmedian`
+* `nanstd` (standard deviation)
+* `nanmad` (median absolute deviation from the median)
+* `nanaad` (mean (average) absolute deviation from the mean)
+* `nanminimum`
+* `nanmaximum`
+* `nanextrema`
 ```
 julia> a = rand(100000);
 
