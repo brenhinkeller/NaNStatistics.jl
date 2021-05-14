@@ -82,19 +82,19 @@
 
     """
     ```julia
-    pctile(A, p; dims)
+    nanpctile(A, p; dims)
     ```
     Find the `p`th percentile of an indexable collection `A`, ignoring NaNs,
     optionally along a dimension specified by `dims`.
 
     A valid percentile value must satisfy 0 <= `p` <= 100.
     """
-    pctile(A, p; dims=:, drop=false) = possiblydropdims(_pctile(A, p, dims), drop, dims)
-    function _pctile(A, p, ::Colon)
+    nanpctile(A, p; dims=:, drop=false) = possiblydropdims(_nanpctile(A, p, dims), drop, dims)
+    function _nanpctile(A, p, ::Colon)
         t = nanmask(A)
         return any(t) ? percentile(A[t],p) : NaN
     end
-    function _pctile(A, p, region)
+    function _nanpctile(A, p, region)
         s = size(A)
         if region == 2
             t = Array{Bool}(undef, s[2])
@@ -111,11 +111,11 @@
                 result[i] = any(t) ? percentile(A[t,i],p) : NaN
             end
         else
-            result = _pctile(A, p, :)
+            result = _nanpctile(A, p, :)
         end
         return result
     end
-    export pctile
+    export nanpctile
 
 
     """
@@ -130,7 +130,7 @@
     """
     function inpctile(A, p)
         offset = (100 - p) / 2
-        return _pctile(A, offset, :) .< A .< _pctile(A, 100-offset, :)
+        return _nanpctile(A, offset, :) .< A .< _nanpctile(A, 100-offset, :)
     end
     export inpctile
 

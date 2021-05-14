@@ -26,7 +26,7 @@
     @test nanmad([1,2,3,NaN]) == 1.0
     @test nanaad([1,2,3,NaN]) ≈ 2/3
     @test nanmedian([1,2,3,NaN]) == 2.0
-    @test pctile([0:100...,NaN],99) == 99.0
+    @test nanpctile([0:100...,NaN],99) == 99.0
     @test nanmin(1.,2.) == 1.
     @test nanmax(1.,2.) == 2.
 
@@ -59,7 +59,7 @@
     @test nanmad([1,2,3]) == 1.0
     @test nanaad([1,2,3]) ≈ 2/3
     @test nanmedian([1,2,3]) == 2.0
-    @test pctile([0:100...],99) == 99.0
+    @test nanpctile([0:100...],99) == 99.0
     @test nanmin(1,2) == 1
     @test nanmax(1,2) == 2
 
@@ -77,7 +77,7 @@
     @test nanmad(1:3) == 1.0
     @test nanaad(1:3) ≈ 2/3
     @test nanmedian(1:3) == 2.0
-    @test pctile(0:100,99) == 99.0
+    @test nanpctile(0:100,99) == 99.0
 
 
     A = 1:10.
@@ -93,7 +93,7 @@
     @test nanmad(1:3.) == 1.0
     @test nanaad(1:3.) ≈ 2/3
     @test nanmedian(1:3.) == 2.0
-    @test pctile(0:100.,99) == 99.0
+    @test nanpctile(0:100.,99) == 99.0
 
     # Summary statistics: dimensional tests, Int64
     A = reshape(1:300,100,3)
@@ -115,8 +115,8 @@
     @test nanaad(A, dims=2) ≈ fill(200/3,100,1)
     @test nanmedian(A, dims=1) == median(A, dims=1)
     @test nanmedian(A, dims=2) == median(A, dims=2)
-    @test pctile(A, 10, dims=1) == [10.9  110.9  210.9]
-    @test pctile(A, 10, dims=2) ≈ 21:120
+    @test nanpctile(A, 10, dims=1) == [10.9  110.9  210.9]
+    @test nanpctile(A, 10, dims=2) ≈ 21:120
 
 
     # Summary statistics: dimensional tests, Float64
@@ -149,8 +149,8 @@
     @test nanstd(A, ones(size(A)), dims=2) ≈ fill(100, 100, 1) # weighted
     @test nanmedian(A, dims=1) == [50.5 150.5 250.5]
     @test dropdims(nanmedian(A, dims=2), dims=2) == 101:200
-    @test pctile(A, 10, dims=1) == [10.9 110.9 210.9]
-    @test pctile(A, 10, dims=2) ≈ 21:120
+    @test nanpctile(A, 10, dims=1) == [10.9 110.9 210.9]
+    @test nanpctile(A, 10, dims=2) ≈ 21:120
     @test nanmad(A, dims=1) == [25.0 25.0 25.0]
     @test nanmad(A, dims=2) == fill(100.0, 100, 1)
     @test nanaad(A, dims=1) == [25.0 25.0 25.0]

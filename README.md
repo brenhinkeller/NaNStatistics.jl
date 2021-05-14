@@ -12,6 +12,7 @@ Summary statistics exported by NaNStatistics are generally named the same as the
 * `nansum`
 * `nanmean`
 * `nanmedian`
+* `nanpctile`
 * `nanstd` (standard deviation)
 * `nanmad` (median absolute deviation from the median)
 * `nanaad` (mean (average) absolute deviation from the mean)
