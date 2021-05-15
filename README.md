@@ -8,7 +8,7 @@
 Fast (often [LoopVectorization](https://github.com/JuliaSIMD/LoopVectorization.jl)-based) summary statistics, histograms, and binning – ignoring NaNs
 
 ### Summary statistics
-Summary statistics exported by NaNStatistics are generally named the same as their normal counterparts, but with "nan" in front of the name, similar to the matlab and numpy conventions. Options include:
+Summary statistics exported by NaNStatistics are generally named the same as their normal counterparts, but with "nan" in front of the name, similar to the Matlab and NumPy conventions. Options include:
 * `nansum`
 * `nanmean`
 * `nanmedian`
@@ -19,7 +19,8 @@ Summary statistics exported by NaNStatistics are generally named the same as the
 * `nanminimum`
 * `nanmaximum`
 * `nanextrema`
-* `nanrange`
+* `nanrange` (range between nanmaximum and nanminimum)
+These functions will generally support the same `dims` keyword as their normal Julia counterparts (though are most efficient when operating on an entire collection).
 ```
 julia> a = rand(100000);
 
@@ -98,11 +99,26 @@ julia> @btime nanbinmean($x,$y,xmin,xmax,nbins)
  90.35682945641588
 ```
 
-There is also a simple moving average function, `movmean`
+There is also a simple moving average function, `movmean`, which can operate in 1D or 2D.
+```
+julia> A = rand(1:10, 4,4)
+4×4 Matrix{Int64}:
+ 3  5  10  3
+ 4  2   5  8
+ 5  6   8  8
+ 2  6  10  6
+
+julia> movmean(A, 3)
+4×4 Matrix{Float64}:
+ 3.5      4.83333  5.5      6.5
+ 4.16667  5.33333  6.11111  7.0
+ 4.16667  5.33333  6.55556  7.5
+ 4.75     6.16667  7.33333  8.0
+ ```
 
 ### Room for future improvement (PRs welcome!):
 * Currently, `nanmedian`, `nanbinmedian`, etc. simply filter for `NaN`s and then fall back to `Statistics.median`. Similarly, `nanpctile` falls back to `StatsBase.percentile`. Adding fast pure-julia SIMD median and percentile implementations would allow for significant performance improvement.
-* Sufficiently high-dimensional or multidiminsional summary statistics (e.g. `nanmean(ones(10,10,10,10), dims=(2,4))`) also currently filter for `NaN`s and fall back to Base.
+* Sufficiently high-dimensional or multidiminsional summary statistics (e.g. `nanmean(ones(10,10,10,10), dims=(2,4))`) could probably be made faster, and are not currently supported for `nanmedian` or `nanpctile`
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://brenhinkeller.github.io/NaNStatistics.jl/stable/

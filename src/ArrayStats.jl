@@ -565,12 +565,14 @@
     ```julia
     movmean(x::AbstractVecOrMat, n::Number)
     ```
-    Simple moving average of `x` in 1 or 2 dimensions, spanning `n` bins (or n*n in 2D)
+    Simple moving average of `x` in 1 or 2 dimensions, spanning `n` bins (or n*n in 2D), returning an array of the same size as `x`.
+    For the resulting moving average to be symmetric, `n` must be an odd integer; if `n` is not an odd integer, the first odd integer greater than `n` will be used instead.
     """
     function movmean(x::AbstractVector, n::Number)
+        mean_type = Base.promote_op(/, eltype(x), Int64)
+        m = Array{mean_type}(undef, size(x))
+        t = Array{Bool}(undef, length(x))
         halfspan = ceil((n-1)/2)
-        t = Array{Bool}(undef,length(x))
-        m = Array{float(eltype(x))}(undef,size(x))
         ind = 1:length(x)
         @inbounds for i in ind
             l = ceil(i-halfspan)
@@ -581,9 +583,10 @@
         return m
     end
     function movmean(x::AbstractMatrix, n::Number)
+        mean_type = Base.promote_op(/, eltype(x), Int64)
+        m = Array{mean_type}(undef, size(x))
+        t = Array{Bool}(undef, size(x))
         halfspan = ceil((n-1)/2)
-        t = Array{Bool}(undef,size(x))
-        m = Array{float(eltype(x))}(undef,size(x))
         iind = repeat(1:size(x,1), 1, size(x,2))
         jind = repeat((1:size(x,2))', size(x,1), 1)
         @inbounds for k = 1:length(x)
@@ -591,8 +594,8 @@
             j = jind[k]
             il = (i-halfspan)
             iu = (i+halfspan)
-            jl = (i-halfspan)
-            ju = (i+halfspan)
+            jl = (j-halfspan)
+            ju = (j+halfspan)
             @avx @. t = (il <= iind <= iu) & (jl <= jind <= ju)
             m[i,j] = nanmean(view(x, t))
         end
