@@ -20,6 +20,7 @@ Summary statistics exported by NaNStatistics are generally named the same as the
 * `nanmaximum`
 * `nanextrema`
 * `nanrange` (range between nanmaximum and nanminimum)
+
 These functions will generally support the same `dims` keyword as their normal Julia counterparts (though are most efficient when operating on an entire collection).
 ```
 julia> a = rand(100000);
