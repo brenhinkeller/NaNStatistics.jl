@@ -13,6 +13,13 @@ function histcounts!(N::Array, x::AbstractArray, xedges::AbstractRange)
     xmin, xmax = extrema(xedges)
     δiδx = nbins/(xmax-xmin)
 
+    # Make sure we don't have a segfault by filling beyond the length of N
+    # in the @inbounds loop below
+    if length(N) < nbins
+        nbins = length(N)
+        @warn "length(N) < nbins; any histogram bins beyond length(N) will not be filled"
+    end
+
     # Loop through each element of x
     @inbounds for i ∈ eachindex(x)
         xᵢ = x[i]
@@ -31,6 +38,13 @@ function histcounts!(N::Array, x::AbstractArray{<:Integer}, xedges::AbstractRang
     nbins = length(xedges) - 1
     xmin, xmax = extrema(xedges)
     δiδx = nbins/(xmax-xmin)
+
+    # Make sure we don't have a segfault by filling beyond the length of N
+    # in the @inbounds loop below
+    if length(N) < nbins
+        nbins = length(N)
+        @warn "length(N) < nbins; any histogram bins beyond length(N) will not be filled"
+    end
 
     # Loop through each element of x
     @inbounds for i ∈ eachindex(x)
