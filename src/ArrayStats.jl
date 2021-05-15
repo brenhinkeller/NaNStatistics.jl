@@ -572,13 +572,12 @@
         mean_type = Base.promote_op(/, eltype(x), Int64)
         m = Array{mean_type}(undef, size(x))
         t = Array{Bool}(undef, length(x))
-        halfspan = ceil((n-1)/2)
+        δi = ceil(Int, (n-1)/2)
         ind = 1:length(x)
         @inbounds for i in ind
-            l = ceil(i-halfspan)
-            u = ceil(i+halfspan)
-            @avx @. t = l <= ind <= u
-            m[i] = nanmean(view(x, t))
+            l = max(i-δi, 1)
+            u = min(i+δi, length(x))
+            m[i] = nanmean(view(x, l:u))
         end
         return m
     end
@@ -586,18 +585,17 @@
         mean_type = Base.promote_op(/, eltype(x), Int64)
         m = Array{mean_type}(undef, size(x))
         t = Array{Bool}(undef, size(x))
-        halfspan = ceil((n-1)/2)
+        δi = ceil(Int, (n-1)/2)
         iind = repeat(1:size(x,1), 1, size(x,2))
         jind = repeat((1:size(x,2))', size(x,1), 1)
         @inbounds for k = 1:length(x)
             i = iind[k]
+            il = max(i-δi, 1)
+            iu = min(i+δi, size(x,1))
             j = jind[k]
-            il = (i-halfspan)
-            iu = (i+halfspan)
-            jl = (j-halfspan)
-            ju = (j+halfspan)
-            @avx @. t = (il <= iind <= iu) & (jl <= jind <= ju)
-            m[i,j] = nanmean(view(x, t))
+            jl = max(j-δi, 1)
+            ju = min(j+δi, size(x,2))
+            m[i,j] = nanmean(view(x, il:iu, jl:ju))
         end
         return m
     end
