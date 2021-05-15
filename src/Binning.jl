@@ -2,15 +2,12 @@
 
     """
     ```julia
-    nanbinmean!(MU, [N], x, y, [w], xmin::Number, xmax::Number, nbins::Integer)
+    nanbinmean!(MU, [N], x, y, xmin::Number, xmax::Number, nbins::Integer)
     ```
     Ignoring NaNs, fill the array `MU` with the means (and optionally `N` with
     the counts) of non-NAN `y` values that fall into each of `nbins` equally
     spaced `x` bins between `xmin` and `xmax`, aligned with bin edges as
     `xmin`:(`xmax`-`xmin`)/`nbins`:`xmax`
-
-    If an optional array of weights [`w`] is specified, then `N` is required, and
-    will be filled with the sum of weights for each bin.
 
     The array of `x` data should given as a one-dimensional array (any subtype
     of AbstractVector) and `y` as either a 1-d or 2-d array (any subtype of
@@ -68,8 +65,30 @@
 
         return MU
     end
+    export nanbinmean!
+
+    """
+    ```julia
+    nanbinmean!(MU, W, x, y, w, xmin::Number, xmax::Number, nbins::Integer)
+    ```
+    Ignoring NaNs, fill the array `MU` with the weighted means (and `W` with
+    the sum of weight) of non-NAN `y` values that fall into each of `nbins`
+    equally-spaced `x` bins between `xmin` and `xmax`, aligned with bin edges as
+    `xmin`:(`xmax`-`xmin`)/`nbins`:`xmax`
+
+    If an optional array of weights [`w`] is specified, then `N` is required, and
+    will be filled with the sum of weights for each bin.
+
+    The array of `x` data should given as a one-dimensional array (any subtype
+    of AbstractVector) and `y` as either a 1-d or 2-d array (any subtype of
+    AbstractVecOrMat).
+
+    The output arrays `MU` and `N` must be the same size, and must have the same
+    number of columns as `y`; if `y` is a 2-d array (matrix), then each column of
+    `y` will be treated as a separate variable.
+    """
     # In-place binning with weights; y, W, MU as 1D vectors
-    function nanbinmean!(MU::AbstractVector, W::AbstractVector, x::AbstractVector, y::AbstractVector, w::AbstractVector, xmin::Number, xmax::Number, nbins::Integer)
+    function nanbinwmean!(MU::AbstractVector, W::AbstractVector, x::AbstractVector, y::AbstractVector, w::AbstractVector, xmin::Number, xmax::Number, nbins::Integer)
         # Calculate bin index from x value
         scalefactor = nbins / (xmax - xmin)
 
@@ -89,7 +108,7 @@
         return MU
     end
     # In-place binning with weights; y, W, MU as 2D matrices
-    function nanbinmean!(MU::AbstractMatrix, W::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, w::AbstractVector, xmin::Number, xmax::Number, nbins::Integer)
+    function nanbinwmean!(MU::AbstractMatrix, W::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, w::AbstractVector, xmin::Number, xmax::Number, nbins::Integer)
         # Calculate bin index from x value
         scalefactor = nbins / (xmax - xmin)
 
@@ -112,7 +131,6 @@
 
         return MU
     end
-    export nanbinmean!
 
 
     """
@@ -178,9 +196,9 @@
 
     """
     ```julia
-    nanbinmean(x, y, [w], xmin::Number, xmax::Number, nbins::Integer)
+    nanbinmean(x, y, xmin::Number, xmax::Number, nbins::Integer)
     ```
-    Ignoring NaNs, calculate the mean (optionally weighted) of `y` values that
+    Ignoring NaNs, calculate the mean of `y` values that
     fall into each of `nbins` equally spaced `x` bins between `xmin` and `xmax`,
     aligned with bin edges as `xmin`:(`xmax`-`xmin`)/`nbins`:`xmax`
 
@@ -194,12 +212,26 @@
         MU = Array{float(eltype(y))}(undef, nbins, size(y)[2:end]...)
         return nanbinmean!(MU, N, x, y, xmin, xmax, nbins)
     end
-    function nanbinmean(x::AbstractVector, y::AbstractVecOrMat, w::AbstractVector, xmin::Number, xmax::Number, nbins::Integer)
+    export nanbinmean
+
+    """
+    ```julia
+    nanbinwmean(x, y, xmin::Number, xmax::Number, nbins::Integer)
+    ```
+    Ignoring NaNs, calculate the weighted mean of `y` values that
+    fall into each of `nbins` equally spaced `x` bins between `xmin` and `xmax`,
+    aligned with bin edges as `xmin`:(`xmax`-`xmin`)/`nbins`:`xmax`
+
+    The array of `x` data should given as a one-dimensional array (any subtype
+    of AbstractVector) and `y` as either a 1-d or 2-d array (any subtype of
+    AbstractVecOrMat). If `y` is a 2-d array, then each column of `y` will be
+    treated as a separate variable.
+    """
+    function nanbinwmean(x::AbstractVector, y::AbstractVecOrMat, w::AbstractVector, xmin::Number, xmax::Number, nbins::Integer)
         W = Array{float(eltype(y))}(undef, nbins, size(y)[2:end]...)
         MU = Array{float(eltype(y))}(undef, nbins, size(y)[2:end]...)
-        return nanbinmean!(MU, W, x, y, w, xmin, xmax, nbins)
+        return nanbinwmean!(MU, W, x, y, w, xmin, xmax, nbins)
     end
-    export nanbinmean
 
     """
     ```julia
