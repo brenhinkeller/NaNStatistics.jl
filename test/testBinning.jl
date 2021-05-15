@@ -37,4 +37,10 @@
     @test M33 == r
     @test N33 == fill(33,3,3)
 
+    # 2D Means
+    x = y = z = 0.5:9.5
+    xedges = yedges = 0:10
+    mu = nanbinmean(x,y,z,xedges,yedges)
+    @test isequal(mu, [((i==j) ? i-0.5 : NaN) for i in 1:10, j in 1:10])
+
 ## -- End of File

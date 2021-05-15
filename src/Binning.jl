@@ -69,6 +69,49 @@
     nanbinmean!(MU, N, x, y, xedges::AbstractRange) = nanbinmean!(MU, N, x, y, minimum(xedges), maximum(xedges), length(xedges)-1)
     export nanbinmean!
 
+    # 2-d binning
+    """
+    ```julia
+    nanbinmean!(MU, N, x, y, z, xedges, yedges)
+    ```
+    Ignoring NaNs, fill the matrix `MU` with the means and `N` with
+    the counts of non-NAN `z` values that fall into a 2D grid of x and y bins
+    defined by `xedges` and `yedges`. The independent variables `x` and `y`,
+    as well as the dependent variable `z`, are all expected as 1D vectors (any
+    subtype of AbstractVector).
+
+    The output matrices `MU` and `N` must be the same size, and must each have
+    `length(yedges)-1` rows and `length(xedges)-1` columns.
+    """
+    function nanbinmean!(MU::AbstractMatrix, N::AbstractMatrix, x::AbstractVector, y::AbstractVector, z::AbstractVector, xedges::AbstractRange, yedges::AbstractRange)
+        # Calculate bin index from x value
+        nxbins = length(xedges)-1
+        xmin, xmax = extrema(xedges)
+        δjδx = nxbins / (xmax - xmin)
+
+        nybins = length(yedges)-1
+        ymin, ymax = extrema(yedges)
+        δiδy = nybins / (ymax - ymin)
+
+        # Calculate the means for each bin, ignoring NaNs
+        fill!(N, 0)
+        fill!(MU, 0) # Fill the output array with zeros to start
+        @inbounds for n = 1:length(x)
+            i_float = (y[n] - ymin) * δiδy
+            j_float = (x[n] - xmin) * δjδx
+            zₙ = z[n]
+            if (zₙ==zₙ) && (0 < i_float < nybins) && (0 < j_float < nxbins)
+                i = ceil(Int, i_float)
+                j = ceil(Int, j_float)
+                N[i,j] += 1
+                MU[i,j] += zₙ
+            end
+        end
+        MU ./= N # Divide by N to calculate means. Empty bin = 0/0 = NaN
+
+        return MU
+    end
+
     """
     ```julia
     nanbinmean!(MU, W, x, y, w, xmin::Number, xmax::Number, nbins::Integer)
@@ -216,6 +259,21 @@
     end
     nanbinmean(x, y, xedges::AbstractRange) = nanbinmean(x, y, minimum(xedges), maximum(xedges), length(xedges)-1)
     export nanbinmean
+
+    """
+    ```julia
+    nanbinmean(x, y, z, xedges, yedges)
+    ```
+    Ignoring NaNs, calculate the mean of `z` values that fall into a 2D grid of
+    x and y bins defined by `xedges` and `yedges`. The independent variables `x`
+    and `y`, as well as the dependent variable `z`, are all expected as 1D vectors
+    (any subtype of AbstractVector).
+    """
+    function nanbinmean(x::AbstractVector, y::AbstractVector, z::AbstractVector, xedges::AbstractRange, yedges::AbstractRange)
+        N = Array{Int}(undef, length(yedges)-1, length(xedges)-1)
+        MU = Array{float(eltype(y))}(undef, length(yedges)-1, length(xedges)-1)
+        return nanbinmean!(MU, N, x, y, z, xedges, yedges)
+    end
 
     """
     ```julia
