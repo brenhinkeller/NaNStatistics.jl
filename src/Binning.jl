@@ -65,6 +65,8 @@
 
         return MU
     end
+    nanbinmean!(MU, x, y, xedges::AbstractRange) = nanbinmean!(MU, x, y, minimum(xedges), maximum(xedges), length(xedges)-1)
+    nanbinmean!(MU, N, x, y, xedges::AbstractRange) = nanbinmean!(MU, N, x, y, minimum(xedges), maximum(xedges), length(xedges)-1)
     export nanbinmean!
 
     """
@@ -75,9 +77,6 @@
     the sum of weight) of non-NAN `y` values that fall into each of `nbins`
     equally-spaced `x` bins between `xmin` and `xmax`, aligned with bin edges as
     `xmin`:(`xmax`-`xmin`)/`nbins`:`xmax`
-
-    If an optional array of weights [`w`] is specified, then `N` is required, and
-    will be filled with the sum of weights for each bin.
 
     The array of `x` data should given as a one-dimensional array (any subtype
     of AbstractVector) and `y` as either a 1-d or 2-d array (any subtype of
@@ -131,6 +130,7 @@
 
         return MU
     end
+    nanbinwmean!(MU, W, x, y, w, xedges::AbstractRange) = nanbinwmean!(MU, W, x, y, w, minimum(xedges), maximum(xedges), length(xedges)-1)
 
 
     """
@@ -189,6 +189,8 @@
         end
         return M
     end
+    nanbinmedian!(MU, x, y, xedges::AbstractRange) = nanbinmedian!(MU, x, y, minimum(xedges), maximum(xedges), length(xedges)-1)
+    nanbinmedian!(MU, N, x, y, xedges::AbstractRange) = nanbinmedian!(MU, N, x, y, minimum(xedges), maximum(xedges), length(xedges)-1)
     export nanbinmedian!
 
 
@@ -212,6 +214,7 @@
         MU = Array{float(eltype(y))}(undef, nbins, size(y)[2:end]...)
         return nanbinmean!(MU, N, x, y, xmin, xmax, nbins)
     end
+    nanbinmean(x, y, xedges::AbstractRange) = nanbinmean(x, y, minimum(xedges), maximum(xedges), length(xedges)-1)
     export nanbinmean
 
     """
@@ -232,6 +235,7 @@
         MU = Array{float(eltype(y))}(undef, nbins, size(y)[2:end]...)
         return nanbinwmean!(MU, W, x, y, w, xmin, xmax, nbins)
     end
+    nanbinwmean(x, y, w, xedges::AbstractRange) = nanbinwmean(x, y, w, minimum(xedges), maximum(xedges), length(xedges)-1)
 
     """
     ```julia
@@ -247,6 +251,7 @@
         M = Array{float(eltype(y))}(undef, nbins, size(y)[2:end]...)
         return nanbinmedian!(M, x, y, xmin, xmax, nbins)
     end
+    nanbinmedian(x, y, xedges::AbstractRange) = nanbinmedian(x, y, minimum(xedges), maximum(xedges), length(xedges)-1)
     export nanbinmedian
 
 
