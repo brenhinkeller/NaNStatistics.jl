@@ -7,6 +7,6 @@ h = histcounts(a, 0:0.1:1)
 @test length(h) == 10
 @test sum(h) == N
 
-@test histcounts(0:99,0:10:100) == fill(10,10)
-@test histcounts(0:99,0,100,10) == fill(10,10)
-@test histcounts(0:99.,0.,100.,10) == fill(10,10)
+@test histcounts(1:100,0:10:100) == fill(10,10)
+@test histcounts(1:100,0,100,10) == fill(10,10)
+@test histcounts(1:100.,0.,100.,10) == fill(10,10)

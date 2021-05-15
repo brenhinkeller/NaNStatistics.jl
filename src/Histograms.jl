@@ -11,14 +11,15 @@ function histcounts!(N::Array, x::AbstractArray, xedges::AbstractRange)
     # What is the size of each bin?
     nbins = length(xedges) - 1
     xmin, xmax = extrema(xedges)
-    binwidth = (xmax-xmin)/nbins
+    δiδx = nbins/(xmax-xmin)
 
     # Loop through each element of x
     @inbounds for i ∈ eachindex(x)
         xᵢ = x[i]
         if xᵢ==xᵢ # If not a NaN
-            binindex = Integer((xᵢ - xmin) ÷ binwidth) + 1
-            if 1 <= binindex <= nbins
+            δi = (xᵢ - xmin) * δiδx
+            if 0 < δi <= nbins
+                binindex = ceil(Int, δi)
                 N[binindex] += 1
             end
         end
@@ -29,13 +30,14 @@ function histcounts!(N::Array, x::AbstractArray{<:Integer}, xedges::AbstractRang
     # What is the size of each bin?
     nbins = length(xedges) - 1
     xmin, xmax = extrema(xedges)
-    binwidth = (xmax-xmin)/nbins
+    δiδx = nbins/(xmax-xmin)
 
     # Loop through each element of x
     @inbounds for i ∈ eachindex(x)
         xᵢ = x[i]
-        binindex = Integer((xᵢ - xmin) ÷ binwidth) + 1
-        if 1 <= binindex <= nbins
+        δi = (xᵢ - xmin) * δiδx
+        if 0 < δi <= nbins
+            binindex = ceil(Int, δi)
             N[binindex] += 1
         end
     end
