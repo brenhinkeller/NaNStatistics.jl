@@ -5,7 +5,7 @@
 [![Build Status][ci-img]][ci-url]
 [![codecov.io][codecov-img]][codecov-url]
 
-Fast (often [LoopVectorization](https://github.com/JuliaSIMD/LoopVectorization.jl)-based) summary statistics, histograms, and binning – ignoring NaNs
+Fast (often [LoopVectorization](https://github.com/JuliaSIMD/LoopVectorization.jl)-based) summary statistics, histograms, and binning — all ignoring `NaN`s, as if `NaN` represented missing data.
 
 ### Summary statistics
 Summary statistics exported by NaNStatistics are generally named the same as their normal counterparts, but with "nan" in front of the name, similar to the Matlab and NumPy conventions. Options include:
@@ -99,7 +99,8 @@ julia> @btime nanbinmean($x,$y,xmin,xmax,nbins)
  72.35387230251672
  90.35682945641588
 ```
-
+### Other functions
+* `movmean`
 There is also a simple moving average function, `movmean`, which can operate in 1D or 2D.
 ```
 julia> A = rand(1:10, 4,4)
