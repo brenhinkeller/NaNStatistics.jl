@@ -3,4 +3,5 @@
 *.jl.mem
 /docs/build/
 /dev
+Manifest.toml
 .DS_Store
