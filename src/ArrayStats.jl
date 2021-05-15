@@ -571,7 +571,6 @@
     function movmean(x::AbstractVector, n::Number)
         mean_type = Base.promote_op(/, eltype(x), Int64)
         m = Array{mean_type}(undef, size(x))
-        t = Array{Bool}(undef, length(x))
         δi = ceil(Int, (n-1)/2)
         ind = 1:length(x)
         @inbounds for i in ind
@@ -584,7 +583,6 @@
     function movmean(x::AbstractMatrix, n::Number)
         mean_type = Base.promote_op(/, eltype(x), Int64)
         m = Array{mean_type}(undef, size(x))
-        t = Array{Bool}(undef, size(x))
         δi = ceil(Int, (n-1)/2)
         iind = repeat(1:size(x,1), 1, size(x,2))
         jind = repeat((1:size(x,2))', size(x,1), 1)
