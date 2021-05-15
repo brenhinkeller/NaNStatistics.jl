@@ -17,7 +17,7 @@
     # Weighted means
     @test NaNStatistics.nanbinwmean([1:100..., 1], [1:100..., NaN], ones(100), 0,100,3) == [17, 50, 83]
     @test NaNStatistics.nanbinwmean(1:100, reshape(1:300,100,3), ones(100), 0, 100, 3) == r
-    NaNStatistics.nanbinwmean!(M33, N33, 1:100, reshape(1:300,100,3), 0, 100, 3)
+    NaNStatistics.nanbinwmean!(M33, N33, 1:100, reshape(1:300,100,3), ones(100), 0, 100, 3)
     @test M33 == r
     @test N33 == fill(33,3,3)
 
