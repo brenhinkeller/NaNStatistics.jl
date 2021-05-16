@@ -17,7 +17,7 @@ function histcounts!(N::Array, x::AbstractArray, xedges::AbstractRange)
     # in the @inbounds loop below
     if length(N) < nbins
         nbins = length(N)
-        @warn "length(N) < nbins; any histogram bins beyond length(N) will not be filled"
+        @warn "length(N) < nbins; any bins beyond length(N) will not be filled"
     end
 
     # Loop through each element of x
@@ -43,7 +43,7 @@ function histcounts!(N::Array, x::AbstractArray{<:Integer}, xedges::AbstractRang
     # in the @inbounds loop below
     if length(N) < nbins
         nbins = length(N)
-        @warn "length(N) < nbins; any histogram bins beyond length(N) will not be filled"
+        @warn "length(N) < nbins; any bins beyond length(N) will not be filled"
     end
 
     # Loop through each element of x
