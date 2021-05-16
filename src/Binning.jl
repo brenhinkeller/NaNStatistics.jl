@@ -26,6 +26,13 @@
         # Calculate bin index from x value
         scalefactor = nbins / (xmax - xmin)
 
+        # Make sure we don't have a segfault by filling beyond the length of N
+        # in the @inbounds loop below
+        if length(MU) < nbins
+            nbins = length(MU)
+            @warn "length(MU) < nbins; any bins beyond length(MU) will not be filled"
+        end
+
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
         fill!(MU, 0) # Fill the output array with zeros to start
@@ -45,6 +52,13 @@
     function nanbinmean!(MU::AbstractMatrix, N::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, xmin::Number, xmax::Number, nbins::Integer)
         # Calculate bin index from x value
         scalefactor = nbins / (xmax - xmin)
+
+        # Make sure we don't have a segfault by filling beyond the length of N
+        # in the @inbounds loop below
+        if length(MU) < nbins
+            nbins = length(MU)
+            @warn "length(MU) < nbins; any bins beyond length(MU) will not be filled"
+        end
 
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
@@ -93,6 +107,17 @@
         ymin, ymax = extrema(yedges)
         δiδy = nybins / (ymax - ymin)
 
+        # Make sure we don't have a segfault by filling beyond the length of N
+        # in the @inbounds loop below
+        if size(MU, 1) < nybins
+            nybins = size(MU, 1)
+            @warn "size(MU, 1) < nybins; any y bins beyond size(MU, 1) will not be filled"
+        end
+        if size(MU, 2) < nxbins
+            nxbins = size(MU, 2)
+            @warn "size(MU, 2) < nxbins; any x bins beyond size(MU, 2) will not be filled"
+        end
+
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
         fill!(MU, 0) # Fill the output array with zeros to start
@@ -134,6 +159,13 @@
         # Calculate bin index from x value
         scalefactor = nbins / (xmax - xmin)
 
+        # Make sure we don't have a segfault by filling beyond the length of N
+        # in the @inbounds loop below
+        if length(MU) < nbins
+            nbins = length(MU)
+            @warn "length(MU) < nbins; any bins beyond length(MU) will not be filled"
+        end
+
         # Calculate the means for each bin, ignoring NaNs
         fill!(W, 0)
         fill!(MU, 0) # Fill the output array with zeros to start
@@ -153,6 +185,13 @@
     function nanbinwmean!(MU::AbstractMatrix, W::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, w::AbstractVector, xmin::Number, xmax::Number, nbins::Integer)
         # Calculate bin index from x value
         scalefactor = nbins / (xmax - xmin)
+
+        # Make sure we don't have a segfault by filling beyond the length of N
+        # in the @inbounds loop below
+        if length(MU) < nbins
+            nbins = length(MU)
+            @warn "length(MU) < nbins; any bins beyond length(MU) will not be filled"
+        end
 
         # Calculate the means for each bin, ignoring NaNs
         fill!(W, 0)
