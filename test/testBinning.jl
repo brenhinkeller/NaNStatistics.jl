@@ -17,11 +17,11 @@
     @test nanbinmean(1:100, reshape(1:300,100,3), range(0,100,length=4)) == r
 
     # Weighted means
-    @test NaNStatistics.nanbinwmean([1:100..., 1], [1:100..., NaN], ones(100), 0,100,3) == [17, 50, 83]
-    @test NaNStatistics.nanbinwmean([1:100..., 1], [1:100..., NaN], ones(100), range(0,100,length=4)) == [17, 50, 83]
-    @test NaNStatistics.nanbinwmean(1:100, reshape(1:300,100,3), ones(100), 0, 100, 3) == r
-    @test NaNStatistics.nanbinwmean(1:100, reshape(1:300,100,3), ones(100), range(0,100,length=4)) == r
-    NaNStatistics.nanbinwmean!(M33, N33, 1:100, reshape(1:300,100,3), ones(100), 0, 100, 3)
+    @test NaNStatistics.nanbinwmean([1:100..., 1], [1:100..., NaN], ones(101), 0,100,3) == [17, 50, 83]
+    @test NaNStatistics.nanbinwmean([1:100..., 1], [1:100..., NaN], ones(101), range(0,100,length=4)) == [17, 50, 83]
+    @test NaNStatistics.nanbinwmean(1:100, reshape(1:300,100,3), ones(101), 0, 100, 3) == r
+    @test NaNStatistics.nanbinwmean(1:100, reshape(1:300,100,3), ones(101), range(0,100,length=4)) == r
+    NaNStatistics.nanbinwmean!(M33, N33, 1:100, reshape(1:300,100,3), ones(101), 0, 100, 3)
     @test M33 == r
     @test N33 == fill(33,3,3)
 
@@ -44,7 +44,9 @@
     @test isequal(mu, [((i==j) ? i-0.5 : NaN) for i in 1:10, j in 1:10])
 
 
-    # Test results and warnings when N is too small to hold results
+## --- Test results and warnings when N is too small to hold results
+
+    # Means
     M2 = zeros(2)
     N2 = fill(0,2)
     w = "length(MU) < nbins; any bins beyond length(MU) will not be filled"
@@ -53,7 +55,6 @@
     @test_logs (:warn, w) nanbinmean!(M2, N2, 1:100,1:100,0,100,3)
     @test M2 == [17, 50]
 
-    # Multiple-dependent-variables-at-once case
     M23 = zeros(2,3)
     N23 = fill(0,2,3)
     w = "size(MU,1) < nbins; any bins beyond size(MU,1) will not be filled"
@@ -61,6 +62,24 @@
     @test M23 == r[1:2,1:3]
     w = "size(MU,2) < size(y,2); any columns beyond size(MU,2) will not be filled"
     @test_logs (:warn, w) nanbinmean!(M23', N23', 1:100, reshape(1:300,100,3), 0, 100, 3)
+    @test M23' == r[1:3,1:2]
+
+    # Weighted Means
+    M2 = zeros(2)
+    N2 = fill(0,2)
+    w = "length(MU) < nbins; any bins beyond length(MU) will not be filled"
+    @test_logs (:warn, w) NaNStatistics.nanbinwmean!(M2, N2, [1:100..., 1],[1:100..., NaN],ones(101), 0,100,3)
+    @test M2 == [17, 50]
+    @test_logs (:warn, w) NaNStatistics.nanbinwmean!(M2, N2, 1:100,1:100,ones(101), 0,100,3)
+    @test M2 == [17, 50]
+
+    M23 = zeros(2,3)
+    N23 = fill(0,2,3)
+    w = "size(MU,1) < nbins; any bins beyond size(MU,1) will not be filled"
+    @test_logs (:warn, w) NaNStatistics.nanbinwmean!(M23, N23, 1:100, reshape(1:300,100,3), ones(101), 0, 100, 3)
+    @test M23 == r[1:2,1:3]
+    w = "size(MU,2) < size(y,2); any columns beyond size(MU,2) will not be filled"
+    @test_logs (:warn, w) NaNStatistics.nanbinwmean!(M23', N23', 1:100, reshape(1:300,100,3), ones(101), 0, 100, 3)
     @test M23' == r[1:3,1:2]
 
     # 2D case
