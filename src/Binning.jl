@@ -52,12 +52,17 @@
     function nanbinmean!(MU::AbstractMatrix, N::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, xmin::Number, xmax::Number, nbins::Integer)
         # Calculate bin index from x value
         scalefactor = nbins / (xmax - xmin)
+        ncols = size(y,2)
 
         # Make sure we don't have a segfault by filling beyond the length of N
         # in the @inbounds loop below
-        if length(MU) < nbins
-            nbins = length(MU)
-            @warn "length(MU) < nbins; any bins beyond length(MU) will not be filled"
+        if size(MU,1) < nbins
+            nbins = size(MU,1)
+            @warn "size(MU,1) < nbins; any bins beyond size(MU,1) will not be filled"
+        end
+        if size(MU,2) < ncols
+            ncols = size(MU,2)
+            @warn "size(MU,2) < size(y,2); any columns beyond size(MU,2) will not be filled"
         end
 
         # Calculate the means for each bin, ignoring NaNs
@@ -67,7 +72,7 @@
             bin_index_float = (x[i] - xmin) * scalefactor
             if (0 < bin_index_float < nbins)
                 bin_index = ceil(Int, bin_index_float)
-                for j = 1:size(y,2)
+                for j = 1:ncols
                     if !isnan(y[i,j])
                         N[bin_index,j] += 1
                         MU[bin_index,j] += y[i,j]
@@ -185,12 +190,17 @@
     function nanbinwmean!(MU::AbstractMatrix, W::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, w::AbstractVector, xmin::Number, xmax::Number, nbins::Integer)
         # Calculate bin index from x value
         scalefactor = nbins / (xmax - xmin)
+        ncols = size(y,2)
 
         # Make sure we don't have a segfault by filling beyond the length of N
         # in the @inbounds loop below
-        if length(MU) < nbins
-            nbins = length(MU)
-            @warn "length(MU) < nbins; any bins beyond length(MU) will not be filled"
+        if size(MU,1) < nbins
+            nbins = size(MU,1)
+            @warn "size(MU,1) < nbins; any bins beyond size(MU,1) will not be filled"
+        end
+        if size(MU,2) < ncols
+            ncols = size(MU,2)
+            @warn "size(MU,2) < size(y,2); any columns beyond size(MU,2) will not be filled"
         end
 
         # Calculate the means for each bin, ignoring NaNs
@@ -200,7 +210,7 @@
             bin_index_float = (x[i] - xmin) * scalefactor
             if (0 < bin_index_float < nbins)
                 bin_index = ceil(Int, bin_index_float)
-                for j = 1:size(y,2)
+                for j = 1:ncols
                     if y[i,j]==y[i,j]
                         W[bin_index,j] += w[i]
                         MU[bin_index,j] += y[i,j]*w[i]
