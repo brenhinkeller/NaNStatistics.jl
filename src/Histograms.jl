@@ -57,5 +57,4 @@ function histcounts!(N::Array, x::AbstractArray{<:Integer}, xedges::AbstractRang
     end
     return N
 end
-histcounts!(N, x, xmin::Number, xmax::Number, nbins::Integer; T=Int64) = histcounts!(N, x, range(xmin, xmax, length=nbins+1); T=T)
 export histcounts!
