@@ -13,6 +13,8 @@
     nanbinmean!(M3, N3, [1:100..., 1],[1:100..., NaN],0,100,3)
     @test M3 == [17, 50, 83]
     @test N3 == fill(33,3)
+    nanbinmean!(M3,[1:100..., 1],[1:100..., NaN],0,100,3)
+    @test M3 == [17, 50, 83]
     @test nanbinmean(1:100, reshape(1:300,100,3), 0, 100, 3) == r
     @test nanbinmean(1:100, reshape(1:300,100,3), range(0,100,length=4)) == r
 
