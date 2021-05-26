@@ -1,4 +1,15 @@
 
+"""
+```julia
+histcounts(x::AbstractArray, xedges::AbstractRange; T=Int64)
+```
+Ignoring NaNs, calculate the number of `x` values that fall into each of
+`length(xedges)-1` equally spaced bins along the `x` axis with bin edges
+specified by `xedges`.
+
+By default, the counts are returned as `Int64`s, though this can be changed by
+specifying an output type with the optional keyword argument `T`.
+"""
 function histcounts(x::AbstractArray, xedges::AbstractRange; T=Int64)
     N = fill(zero(T), length(xedges)-1)
     histcounts!(N, x, xedges)
@@ -7,6 +18,12 @@ end
 histcounts(x, xmin::Number, xmax::Number, nbins::Integer; T=Int64) = histcounts(x, range(xmin, xmax, length=nbins+1); T=T)
 export histcounts
 
+"""
+```julia
+histcounts!(N, x, xedges::AbstractRange; T=Int64)
+```
+As `histcounts`, but in-place, returning counts in the Array `N`
+"""
 function histcounts!(N::Array, x::AbstractArray, xedges::AbstractRange)
     # What is the size of each bin?
     nbins = length(xedges) - 1
