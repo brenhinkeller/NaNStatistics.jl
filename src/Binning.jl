@@ -25,7 +25,7 @@
         # What is the size of each bin?
         nbins = length(xedges) - 1
         xmin, xmax = extrema(xedges)
-        δiδx = nbins / (xmax - xmin)
+        δ𝑖δx = nbins / (xmax - xmin)
 
         # Make sure we don't have a segfault by filling beyond the length of N
         # in the @inbounds loop below
@@ -37,12 +37,13 @@
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
         fill!(MU, 0) # Fill the output array with zeros to start
-        @inbounds for i = 1:length(x)
-            bin_index_float = (x[i] - xmin) * δiδx
-            if (0 < bin_index_float < nbins) && (y[i]==y[i])
-                bin_index = ceil(Int, bin_index_float)
-                N[bin_index] += 1
-                MU[bin_index] += y[i]
+        @inbounds for n ∈ eachindex(x)
+            𝑖 = (x[n] - xmin) * δ𝑖δx
+            yₙ = y[n]
+            if (0 < 𝑖 < nbins) && (yₙ==yₙ)
+                i = ceil(Int, 𝑖)
+                N[i] += 1
+                MU[i] += yₙ
             end
         end
         MU ./= N # Divide by N to calculate means. Empty bin = 0/0 = NaN
@@ -54,7 +55,7 @@
         # What is the size of each bin?
         nbins = length(xedges) - 1
         xmin, xmax = extrema(xedges)
-        δiδx = nbins / (xmax - xmin)
+        δ𝑖δx = nbins / (xmax - xmin)
         ncols = size(y,2)
 
         # Make sure we don't have a segfault by filling beyond the length of N
@@ -71,14 +72,14 @@
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
         fill!(MU, 0) # Fill the output array with zeros to start
-        @inbounds for i = 1:length(x)
-            bin_index_float = (x[i] - xmin) * δiδx
-            if (0 < bin_index_float < nbins)
-                bin_index = ceil(Int, bin_index_float)
-                for j = 1:ncols
-                    if !isnan(y[i,j])
-                        N[bin_index,j] += 1
-                        MU[bin_index,j] += y[i,j]
+        @inbounds for n ∈ eachindex(x)
+            𝑖 = (x[n] - xmin) * δ𝑖δx
+            if (0 < 𝑖 < nbins)
+                i = ceil(Int, 𝑖)
+                for j ∈ 1:ncols
+                    if y[n,j]==y[n,j]
+                        N[i,j] += 1
+                        MU[i,j] += y[n,j]
                     end
                 end
             end
@@ -129,13 +130,13 @@
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
         fill!(MU, 0) # Fill the output array with zeros to start
-        @inbounds for n = 1:length(x)
-            i_float = (y[n] - ymin) * δiδy
-            j_float = (x[n] - xmin) * δjδx
+        @inbounds for n ∈ eachindex(x)
+            𝑖 = (y[n] - ymin) * δiδy
+            𝑗 = (x[n] - xmin) * δjδx
             zₙ = z[n]
-            if (zₙ==zₙ) && (0 < i_float < nybins) && (0 < j_float < nxbins)
-                i = ceil(Int, i_float)
-                j = ceil(Int, j_float)
+            if (zₙ==zₙ) && (0 < 𝑖 < nybins) && (0 < 𝑗 < nxbins)
+                i = ceil(Int, 𝑖)
+                j = ceil(Int, 𝑗)
                 N[i,j] += 1
                 MU[i,j] += zₙ
             end
@@ -167,7 +168,7 @@
         # What is the size of each bin?
         nbins = length(xedges) - 1
         xmin, xmax = extrema(xedges)
-        δiδx = nbins / (xmax - xmin)
+        δ𝑖δx = nbins / (xmax - xmin)
 
         # Make sure we don't have a segfault by filling beyond the length of N
         # in the @inbounds loop below
@@ -179,12 +180,13 @@
         # Calculate the means for each bin, ignoring NaNs
         fill!(W, 0)
         fill!(MU, 0) # Fill the output array with zeros to start
-        @inbounds for i = 1:length(x)
-            bin_index_float = (x[i] - xmin) * δiδx
-            if (0 < bin_index_float < nbins) && (y[i]==y[i])
-                bin_index = ceil(Int, bin_index_float)
-                W[bin_index] += w[i]
-                MU[bin_index] += y[i]*w[i]
+        @inbounds for n ∈ eachindex(x)
+            𝑖 = (x[n] - xmin) * δ𝑖δx
+            yₙ = y[n]
+            if (0 < 𝑖 < nbins) && (yₙ==yₙ)
+                i = ceil(Int, 𝑖)
+                W[i] += w[n]
+                MU[i] += yₙ * w[n]
             end
         end
         MU ./= W # Divide by sum of weights to calculate means. Empty bin = 0/0 = NaN
@@ -195,7 +197,7 @@
     function nanbinwmean!(MU::AbstractMatrix, W::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, w::AbstractVector, xedges::AbstractRange)
         nbins = length(xedges) - 1
         xmin, xmax = extrema(xedges)
-        δiδx = nbins / (xmax - xmin)
+        δ𝑖δx = nbins / (xmax - xmin)
         ncols = size(y,2)
 
         # Make sure we don't have a segfault by filling beyond the length of N
@@ -212,14 +214,14 @@
         # Calculate the means for each bin, ignoring NaNs
         fill!(W, 0)
         fill!(MU, 0) # Fill the output array with zeros to start
-        @inbounds for i = 1:length(x)
-            bin_index_float = (x[i] - xmin) * δiδx
-            if (0 < bin_index_float < nbins)
-                bin_index = ceil(Int, bin_index_float)
-                for j = 1:ncols
-                    if y[i,j]==y[i,j]
-                        W[bin_index,j] += w[i]
-                        MU[bin_index,j] += y[i,j]*w[i]
+        @inbounds for n ∈ eachindex(x)
+            𝑖 = (x[n] - xmin) * δ𝑖δx
+            if (0 < 𝑖 < nbins)
+                i = ceil(Int, 𝑖)
+                for j ∈ 1:ncols
+                    if y[n,j]==y[n,j]
+                        W[i,j] += w[n]
+                        MU[i,j] += y[n,j]*w[n]
                     end
                 end
             end
