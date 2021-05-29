@@ -117,13 +117,13 @@
 
         # Make sure we don't have a segfault by filling beyond the length of N
         # in the @inbounds loop below
-        if size(MU, 1) < nybins
-            nybins = size(MU, 1)
-            @warn "size(MU, 1) < nybins; any y bins beyond size(MU, 1) will not be filled"
+        if size(MU,1) < nybins
+            nybins = size(MU,1)
+            @warn "size(MU,1) < nybins; any y bins beyond size(MU,1) will not be filled"
         end
-        if size(MU, 2) < nxbins
-            nxbins = size(MU, 2)
-            @warn "size(MU, 2) < nxbins; any x bins beyond size(MU, 2) will not be filled"
+        if size(MU,2) < nxbins
+            nxbins = size(MU,2)
+            @warn "size(MU,2) < nxbins; any x bins beyond size(MU,2) will not be filled"
         end
 
         # Calculate the means for each bin, ignoring NaNs

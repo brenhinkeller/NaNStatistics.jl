@@ -87,8 +87,8 @@
     # 2D case
     x = y = z = 0.5:9.5
     xedges = yedges = 0:10
-    w1 = "size(MU, 1) < nybins; any y bins beyond size(MU, 1) will not be filled"
-    w2 = "size(MU, 2) < nxbins; any x bins beyond size(MU, 2) will not be filled"
+    w1 = "size(MU,1) < nybins; any y bins beyond size(MU,1) will not be filled"
+    w2 = "size(MU,2) < nxbins; any x bins beyond size(MU,2) will not be filled"
     @test_logs (:warn, w1) (:warn, w2) nanbinmean!(M33, N33, x,y,z,xedges,yedges)
     @test isequal(M33, [((i==j) ? i-0.5 : NaN) for i in 1:3, j in 1:3])
 
