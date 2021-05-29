@@ -56,7 +56,7 @@ function histcounts!(N::Array, x::AbstractArray, xedges::AbstractRange)
     # What is the size of each bin?
     nbins = length(xedges) - 1
     xmin, xmax = extrema(xedges)
-    δiδx = nbins/(xmax-xmin)
+    δ𝑖δx = nbins/(xmax-xmin)
 
     # Make sure we don't have a segfault by filling beyond the length of N
     # in the @inbounds loop below
@@ -66,38 +66,12 @@ function histcounts!(N::Array, x::AbstractArray, xedges::AbstractRange)
     end
 
     # Loop through each element of x
-    @inbounds for i ∈ eachindex(x)
-        xᵢ = x[i]
-        if xᵢ==xᵢ # If not a NaN
-            δi = (xᵢ - xmin) * δiδx
-            if 0 < δi <= nbins
-                binindex = ceil(Int, δi)
-                N[binindex] += 1
-            end
-        end
-    end
-    return N
-end
-function histcounts!(N::Array, x::AbstractArray{<:Integer}, xedges::AbstractRange)
-    # What is the size of each bin?
-    nbins = length(xedges) - 1
-    xmin, xmax = extrema(xedges)
-    δiδx = nbins/(xmax-xmin)
-
-    # Make sure we don't have a segfault by filling beyond the length of N
-    # in the @inbounds loop below
-    if length(N) < nbins
-        nbins = length(N)
-        @warn "length(N) < nbins; any bins beyond length(N) will not be filled"
-    end
-
-    # Loop through each element of x
-    @inbounds for i ∈ eachindex(x)
-        xᵢ = x[i]
-        δi = (xᵢ - xmin) * δiδx
-        if 0 < δi <= nbins
-            binindex = ceil(Int, δi)
-            N[binindex] += 1
+    @inbounds for n ∈ eachindex(x)
+        xᵢ = x[n]
+        𝑖 = (xᵢ - xmin) * δ𝑖δx
+        if 0 < 𝑖 <= nbins
+            i = ceil(Int, 𝑖)
+            N[i] += 1
         end
     end
     return N
