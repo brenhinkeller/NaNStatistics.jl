@@ -308,6 +308,23 @@
     of AbstractVector) and `y` as either a 1-d or 2-d array (any subtype of
     AbstractVecOrMat). If `y` is a 2-d array, then each column of `y` will be
     treated as a separate variable.
+
+    ## Examples
+    ```julia
+    julia> nanbinmean([1:100..., 1], [1:100..., NaN], 0:25:100)
+    4-element Vector{Float64}:
+     13.0
+     38.0
+     63.0
+     87.5
+
+    julia> nanbinmean(1:100, reshape(1:300,100,3), 0:25:100)
+    4×3 Matrix{Float64}:
+     13.0  113.0  213.0
+     38.0  138.0  238.0
+     63.0  163.0  263.0
+     87.5  187.5  287.5
+    ```
     """
     function nanbinmean(x::AbstractVector, y::AbstractVecOrMat, xedges::AbstractRange)
         N = Array{Int}(undef, length(xedges)-1, size(y)[2:end]...)
@@ -325,6 +342,26 @@
     x and y bins with bin edges defined by `xedges` and `yedges`. The independent
     variables `x` and `y`, as well as the dependent variable `z`, are all expected
     as 1D vectors (any subtype of AbstractVector).
+
+    ## Examples
+    ```julia
+    julia> x = y = z = 0.5:9.5;
+
+    julia> xedges = yedges = 0:10;
+
+    julia> nanbinmean(x,y,z,xedges,yedges)
+    10×10 Matrix{Float64}:
+       0.5  NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN
+     NaN      1.5  NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN
+     NaN    NaN      2.5  NaN    NaN    NaN    NaN    NaN    NaN    NaN
+     NaN    NaN    NaN      3.5  NaN    NaN    NaN    NaN    NaN    NaN
+     NaN    NaN    NaN    NaN      4.5  NaN    NaN    NaN    NaN    NaN
+     NaN    NaN    NaN    NaN    NaN      5.5  NaN    NaN    NaN    NaN
+     NaN    NaN    NaN    NaN    NaN    NaN      6.5  NaN    NaN    NaN
+     NaN    NaN    NaN    NaN    NaN    NaN    NaN      7.5  NaN    NaN
+     NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN      8.5  NaN
+     NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN    NaN      9.5
+    ```
     """
     function nanbinmean(x::AbstractVector, y::AbstractVector, z::AbstractVector, xedges::AbstractRange, yedges::AbstractRange)
         N = Array{Int}(undef, length(yedges)-1, length(xedges)-1)
@@ -352,6 +389,7 @@
     end
     nanbinwmean(x, y, w, xmin::Number, xmax::Number, nbins::Integer) = nanbinwmean(x, y, w, range(xmin,xmax,length=nbins+1))
 
+
     """
     ```julia
     nanbinmedian(x, y, xedges::AbstractRange)
@@ -361,6 +399,23 @@
     specified by `xedges`.
 
     If `y` is a 2-d array (matrix), each column will be treated as a separate variable
+
+    ## Examples
+    ```julia
+    julia> nanbinmedian([1:100..., 1], [1:100..., NaN], 0:25:100)
+    4-element Vector{Float64}:
+     12.5
+     37.0
+     62.0
+     87.0
+
+    julia> nanbinmedian(1:100, reshape(1:300,100,3), 0:25:100)
+    4×3 Matrix{Float64}:
+     12.5  112.5  212.5
+     37.0  137.0  237.0
+     62.0  162.0  262.0
+     87.0  187.0  287.0
+    ```
     """
     function nanbinmedian(x::AbstractVector, y::AbstractVecOrMat, xedges::AbstractRange)
         M = Array{float(eltype(y))}(undef, length(xedges)-1, size(y)[2:end]...)

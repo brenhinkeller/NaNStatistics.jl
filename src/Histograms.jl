@@ -9,6 +9,24 @@ specified by `xedges`.
 
 By default, the counts are returned as `Int64`s, though this can be changed by
 specifying an output type with the optional keyword argument `T`.
+
+## Examples
+```julia
+julia> b = 10 * rand(100000);
+
+julia> histcounts(b, 0:1:10)
+10-element Vector{Int64}:
+ 10054
+  9987
+  9851
+  9971
+  9832
+ 10033
+ 10250
+ 10039
+  9950
+ 10033
+```
 """
 function histcounts(x, xedges::AbstractRange; T=Int64)
     N = fill(zero(T), length(xedges)-1)
@@ -33,6 +51,26 @@ dimension of `N` corresponds to the x axis (with `size(N,2) == length(xedges)-1`
 
 By default, the counts are returned as `Int64`s, though this can be changed by
 specifying an output type with the optional keyword argument `T`.
+
+## Examples
+```julia
+julia> x = y = 0.5:9.5;
+
+julia> xedges = yedges = 0:10;
+
+julia> N = histcounts(x,y,xedges,yedges)
+10×10 Matrix{Int64}:
+ 1  0  0  0  0  0  0  0  0  0
+ 0  1  0  0  0  0  0  0  0  0
+ 0  0  1  0  0  0  0  0  0  0
+ 0  0  0  1  0  0  0  0  0  0
+ 0  0  0  0  1  0  0  0  0  0
+ 0  0  0  0  0  1  0  0  0  0
+ 0  0  0  0  0  0  1  0  0  0
+ 0  0  0  0  0  0  0  1  0  0
+ 0  0  0  0  0  0  0  0  1  0
+ 0  0  0  0  0  0  0  0  0  1
+```
 """
 function histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange; T=Int64)
     N = fill(zero(T), length(yedges)-1, length(xedges)-1)
