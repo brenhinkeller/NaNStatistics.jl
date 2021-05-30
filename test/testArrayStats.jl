@@ -156,6 +156,43 @@
     @test nanaad(A, dims=1) == [25.0 25.0 25.0]
     @test nanaad(A, dims=2) ≈ fill(200/3, 100, 1)
 
+    # Summary statistics: dimensional tests, Float64
+    A = reshape(1:300.,100,3)
+    @test nanminimum(A, dim=1) == vec(minimum(A, dims=1))
+    @test nanminimum(A, dim=2) == vec(minimum(A, dims=2))
+    @test nanmaximum(A, dim=1) == vec(maximum(A, dims=1))
+    @test nanmaximum(A, dim=2) == vec(maximum(A, dims=2))
+    @test nanmean(A, dim=1) == vec(mean(A, dims=1))
+    @test nanmean(A, dim=2) == vec(mean(A, dims=2))
+    @test nanmean(A, ones(size(A)), dim=1) == vec(mean(A, dims=1)) # weighted
+    @test nanmean(A, ones(size(A)), dim=2) == vec(mean(A, dims=2)) # weighted
+    @test nanstd(A, dim=1) ≈ vec(std(A, dims=1))
+    @test nanstd(A, dim=2) ≈ vec(std(A, dims=2))
+    @test nanstd(A, ones(size(A)), dim=1) ≈ vec(std(A, dims=1)) # weighted
+    @test nanstd(A, ones(size(A)), dim=2) ≈ vec(std(A, dims=2)) # weighted
+    @test nanmedian(A, dim=1) == vec(median(A, dims=1))
+    @test nanmedian(A, dim=2) == vec(median(A, dims=2))
+    @test nanminimum(A, dim=1) == [1, 101, 201]
+    @test nanminimum(A, dim=2) == 1:100
+    @test nanmaximum(A, dim=1) == [100, 200, 300]
+    @test nanmaximum(A, dim=2) == 201:300
+    @test nanmean(A, dim=1) == [50.5, 150.5, 250.5]
+    @test nanmean(A, dim=2) == 101:200
+    @test nanmean(A, ones(size(A)), dim=1) == [50.5, 150.5, 250.5] # weighted
+    @test nanmean(A, ones(size(A)), dim=2) == 101:200 # weighted
+    @test nanstd(A, dim=1) ≈ fill(29.011491975882016, 3)
+    @test nanstd(A, dim=2) ≈ fill(100, 100)
+    @test nanstd(A, ones(size(A)), dim=1) ≈ fill(29.011491975882016, 3) # weighted
+    @test nanstd(A, ones(size(A)), dim=2) ≈ fill(100, 100) # weighted
+    @test nanmedian(A, dim=1) == [50.5, 150.5, 250.5]
+    @test nanmedian(A, dim=2) == 101:200
+    @test nanpctile(A, 10, dim=1) == [10.9, 110.9, 210.9]
+    @test nanpctile(A, 10, dim=2) ≈ 21:120
+    @test nanmad(A, dim=1) == [25.0, 25.0, 25.0]
+    @test nanmad(A, dim=2) == fill(100.0, 100)
+    @test nanaad(A, dim=1) == [25.0, 25.0, 25.0]
+    @test nanaad(A, dim=2) ≈ fill(200/3, 100)
+    
     # Moving average: 1D
     @test movmean(collect(1:10.),5) == movmean(1:10,5)
     @test movmean(1:10,5) == [2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.5, 9.0]
