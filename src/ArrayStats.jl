@@ -33,6 +33,7 @@
     # Special methods for arrays that cannot contain NaNs
     nanmask!(mask, A::AbstractArray{<:Integer}) = fill!(mask, true)
     nanmask!(mask, A::AbstractArray{<:Rational}) = fill!(mask, true)
+    export nanmask!
 
     """
     ```julia
@@ -78,12 +79,16 @@
 
     """
     ```julia
-    nanpctile(A, p; dims)
+    nanpctile(A, p; dims
     ```
     Find the `p`th percentile of an indexable collection `A`, ignoring NaNs,
     optionally along a dimension specified by `dims`.
 
     A valid percentile value must satisfy 0 <= `p` <= 100.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nanpctile(A, p; dims=:, dim=:) = __nanpctile(A, p, dims, dim)
     __nanpctile(A, p, ::Colon, ::Colon) = _nanpctile(A, p, :)
@@ -179,6 +184,10 @@
     ```
     Calculate the sum of an indexable collection `A`, ignoring NaNs, optionally
     along dimensions specified by `dims`.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nansum(A; dims=:, dim=:) = __nansum(A, dims, dim)
     __nansum(A, ::Colon, ::Colon) = _nansum(A, :)
@@ -217,6 +226,10 @@
     ```
     As `minimum` but ignoring `NaN`s: Find the smallest non-`NaN` value of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nanminimum(A; dims=:, dim=:) = __nanminimum(A, dims, dim)
     __nanminimum(A, ::Colon, ::Colon) = _nanminimum(A, :)
@@ -233,6 +246,10 @@
     ```
     Find the largest non-NaN value of an indexable collection `A`, optionally
     along a dimension specified by `dims`.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nanmaximum(A; dims=:, dim=:) = __nanmaximum(A, dims, dim)
     __nanmaximum(A, ::Colon, ::Colon) = _nanmaximum(A, :)
@@ -249,6 +266,10 @@
     ```
     Find the extrema (maximum & minimum) of an indexable collection `A`,
     ignoring NaNs, optionally along a dimension specified by `dims`.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nanextrema(A; dims=:, dim=:) = __nanextrema(A, dims, dim)
     __nanextrema(A, ::Colon, ::Colon) = (_nanminimum(A, :), _nanmaximum(A, :))
@@ -263,6 +284,10 @@
     ```
     Calculate the range (maximum - minimum) of an indexable collection `A`,
     ignoring NaNs, optionally along a dimension specified by `dims`.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nanrange(A; dims=:, dim=:) = __nanmaximum(A, dims, dim) - __nanminimum(A, dims, dim)
     export nanrange
@@ -274,6 +299,10 @@
     ```
     Ignoring NaNs, calculate the mean (optionally weighted) of an indexable
     collection `A`, optionally along dimensions specified by `dims`.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nanmean(A; dims=:, dim=:) = __nanmean(A, dims, dim)
     __nanmean(A, ::Colon, ::Colon) = _nanmean(A, :)
@@ -373,6 +402,10 @@
     ```
     Calculate the standard deviation (optionaly weighted), ignoring NaNs, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nanstd(A; dims=:, dim=:) = __nanstd(A, dims, dim)
     __nanstd(A, ::Colon, ::Colon) = _nanstd(A, :)
@@ -505,6 +538,10 @@
     ```
     Calculate the median, ignoring NaNs, of an indexable collection `A`,
     optionally along a dimension specified by `dims`.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nanmedian(A; dims=:, dim=:) = __nanmedian(A, dims, dim)
     __nanmedian(A, ::Colon, ::Colon) = _nanmedian(A, :)
@@ -544,7 +581,11 @@
     ```
     Median absolute deviation from the median, ignoring NaNs, of an indexable
     collection `A`, optionally along a dimension specified by `dims`.
-    Note that for a Normal distribution, sigma = 1.4826 * MAD
+    Note that for a Normal distribution, sigma = 1.4826 * MAD.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nanmad(A; dims=:, dim=:) = __nanmad(A, dims, dim)
     __nanmad(A, dims, dim) = __nanmedian(abs.(A .- _nanmedian(A, dims)), dims, dim)
@@ -558,7 +599,11 @@
     ```
     Mean (average) absolute deviation from the mean, ignoring NaNs, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
-    Note that for a Normal distribution, sigma = 1.253 * AAD
+    Note that for a Normal distribution, sigma = 1.253 * AAD.
+
+    Also supports the `dim` keyword, which behaves identically to `dims`, but
+    also drops any singleton dimensions that have been reduced over (as is the
+    convention in some other languages).
     """
     nanaad(A; dims=:, dim=:) = __nanaad(A, dims, dim)
     __nanaad(A, dims, dim) = __nanmean(abs.(A .- _nanmean(A, dims)), dims, dim)
@@ -572,8 +617,12 @@
     ```julia
     movmean(x::AbstractVecOrMat, n::Number)
     ```
-    Simple moving average of `x` in 1 or 2 dimensions, spanning `n` bins (or n*n in 2D), returning an array of the same size as `x`.
-    For the resulting moving average to be symmetric, `n` must be an odd integer; if `n` is not an odd integer, the first odd integer greater than `n` will be used instead.
+    Simple moving average of `x` in 1 or 2 dimensions, spanning `n` bins
+    (or n*n in 2D), returning an array of the same size as `x`.
+
+    For the resulting moving average to be symmetric, `n` must be an odd integer;
+    if `n` is not an odd integer, the first odd integer greater than `n` will be
+    used instead.
     """
     function movmean(x::AbstractVector, n::Number)
         mean_type = Base.promote_op(/, eltype(x), Int64)
