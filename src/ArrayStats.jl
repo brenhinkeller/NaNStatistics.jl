@@ -611,7 +611,35 @@
     export nanaad
 
 
-## -- moving average
+## --- Normalize and nanstandardize arrays, ignoring NaNs
+
+    """
+    ```julia
+    nanstandardize!(A::Array{<:AbstractFloat}; dims)
+    ```
+    Rescale `A` to unit variance and zero mean
+    i.e. `A .= (A .- nanmean(A)) ./ nanstd(A)`
+    """
+    nanstandardize!(A::Array{<:AbstractFloat}; dims=:) = _nanstandardize!(A, dims)
+    function _nanstandardize!(A::Array{<:AbstractFloat}, dims=:)
+        A .-= _nanmean(A, dims)
+        A ./= _nanstd(A, dims)
+        return A
+    end
+    export nanstandardize!
+
+    """
+    ```julia
+    nanstandardize(A; dims)
+    ```
+    Rescale a copy of `A` to unit variance and zero mean
+    i.e. `(A .- nanmean(A)) ./ nanstd(A)`
+    """
+    nanstandardize(A::AbstractArray; dims=:) = _nanstandardize!(float.(A), dims)
+    export nanstandardize
+
+
+## -- Moving average, ignoring NaNs
 
     """
     ```julia

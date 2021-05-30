@@ -20,6 +20,7 @@ Summary statistics exported by NaNStatistics are generally named the same as the
 * `nanmaximum`
 * `nanextrema`
 * `nanrange` (range between nanmaximum and nanminimum)
+* `nanstandardize` / `nanstandardize!` (de-mean and set to unit variance)
 
 These functions will generally support the same `dims` keyword argument as their normal Julia counterparts (though are most efficient when operating on an entire collection).
 As an alternative to `dims`, the `dim` keyword is also supported, which behaves identially to `dims` except that it also (as is the norm in some other languages) drops any singleton dimensions that have been reduced over.
@@ -102,7 +103,7 @@ julia> @btime nanbinmean($x,$y,xmin,xmax,nbins)
 ```
 ### Other functions
 * `movmean`
-There is also a simple moving average function, `movmean`, which can operate in 1D or 2D.
+A simple moving average function, which can operate in 1D or 2D, ignoring NaNs.
 ```
 julia> A = rand(1:10, 4,4)
 4×4 Matrix{Int64}:

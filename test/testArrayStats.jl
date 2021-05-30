@@ -192,7 +192,11 @@
     @test nanmad(A, dim=2) == fill(100.0, 100)
     @test nanaad(A, dim=1) == [25.0, 25.0, 25.0]
     @test nanaad(A, dim=2) ≈ fill(200/3, 100)
-    
+
+    # Standardization
+    @test nanstandardize!(collect(1:10.)) ≈ ((1:10) .- mean(1:10)) / std(1:10)
+    @test nanstandardize(1:10.) ≈ ((1:10) .- mean(1:10)) / std(1:10)
+
     # Moving average: 1D
     @test movmean(collect(1:10.),5) == movmean(1:10,5)
     @test movmean(1:10,5) == [2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.5, 9.0]
