@@ -6,7 +6,7 @@ module NaNStatistics
     using VectorizationBase: Vec
 
     using Statistics
-    using StatsBase: percentile, mean, std, ProbabilityWeights
+    using StatsBase: percentile, mean, std
 
     include("ArrayStats.jl")
     include("Histograms.jl")
