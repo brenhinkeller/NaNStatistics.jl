@@ -164,7 +164,7 @@
     `y` will be treated as a separate variable.
     """
     # In-place binning with weights; y, W, MU as 1D vectors
-    function nanbinwmean!(MU::AbstractVector, W::AbstractVector, x::AbstractVector, y::AbstractVector, w::AbstractVector, xedges::AbstractRange)
+    function nanbinmean!(MU::AbstractVector, W::AbstractVector, x::AbstractVector, y::AbstractVector, w::AbstractVector, xedges::AbstractRange)
         # What is the size of each bin?
         nbins = length(xedges) - 1
         xmin, xmax = extrema(xedges)
@@ -194,7 +194,7 @@
         return MU
     end
     # In-place binning with weights; y, W, MU as 2D matrices
-    function nanbinwmean!(MU::AbstractMatrix, W::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, w::AbstractVector, xedges::AbstractRange)
+    function nanbinmean!(MU::AbstractMatrix, W::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, w::AbstractVector, xedges::AbstractRange)
         nbins = length(xedges) - 1
         xmin, xmax = extrema(xedges)
         δ𝑖δx = nbins / (xmax - xmin)
@@ -230,7 +230,7 @@
 
         return MU
     end
-    nanbinwmean!(MU, W, x, y, w, xmin::Number, xmax::Number, nbins::Integer) = nanbinwmean!(MU, W, x, y, w, range(xmin,xmax,length=nbins+1))
+    nanbinmean!(MU, W, x, y, w, xmin::Number, xmax::Number, nbins::Integer) = nanbinmean!(MU, W, x, y, w, range(xmin,xmax,length=nbins+1))
 
 
     """
@@ -371,7 +371,7 @@
 
     """
     ```julia
-    nanbinwmean(x, y, xedges::AbstractRange)
+    nanbinmean(x, y, xedges::AbstractRange)
     ```
     Ignoring NaNs, calculate the weighted mean of `y` values that
     fall into each of `length(xedges)-1` equally spaced bins along the `x`
@@ -382,12 +382,12 @@
     AbstractVecOrMat). If `y` is a 2-d array, then each column of `y` will be
     treated as a separate variable.
     """
-    function nanbinwmean(x::AbstractVector, y::AbstractVecOrMat, w::AbstractVector, xedges::AbstractRange)
+    function nanbinmean(x::AbstractVector, y::AbstractVecOrMat, w::AbstractVector, xedges::AbstractRange)
         W = Array{float(eltype(y))}(undef, length(xedges)-1, size(y)[2:end]...)
         MU = Array{float(eltype(y))}(undef, length(xedges)-1, size(y)[2:end]...)
-        return nanbinwmean!(MU, W, x, y, w, xedges)
+        return nanbinmean!(MU, W, x, y, w, xedges)
     end
-    nanbinwmean(x, y, w, xmin::Number, xmax::Number, nbins::Integer) = nanbinwmean(x, y, w, range(xmin,xmax,length=nbins+1))
+    nanbinmean(x, y, w, xmin::Number, xmax::Number, nbins::Integer) = nanbinmean(x, y, w, range(xmin,xmax,length=nbins+1))
 
 
     """
