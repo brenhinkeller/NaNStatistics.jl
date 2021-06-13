@@ -59,7 +59,7 @@ function _nanmean(A, ::Colon)
         n += notnan
         Σ += ifelse(notnan, A[i], ∅)
     end
-    return Σ / length(A)
+    return Σ / n
 end
 
 # Recursive fallback method for overly-complex reductions
