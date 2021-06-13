@@ -51,9 +51,13 @@ end
 
 # Reduce all the dims!
 function _nanmean(A, ::Colon)
-    Σ = zero(eltype(A))
+    n = 0
+    Σ = ∅ = zero(eltype(A))
     @avx for i ∈ eachindex(A)
-        Σ += A[i]
+        Aᵢ = A[i]
+        notnan = Aᵢ==Aᵢ
+        n += notnan
+        Σ += ifelse(notnan, A[i], ∅)
     end
     return Σ / length(A)
 end
@@ -119,7 +123,7 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
   push!(rblock.args, :($Bind = Σ / n))
   # Put it all together
   quote
-    ∅ = zero(eltype(Bv))
+    ∅ = zero(eltype(B))
     @avx $loops
     return B
   end

@@ -8,7 +8,6 @@ module NaNStatistics
     using Static
     _dim(::Type{StaticInt{N}}) where {N} = N::Int
 
-
     using Statistics
     using StatsBase: percentile, mean, std
 
