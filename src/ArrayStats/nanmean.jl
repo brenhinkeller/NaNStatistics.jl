@@ -89,7 +89,6 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
     if n ∈ static_dims
       push!(reduct_inds, n)
       push!(Bv.args, :(firstindex(B,$n)))
-      push!(len.args, :(size(A, $n)))
     else
       push!(nonreduct_inds, n)
       push!(Bv.args, :)
