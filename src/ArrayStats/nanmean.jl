@@ -75,12 +75,12 @@ end
 function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
   M = length(static_dims)
   # `static_dims` now contains every dim we're taking the mean over.
-  Bv = Expr(:call, :view, :B)
+  Bᵥ = Expr(:call, :view, :B)
   reduct_inds = Int[]
   nonreduct_inds = Int[]
   # Firstly, build our expressions for indexing each array
   Aind = :(A[])
-  Bind = :(Bv[])
+  Bind = :(Bᵥ[])
   inds = Vector{Symbol}(undef, N)
   for n ∈ 1:N
     ind = Symbol(:i_,n)
@@ -88,10 +88,10 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
     push!(Aind.args, ind)
     if n ∈ static_dims
       push!(reduct_inds, n)
-      push!(Bv.args, :(firstindex(B,$n)))
+      push!(Bᵥ.args, :(firstindex(B,$n)))
     else
       push!(nonreduct_inds, n)
-      push!(Bv.args, :)
+      push!(Bᵥ.args, :)
       push!(Bind.args, ind)
     end
   end
@@ -126,7 +126,7 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
   # Put it all together
   quote
     ∅ = zero(eltype(B))
-    Bv = $Bv
+    Bᵥ = $Bᵥ
     @avx $loops
     return B
   end
