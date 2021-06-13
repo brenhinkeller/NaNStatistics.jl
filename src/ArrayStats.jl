@@ -295,57 +295,15 @@
 
     """
     ```julia
-    nanmean(A, [W]; dims)
+    nanmean(A, W; dims)
     ```
-    Ignoring NaNs, calculate the mean (optionally weighted) of an indexable
+    Ignoring NaNs, calculate the weighted mean of an indexable
     collection `A`, optionally along dimensions specified by `dims`.
 
     Also supports the `dim` keyword, which behaves identically to `dims`, but
     also drops any singleton dimensions that have been reduced over (as is the
     convention in some other languages).
     """
-    nanmean(A; dims=:, dim=:) = __nanmean(A, dims, dim)
-    __nanmean(A, ::Colon, ::Colon) = _nanmean(A, :)
-    __nanmean(A, region, ::Colon) = _nanmean(A, region)
-    __nanmean(A, ::Colon, region) = _reducedims(_nanmean(A, region), region)
-    function _nanmean(A, region)
-        mask = nanmask(A)
-        return sum(A.*mask, dims=region) ./ sum(mask, dims=region)
-    end
-    # Fallback method for non-Arrays
-    function _nanmean(A, ::Colon)
-        n = 0
-        m = zero(eltype(A))
-        @inbounds @simd for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            t = Aᵢ == Aᵢ
-            n += t
-            m += Aᵢ * t
-        end
-        return m / n
-    end
-    # Can't have NaNs if array is all Integers
-    function _nanmean(A::Array{<:Integer}, ::Colon)
-        m = zero(eltype(A))
-        @avx for i ∈ eachindex(A)
-            m += A[i]
-        end
-        return m / length(A)
-    end
-    # Optimized AVX version for floats
-    function _nanmean(A::AbstractArray{<:AbstractFloat}, ::Colon)
-        n = 0
-        T = eltype(A)
-        m = zero(T)
-        @avx for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            t = Aᵢ==Aᵢ
-            n += t
-            m += ifelse(t, Aᵢ, zero(T))
-        end
-        return m / n
-    end
-
     nanmean(A, W; dims=:, dim=:) = __nanmean(A, W, dims, dim)
     __nanmean(A, W, ::Colon, ::Colon) = _nanmean(A, W, :)
     __nanmean(A, W, region, ::Colon) = _nanmean(A, W, region)
