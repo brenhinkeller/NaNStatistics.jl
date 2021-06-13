@@ -122,7 +122,7 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
   push!(block.args, :(n += notnan))
   push!(block.args, :(Σ += ifelse(notnan, Aᵢ, ∅)))
   # Push more things here if you want them at the end of the reduction loop
-  push!(rblock.args, :($Bind = Σ / n))
+  push!(rblock.args, :($Bind = Σ * inv(n)))
   # Put it all together
   quote
     ∅ = zero(eltype(B))
