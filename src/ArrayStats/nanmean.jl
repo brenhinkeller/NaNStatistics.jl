@@ -63,7 +63,7 @@ function _nanmean(A, ::Colon)
 end
 
 # Recursive fallback method for overly-complex reductions
-function _nanmean_fallback!(B::AbstractArray, A::AbstractArray, dims)
+function _nanmean_fallback!(B::AbstractArray, A::AbstractArray, region)
     mask = nanmask(A)
     B .= sum(A.*mask, dims=region) ./ sum(mask, dims=region)
     return  B
@@ -75,11 +75,12 @@ end
 function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
   M = length(static_dims)
   # `static_dims` now contains every dim we're taking the mean over.
+  Bv = Expr(:call, :view, :B)
   reduct_inds = Int[]
   nonreduct_inds = Int[]
   # Firstly, build our expressions for indexing each array
   Aind = :(A[])
-  Bind = :(B[])
+  Bind = :(Bv[])
   inds = Vector{Symbol}(undef, N)
   for n ∈ 1:N
     ind = Symbol(:i_,n)
@@ -87,9 +88,11 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
     push!(Aind.args, ind)
     if n ∈ static_dims
       push!(reduct_inds, n)
-      push!(Bind.args, :(firstindex(B,$n)))
+      push!(Bv.args, :(firstindex(B,$n)))
+      push!(len.args, :(size(A, $n)))
     else
       push!(nonreduct_inds, n)
+      push!(Bv.args, :)
       push!(Bind.args, ind)
     end
   end
@@ -124,6 +127,7 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
   # Put it all together
   quote
     ∅ = zero(eltype(B))
+    Bv = $Bv
     @avx $loops
     return B
   end
@@ -178,3 +182,6 @@ end
     branches_nanmean_quote(N, M, D)
   end
 end
+
+
+## ---
