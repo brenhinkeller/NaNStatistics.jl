@@ -32,7 +32,7 @@ julia> nanstd(A, dims=2)
  0.7071067811865476
 ```
 """
-nanstd(A; dims=:, mean=nothing, corrected=true) = sqrt!(__nanvar(mean, corrected, A, dims, dim))
+nanstd(A; dims=:, dim=:, mean=nothing, corrected=true) = sqrt!(__nanvar(mean, corrected, A, dims, dim))
 export nanstd
 
 sqrt!(x::Number) = sqrt(x)
