@@ -208,7 +208,7 @@ end
   total_combinations = binomial(N,M)
   if total_combinations > 6
     # Fallback, for overly-complex reductions
-    return :(_nanvar_recursive!(B, corrected, A, dims))
+    return :(_nanvar_fallback!(B, corrected, A, dims))
   else
     branches_nanvar_quote(N, M, D)
   end
