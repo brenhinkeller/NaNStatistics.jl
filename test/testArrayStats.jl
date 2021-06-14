@@ -204,6 +204,12 @@
     @test nanaad(A, dim=1) == [25.0, 25.0, 25.0]
     @test nanaad(A, dim=2) ≈ fill(200/3, 100)
 
+    # Test fallbacks for complex reductions
+    A = randn((2 .+ (1:6))...);
+    @test nanmean(A, dims=(4,5,6)) ≈ mean(A, dims=(4,5,6))
+    @test nanstd(A, dims=(4,5,6)) ≈ std(A, dims=(4,5,6))
+    @test nanstd(A, dims=(4,5,6)) ≈ nanstd(A, dims=(4,5,6), mean=nanmean(A, dims=(4,5,6)))
+
     # Standardization
     @test nanstandardize!(collect(1:10.)) ≈ ((1:10) .- mean(1:10)) / std(1:10)
     @test nanstandardize(1:10.) ≈ ((1:10) .- mean(1:10)) / std(1:10)
