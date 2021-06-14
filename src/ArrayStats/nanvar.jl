@@ -9,7 +9,7 @@ A precomputed `mean` may optionally be provided, which results in a somewhat fas
 calculation. If `corrected` is `true`, then _Bessel's correction_ is applied, such
 that the sum is divided by `n-1` rather than `n`.
 
-As an alternative to `dims`, `nanvar` also supports the `dim` keyword, which 
+As an alternative to `dims`, `nanvar` also supports the `dim` keyword, which
 behaves identically to `dims`, but also drops any singleton dimensions that have
 been reduced over (as is the convention in some other languages).
 
@@ -99,7 +99,7 @@ function _nanvar_fallback!(B::AbstractArray, corrected::Bool, A::AbstractArray,r
 end
 
 
-# Chris Elrod metaprogramming magic:
+# Metaprogramming magic adapted from Chris Elrod example:
 # Generate customized set of loops for a given ndims and a vector
 # `static_dims` of dimensions to reduce over
 function staticdim_nanvar_quote(static_dims::Vector{Int}, N::Int)
