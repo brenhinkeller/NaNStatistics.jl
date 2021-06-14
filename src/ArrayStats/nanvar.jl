@@ -9,9 +9,14 @@ A precomputed `mean` may optionally be provided, which results in a somewhat fas
 calculation. If `corrected` is `true`, then _Bessel's correction_ is applied, such
 that the sum is divided by `n-1` rather than `n`.
 
+As an alternative to `dims`, `nanvar` also supports the `dim` keyword, which 
+behaves identically to `dims`, but also drops any singleton dimensions that have
+been reduced over (as is the convention in some other languages).
+
+
 ## Examples
 ```julia
-julia> using VectorizedStatistics
+julia> using NaNStatistics
 
 julia> A = [1 2; 3 4]
 2×2 Matrix{Int64}:

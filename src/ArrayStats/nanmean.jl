@@ -5,9 +5,9 @@ nanmean(A; dims)
 Compute the mean of all non-`NaN` elements in `A`, optionally over dimensions
 specified by `dims`. As `Statistics.mean`, but ignoring `NaN`s.
 
-Also supports the `dim` keyword, which behaves identically to `dims`, but
-also drops any singleton dimensions that have been reduced over (as is the
-convention in some other languages).
+As an alternative to `dims`, `nanmean` also supports the `dim` keyword, which
+behaves identically to `dims`, but also drops any singleton dimensions that have
+been reduced over (as is the convention in some other languages).
 
 ## Examples
 ```julia

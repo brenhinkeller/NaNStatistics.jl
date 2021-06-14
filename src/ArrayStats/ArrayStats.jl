@@ -356,72 +356,15 @@
 
     """
     ```julia
-    nanstd(A, [W]; dims)
+    nanstd(A, W; dims)
     ```
-    Calculate the standard deviation (optionaly weighted), ignoring NaNs, of an
+    Calculate the weighted standard deviation, ignoring NaNs, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
 
     Also supports the `dim` keyword, which behaves identically to `dims`, but
     also drops any singleton dimensions that have been reduced over (as is the
     convention in some other languages).
     """
-    nanstd(A; dims=:, dim=:) = __nanstd(A, dims, dim)
-    __nanstd(A, ::Colon, ::Colon) = _nanstd(A, :)
-    __nanstd(A, region, ::Colon) = _nanstd(A, region)
-    __nanstd(A, ::Colon, region) = _reducedims(_nanstd(A, region), region)
-    function _nanstd(A, region)
-        mask = nanmask(A)
-        N = sum(mask, dims=region)
-        s = sum(A.*mask, dims=region)./N
-        d = A .- s # Subtract mean, using broadcasting
-        @avx for i ∈ eachindex(d)
-            dᵢ = d[i]
-            d[i] = ifelse(mask[i], dᵢ * dᵢ, 0)
-        end
-        s .= sum(d, dims=region)
-        @avx for i ∈ eachindex(s)
-            s[i] = sqrt( s[i] / max((N[i] - 1), 0) )
-        end
-        return s
-    end
-    function _nanstd(A, ::Colon)
-        n = 0
-        m = zero(eltype(A))
-        @inbounds @simd for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            t = Aᵢ == Aᵢ # False for NaNs
-            n += t
-            m += Aᵢ * t
-        end
-        mu = m / n
-        s = zero(typeof(mu))
-        @inbounds @simd for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            d = (Aᵢ - mu) * (Aᵢ == Aᵢ)# zero if Aᵢ is NaN
-            s += d * d
-        end
-        return sqrt(s / max((n-1), 0))
-    end
-    function _nanstd(A::AbstractArray{<:AbstractFloat}, ::Colon)
-        n = 0
-        T = eltype(A)
-        m = zero(T)
-        @avx for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            t = Aᵢ==Aᵢ
-            n += t
-            m += ifelse(t, Aᵢ, zero(T))
-        end
-        mu = m / n
-        s = zero(typeof(mu))
-        @avx for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            d = ifelse(Aᵢ==Aᵢ, Aᵢ - mu, 0)
-            s += d * d
-        end
-        return sqrt(s / max((n-1), 0))
-    end
-
     nanstd(A, W; dims=:, dim=:) = __nanstd(A, W, dims, dim)
     __nanstd(A, W, ::Colon, ::Colon) = _nanstd(A, W, :)
     __nanstd(A, W, region, ::Colon) = _nanstd(A, W, region)
