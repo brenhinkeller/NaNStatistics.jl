@@ -15,6 +15,7 @@ module NaNStatistics
     include("ArrayStats/nanmean.jl")
     include("ArrayStats/nanvar.jl")
     include("ArrayStats/nanstd.jl")
+    include("ArrayStats/nancov.jl")
     include("Histograms.jl")
     include("Binning.jl")
 
