@@ -523,8 +523,9 @@
     """
     nanstandardize!(A::Array{<:AbstractFloat}; dims=:) = _nanstandardize!(A, dims)
     function _nanstandardize!(A::Array{<:AbstractFloat}, dims=:)
-        A .-= _nanmean(A, dims)
-        A ./= _nanstd(A, dims)
+        μ = nanmean(A, dims=dims)
+        A .-= μ
+        A ./= nanstd(A, dims=dims, mean=μ)
         return A
     end
     export nanstandardize!
