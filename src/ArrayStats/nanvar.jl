@@ -87,12 +87,12 @@ function _nanvar_fallback!(B::AbstractArray, corrected::Bool, A::AbstractArray,r
     N = sum(mask, dims=region)
     Σ = sum(A.*mask, dims=region)./N
     δ = A .- Σ # Subtract mean, using broadcasting
-    @avx for i ∈ eachindex(d)
+    @avx for i ∈ eachindex(δ)
         δᵢ = δ[i]
         δ[i] = ifelse(mask[i], δᵢ * δᵢ, 0)
     end
     B .= sum(δ, dims=region)
-    @avx for i ∈ eachindex(s)
+    @avx for i ∈ eachindex(B)
         B[i] = B[i] / max(N[i] - corrected, 0)
     end
     return B
