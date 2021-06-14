@@ -20,14 +20,14 @@ Summary statistics exported by NaNStatistics are generally named the same as the
 * `nanmedian`
 
 ##### Measures of dispersion
-* `nanvar` - variance
-* `nanstd` - standard deviation
-* `nanmad` - median absolute deviation from the median
-* `nanaad` - mean (average) absolute deviation from the mean
-* `nancov` - covariance
-* `nancor` - Pearson's product-moment correlation
-* `nanrange` - range between nanmaximum and nanminimum
-* `nanpctile` - percentile
+* `nanvar` &emsp; variance
+* `nanstd` &emsp; standard deviation
+* `nanmad` &emsp; median absolute deviation from the median
+* `nanaad` &emsp; mean (average) absolute deviation from the mean
+* `nancov` &emsp; covariance
+* `nancor` &emsp; Pearson's product-moment correlation
+* `nanrange` &emsp; range between nanmaximum and nanminimum
+* `nanpctile` &emsp; percentile
 
 These functions will generally support the same `dims` keyword argument as their normal Julia counterparts (though are most efficient when operating on an entire collection).
 As an alternative to `dims`, the `dim` keyword is also supported, which behaves identially to `dims` except that it also (as is the norm in some other languages) drops any singleton dimensions that have been reduced over.
