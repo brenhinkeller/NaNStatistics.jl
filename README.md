@@ -9,18 +9,25 @@ Fast (often [LoopVectorization](https://github.com/JuliaSIMD/LoopVectorization.j
 
 ### Summary statistics
 Summary statistics exported by NaNStatistics are generally named the same as their normal counterparts, but with "nan" in front of the name, similar to the Matlab and NumPy conventions. Options include:
+##### Reductions
 * `nansum`
-* `nanmean`
-* `nanmedian`
-* `nanpctile`
-* `nanstd` (standard deviation)
-* `nanmad` (median absolute deviation from the median)
-* `nanaad` (mean (average) absolute deviation from the mean)
 * `nanminimum`
 * `nanmaximum`
 * `nanextrema`
+
+##### Measures of central tendency
+* `nanmean`
+* `nanmedian`
+
+##### Measures of dispersion
+* `nanvar` (variance)
+* `nanstd` (standard deviation)
+* `nanmad` (median absolute deviation from the median)
+* `nanaad` (mean (average) absolute deviation from the mean)
+* `nancov` (covariance)
+* `nancor` (Pearson's product-moment correlation)
 * `nanrange` (range between nanmaximum and nanminimum)
-* `nanstandardize` / `nanstandardize!` (de-mean and set to unit variance)
+* `nanpctile` (percentile)
 
 These functions will generally support the same `dims` keyword argument as their normal Julia counterparts (though are most efficient when operating on an entire collection).
 As an alternative to `dims`, the `dim` keyword is also supported, which behaves identially to `dims` except that it also (as is the norm in some other languages) drops any singleton dimensions that have been reduced over.
@@ -119,6 +126,9 @@ julia> movmean(A, 3)
  4.16667  5.33333  6.55556  7.5
  4.75     6.16667  7.33333  8.0
  ```
+
+ * `nanstandardize` / `nanstandardize!` (de-mean and set to unit variance)
+
 
 ### Room for future improvement (PRs welcome!):
 * Currently, `nanmedian`, `nanbinmedian`, etc. simply filter for `NaN`s and then fall back to `Statistics.median`. Similarly, `nanpctile` falls back to `StatsBase.percentile`. Adding fast pure-julia SIMD median and percentile implementations would allow for significant performance improvement.
