@@ -141,5 +141,5 @@ julia> movmean(A, 3)
 [docs-dev-url]: https://brenhinkeller.github.io/NaNStatistics.jl/dev/
 [ci-img]: https://github.com/brenhinkeller/NaNStatistics.jl/workflows/CI/badge.svg
 [ci-url]: https://github.com/brenhinkeller/NaNStatistics.jl/actions?query=workflow%3ACI
-[codecov-img]: http://codecov.io/github/brenhinkeller/NaNStatistics.jl/coverage.svg?branch=main
+[codecov-img]: https://codecov.io/gh/brenhinkeller/VectorizedStatistics.jl/branch/main/graph/badge.svg
 [codecov-url]: http://codecov.io/github/brenhinkeller/NaNStatistics.jl?branch=main
