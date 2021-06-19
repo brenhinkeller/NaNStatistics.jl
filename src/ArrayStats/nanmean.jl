@@ -51,8 +51,9 @@ end
 
 # Reduce all the dims!
 function _nanmean(A, ::Colon)
+    Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
-    Σ = ∅ = zero(eltype(A))
+    Σ = ∅ = zero(Tₒ)
     @avx for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ

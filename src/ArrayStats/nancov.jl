@@ -1,6 +1,6 @@
 function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool, μᵪ::Number, μᵧ::Number)
     # Calculate covariance
-    σᵪᵧ = ∅ = zero(promote_type(typeof(μᵪ), typeof(μᵧ)))
+    σᵪᵧ = ∅ = zero(promote_type(typeof(μᵪ), typeof(μᵧ), Int))
     n = 0
     @avx for i ∈ indices((x,y))
             δᵪ = x[i] - μᵪ

@@ -46,8 +46,9 @@ _nanvar(μ, corrected::Bool, A, dims::Int) = _nanvar(μ, corrected, A, (dims,))
 _nanvar(::Nothing, corrected::Bool, A, dims::Tuple) = _nanvar!(_nanmean(A, dims), corrected, A, dims)
 function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
     # Reduce all the dims!
+    Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
-    Σ = ∅ = zero(eltype(A))
+    Σ = ∅ = zero(Tₒ)
     @avx for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ
