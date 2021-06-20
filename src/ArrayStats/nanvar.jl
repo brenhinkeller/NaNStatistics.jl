@@ -64,6 +64,22 @@ function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
     end
     return σ² / max(n-corrected,0)
 end
+function _nanvar(::Nothing, corrected::Bool, A::AbstractArray{<:Integer}, ::Colon)
+    # Reduce all the dims!
+    Tₒ = Base.promote_op(/, eltype(A), Int)
+    n = length(A)
+    Σ = zero(Tₒ)
+    @avx for i ∈ eachindex(A)
+        Σ += A[i]
+    end
+    μ = Σ / n
+    σ² = zero(typeof(μ))
+    @avx for i ∈ eachindex(A)
+        δ = A[i] - μ
+        σ² += δ * δ
+    end
+    return σ² / max(n-corrected,0)
+end
 
 # If the mean is known, pass it on in the appropriate form
 _nanvar(μ, corrected::Bool, A, dims::Tuple) = _nanvar!(collect(μ), corrected, A, dims)
@@ -78,6 +94,20 @@ function _nanvar(μ::Number, corrected::Bool, A, ::Colon)
         notnan = δ==δ
         n += notnan
         σ² += ifelse(notnan, δ * δ, ∅)
+    end
+    return σ² / max(n-corrected, 0)
+end
+function _nanvar(μ::Number, corrected::Bool, A::AbstractArray{<:Integer}, ::Colon)
+    # Reduce all the dims!
+    σ² = zero(typeof(μ))
+    if μ==μ
+        @avx for i ∈ eachindex(A)
+            δ = A[i] - μ
+            σ² += δ * δ
+        end
+        n = length(A)
+    else
+        n = 0
     end
     return σ² / max(n-corrected, 0)
 end
