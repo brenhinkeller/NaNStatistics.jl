@@ -180,48 +180,6 @@
 
     """
     ```julia
-    nansum(A; dims)
-    ```
-    Calculate the sum of an indexable collection `A`, ignoring NaNs, optionally
-    along dimensions specified by `dims`.
-
-    Also supports the `dim` keyword, which behaves identically to `dims`, but
-    also drops any singleton dimensions that have been reduced over (as is the
-    convention in some other languages).
-    """
-    nansum(A; dims=:, dim=:) = __nansum(A, dims, dim)
-    __nansum(A, ::Colon, ::Colon) = _nansum(A, :)
-    __nansum(A, region, ::Colon) = _nansum(A, region)
-    __nansum(A, ::Colon, region) = _reducedims(_nansum(A, region), region)
-    _nansum(A, region) = sum(A.*nanmask(A), dims=region)
-    function _nansum(A,::Colon)
-        m = zero(eltype(A))
-        @inbounds @simd for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            m += Aᵢ * (Aᵢ==Aᵢ)
-        end
-        return m
-    end
-    function _nansum(A::Array,::Colon)
-        T = eltype(A)
-        m = zero(T)
-        @avx for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            m += ifelse(Aᵢ==Aᵢ, Aᵢ, zero(T))
-        end
-        return m
-    end
-    function _nansum(A::Array{<:Integer},::Colon)
-        m = zero(eltype(A))
-        @avx for i ∈ eachindex(A)
-            m += A[i]
-        end
-        return m
-    end
-    export nansum
-
-    """
-    ```julia
     nanminimum(A; dims)
     ```
     As `minimum` but ignoring `NaN`s: Find the smallest non-`NaN` value of an
