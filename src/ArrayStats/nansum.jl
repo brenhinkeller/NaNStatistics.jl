@@ -53,7 +53,7 @@ end
 function _nansum(A, ::Colon)
     Tₒ = Base.promote_op(+, eltype(A), Int)
     Σ = ∅ = zero(Tₒ)
-    @avx for i ∈ eachindex(A)
+    @turbo for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ
         Σ += ifelse(notnan, A[i], ∅)
@@ -63,7 +63,7 @@ end
 function _nansum(A::AbstractArray{<:Integer}, ::Colon)
     Tₒ = Base.promote_op(+, eltype(A), Int)
     Σ = zero(Tₒ)
-    @avx for i ∈ eachindex(A)
+    @turbo for i ∈ eachindex(A)
         Σ += A[i]
     end
     return Σ
@@ -126,7 +126,7 @@ function staticdim_nansum_quote(static_dims::Vector{Int}, N::Int)
   quote
     ∅ = zero(eltype(B))
     Bᵥ = $Bᵥ
-    @avx $loops
+    @turbo $loops
     return B
   end
 end

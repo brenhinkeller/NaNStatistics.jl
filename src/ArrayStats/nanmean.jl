@@ -54,7 +54,7 @@ function _nanmean(A, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
     Σ = ∅ = zero(Tₒ)
-    @avx for i ∈ eachindex(A)
+    @turbo for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ
         n += notnan
@@ -65,7 +65,7 @@ end
 function _nanmean(A::AbstractArray{<:Integer}, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     Σ = zero(Tₒ)
-    @avx for i ∈ eachindex(A)
+    @turbo for i ∈ eachindex(A)
         Σ += A[i]
     end
     return Σ / length(A)
@@ -130,7 +130,7 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
   quote
     ∅ = zero(eltype(B))
     Bᵥ = $Bᵥ
-    @avx $loops
+    @turbo $loops
     return B
   end
 end

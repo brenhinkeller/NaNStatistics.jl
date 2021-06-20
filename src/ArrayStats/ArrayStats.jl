@@ -25,7 +25,7 @@
     Fill a Boolean mask of dimensions `size(A)` that is false wherever `A` is `NaN`
     """
     function nanmask!(mask, A)
-        @avx for i=1:length(A)
+        @turbo for i=1:length(A)
             mask[i] = A[i]==A[i]
         end
         return mask
@@ -42,7 +42,7 @@
     Replace all `NaN`s in A with zeros of the same type
     """
     function zeronan!(A::Array)
-        @avx for i ∈ eachindex(A)
+        @turbo for i ∈ eachindex(A)
             Aᵢ = A[i]
             A[i] = ifelse(Aᵢ==Aᵢ, Aᵢ, 0)
         end
@@ -287,7 +287,7 @@
     function _nanmean(A::Array{<:Integer}, W, ::Colon)
         n = zero(eltype(W))
         m = zero(promote_type(eltype(W), eltype(A)))
-        @avx for i ∈ eachindex(A)
+        @turbo for i ∈ eachindex(A)
             Wᵢ = W[i]
             n += Wᵢ
             m += Wᵢ * A[i]
@@ -300,7 +300,7 @@
         T2 = promote_type(eltype(W), eltype(A))
         n = zero(T1)
         m = zero(T2)
-        @avx for i ∈ eachindex(A)
+        @turbo for i ∈ eachindex(A)
             Aᵢ = A[i]
             Wᵢ = W[i]
             t = Aᵢ==Aᵢ
@@ -333,12 +333,12 @@
         w = sum(W.*mask, dims=region)
         s = sum(A.*W.*mask, dims=region) ./ w
         d = A .- s # Subtract mean, using broadcasting
-        @avx for i ∈ eachindex(d)
+        @turbo for i ∈ eachindex(d)
             dᵢ = d[i]
             d[i] = (dᵢ * dᵢ * W[i]) * mask[i]
         end
         s .= sum(d, dims=region)
-        @avx for i ∈ eachindex(s)
+        @turbo for i ∈ eachindex(s)
             s[i] = sqrt((s[i] * n[i]) / (w[i] * (n[i] - 1)))
         end
         return s
@@ -370,7 +370,7 @@
         Tm = promote_type(eltype(W), eltype(A))
         w = zero(Tw)
         m = zero(Tm)
-        @avx for i ∈ eachindex(A)
+        @turbo for i ∈ eachindex(A)
             Aᵢ = A[i]
             Wᵢ = W[i]
             t = Aᵢ==Aᵢ
@@ -381,7 +381,7 @@
         mu = m / w
         Tmu = typeof(mu)
         s = zero(Tmu)
-        @avx for i ∈ eachindex(A)
+        @turbo for i ∈ eachindex(A)
             Aᵢ = A[i]
             d = Aᵢ - mu
             s += ifelse(Aᵢ==Aᵢ, d * d * W[i], zero(Tmu))

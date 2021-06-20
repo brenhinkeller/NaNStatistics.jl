@@ -49,7 +49,7 @@ function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
     Σ = ∅ = zero(Tₒ)
-    @avx for i ∈ eachindex(A)
+    @turbo for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ
         n += notnan
@@ -57,7 +57,7 @@ function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
     end
     μ = Σ / n
     σ² = ∅ = zero(typeof(μ))
-    @avx for i ∈ eachindex(A)
+    @turbo for i ∈ eachindex(A)
         δ = A[i] - μ
         notnan = δ==δ
         σ² += ifelse(notnan, δ * δ, ∅)
@@ -69,12 +69,12 @@ function _nanvar(::Nothing, corrected::Bool, A::AbstractArray{<:Integer}, ::Colo
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = length(A)
     Σ = zero(Tₒ)
-    @avx for i ∈ eachindex(A)
+    @turbo for i ∈ eachindex(A)
         Σ += A[i]
     end
     μ = Σ / n
     σ² = zero(typeof(μ))
-    @avx for i ∈ eachindex(A)
+    @turbo for i ∈ eachindex(A)
         δ = A[i] - μ
         σ² += δ * δ
     end
@@ -89,7 +89,7 @@ function _nanvar(μ::Number, corrected::Bool, A, ::Colon)
     # Reduce all the dims!
     n = 0
     σ² = ∅ = zero(typeof(μ))
-    @avx for i ∈ eachindex(A)
+    @turbo for i ∈ eachindex(A)
         δ = A[i] - μ
         notnan = δ==δ
         n += notnan
@@ -101,7 +101,7 @@ function _nanvar(μ::Number, corrected::Bool, A::AbstractArray{<:Integer}, ::Col
     # Reduce all the dims!
     σ² = zero(typeof(μ))
     if μ==μ
-        @avx for i ∈ eachindex(A)
+        @turbo for i ∈ eachindex(A)
             δ = A[i] - μ
             σ² += δ * δ
         end
@@ -118,12 +118,12 @@ end
 #     N = sum(mask, dims=region)
 #     Σ = sum(A.*mask, dims=region)./N
 #     δ = A .- Σ # Subtract mean, using broadcasting
-#     @avx for i ∈ eachindex(δ)
+#     @turbo for i ∈ eachindex(δ)
 #         δᵢ = δ[i]
 #         δ[i] = ifelse(mask[i], δᵢ * δᵢ, 0)
 #     end
 #     B .= sum(δ, dims=region)
-#     @avx for i ∈ eachindex(B)
+#     @turbo for i ∈ eachindex(B)
 #         B[i] = B[i] / max(N[i] - corrected, 0)
 #     end
 #     return B
@@ -190,7 +190,7 @@ function staticdim_nanvar_quote(static_dims::Vector{Int}, N::Int)
   quote
     ∅ = zero(eltype(B))
     Bᵥ = $Bᵥ
-    @avx $loops
+    @turbo $loops
     return B
   end
 end

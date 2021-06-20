@@ -2,7 +2,7 @@ function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool, μᵪ::N
     # Calculate covariance
     σᵪᵧ = ∅ = zero(promote_type(typeof(μᵪ), typeof(μᵧ), Int))
     n = 0
-    @avx for i ∈ indices((x,y))
+    @turbo for i ∈ indices((x,y))
             δᵪ = x[i] - μᵪ
             δᵧ = y[i] - μᵧ
             δ² = δᵪ * δᵧ
