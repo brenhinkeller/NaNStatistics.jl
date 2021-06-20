@@ -62,6 +62,14 @@ function _nanmean(A, ::Colon)
     end
     return Σ / n
 end
+function _nanmean(A::AbstractArray{<:Integer}, ::Colon)
+    Tₒ = Base.promote_op(/, eltype(A), Int)
+    Σ = zero(Tₒ)
+    @avx for i ∈ eachindex(A)
+        Σ += A[i]
+    end
+    return Σ / length(A)
+end
 
 
 # Metaprogramming magic adapted from Chris Elrod example:
