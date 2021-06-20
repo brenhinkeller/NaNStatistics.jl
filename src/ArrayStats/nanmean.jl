@@ -63,12 +63,6 @@ function _nanmean(A, ::Colon)
     return Σ / n
 end
 
-# Recursive fallback method for overly-complex reductions
-function _nanmean_fallback!(B::AbstractArray, A::AbstractArray, region)
-    mask = nanmask(A)
-    B .= sum(A.*mask, dims=region) ./ sum(mask, dims=region)
-    return  B
-end
 
 # Metaprogramming magic adapted from Chris Elrod example:
 # Generate customized set of loops for a given ndims and a vector
@@ -174,13 +168,7 @@ end
 # Efficient @generated in-place mean
 @generated function _nanmean!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{Integer,M}}}
   N == M && return :(B[1] = _nanmean(A, :); B)
-  total_combinations = binomial(N,M)
-  if total_combinations > 6
-    # Fallback, for overly-complex reductions
-    return :(_nanmean_fallback!(B, A, dims))
-  else
-    branches_nanmean_quote(N, M, D)
-  end
+  branches_nanmean_quote(N, M, D)
 end
 
 

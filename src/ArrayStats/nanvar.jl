@@ -82,22 +82,22 @@ function _nanvar(μ::Number, corrected::Bool, A, ::Colon)
     return σ² / max(n-corrected, 0)
 end
 
-# Fallback method for overly-complex reductions
-function _nanvar_fallback!(B::AbstractArray, corrected::Bool, A::AbstractArray,region)
-    mask = nanmask(A)
-    N = sum(mask, dims=region)
-    Σ = sum(A.*mask, dims=region)./N
-    δ = A .- Σ # Subtract mean, using broadcasting
-    @avx for i ∈ eachindex(δ)
-        δᵢ = δ[i]
-        δ[i] = ifelse(mask[i], δᵢ * δᵢ, 0)
-    end
-    B .= sum(δ, dims=region)
-    @avx for i ∈ eachindex(B)
-        B[i] = B[i] / max(N[i] - corrected, 0)
-    end
-    return B
-end
+# # Fallback method for overly-complex reductions
+# function _nanvar_fallback!(B::AbstractArray, corrected::Bool, A::AbstractArray,region)
+#     mask = nanmask(A)
+#     N = sum(mask, dims=region)
+#     Σ = sum(A.*mask, dims=region)./N
+#     δ = A .- Σ # Subtract mean, using broadcasting
+#     @avx for i ∈ eachindex(δ)
+#         δᵢ = δ[i]
+#         δ[i] = ifelse(mask[i], δᵢ * δᵢ, 0)
+#     end
+#     B .= sum(δ, dims=region)
+#     @avx for i ∈ eachindex(B)
+#         B[i] = B[i] / max(N[i] - corrected, 0)
+#     end
+#     return B
+# end
 
 
 # Metaprogramming magic adapted from Chris Elrod example:
@@ -206,11 +206,11 @@ end
 # Efficient @generated in-place var
 @generated function _nanvar!(B::AbstractArray{Tₒ,N}, corrected::Bool, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{Integer,M}}}
   N == M && return :(B[1] = _nanvar(B[1], corrected, A, :); B)
-  total_combinations = binomial(N,M)
-  if total_combinations > 6
-    # Fallback, for overly-complex reductions
-    return :(_nanvar_fallback!(B, corrected, A, dims))
-  else
+  # total_combinations = binomial(N,M)
+  # if total_combinations > 6
+  #   # Fallback, for overly-complex reductions
+  #   return :(_nanvar_fallback!(B, corrected, A, dims))
+  # else
     branches_nanvar_quote(N, M, D)
-  end
+  # end
 end
