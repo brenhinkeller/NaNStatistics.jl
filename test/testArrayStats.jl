@@ -179,8 +179,8 @@
 
     # Summary statistics: dimensional tests, Float64
     A = reshape(1:300.,100,3)
-    @test nansum(A, dims=1) == sum(A, dims=1)
-    @test nansum(A, dims=2) == sum(A, dims=2)
+    @test nansum(A, dim=1) == vec(sum(A, dims=1))
+    @test nansum(A, dim=2) == vec(sum(A, dims=2))
     @test nanminimum(A, dim=1) == vec(minimum(A, dims=1))
     @test nanminimum(A, dim=2) == vec(minimum(A, dims=2))
     @test nanmaximum(A, dim=1) == vec(maximum(A, dims=1))
@@ -225,6 +225,21 @@
     @test nanmean(A, dims=(4,5,6)) ≈ mean(A, dims=(4,5,6))
     @test nanstd(A, dims=(4,5,6)) ≈ std(A, dims=(4,5,6))
     @test nanstd(A, dims=(4,5,6)) ≈ nanstd(A, dims=(4,5,6), mean=nanmean(A, dims=(4,5,6)))
+
+    # A few tests with other types
+    for T in (Bool, Float16, Float32)
+        A = rand(T, 100)
+        @test nansum(A) ≈ sum(A)
+        @test nanmean(A) ≈ mean(A)
+        @test nanstd(A) ≈ std(A)
+    end
+
+    for T in (UInt8, UInt16, UInt32, Int8, Int16, Int32)
+        A = collect(T, 1:100)
+        @test nansum(A) == 5050
+        @test nanmean(A) == 50.5
+        @test nanstd(A) ≈ 29.011491975882016
+    end
 
     # Standardization
     @test nanstandardize!(collect(1:10.)) ≈ ((1:10) .- mean(1:10)) / std(1:10)
