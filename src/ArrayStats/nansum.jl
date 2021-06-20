@@ -44,14 +44,14 @@ function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
     sₒ = ntuple(Val(N)) do d
         ifelse(d ∈ dims, 1, sᵢ[d])
     end
-    Tₒ = Base.promote_type(T, Int)
+    Tₒ = Base.promote_op(+, T, Int)
     B = similar(A, Tₒ, sₒ)
     _nansum!(B, A, dims)
 end
 
 # Reduce all the dims!
 function _nansum(A, ::Colon)
-    Tₒ = Base.promote_type(eltype(A), Int)
+    Tₒ = Base.promote_op(+, eltype(A), Int)
     Σ = ∅ = zero(Tₒ)
     @avx for i ∈ eachindex(A)
         Aᵢ = A[i]
@@ -61,7 +61,7 @@ function _nansum(A, ::Colon)
     return Σ
 end
 function _nansum(A::AbstractArray{<:Integer}, ::Colon)
-    Tₒ = Base.promote_type(eltype(A), Int)
+    Tₒ = Base.promote_op(+, eltype(A), Int)
     Σ = zero(Tₒ)
     @avx for i ∈ eachindex(A)
         Σ += A[i]
