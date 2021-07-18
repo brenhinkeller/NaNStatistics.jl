@@ -14,7 +14,7 @@ VectorizationBase = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
 [compat]
 IfElse = "0.1"
 LoopVectorization = "0.12.42"
-Static = "0.2"
+Static = "0.2, 0.3"
 StatsBase = "0.28 - 0.33"
 VectorizationBase = "0.20"
 julia = "1"
