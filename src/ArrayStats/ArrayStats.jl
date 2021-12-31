@@ -393,49 +393,6 @@
 
     """
     ```julia
-    nanmedian(A; dims)
-    ```
-    Calculate the median, ignoring NaNs, of an indexable collection `A`,
-    optionally along a dimension specified by `dims`.
-
-    Also supports the `dim` keyword, which behaves identically to `dims`, but
-    also drops any singleton dimensions that have been reduced over (as is the
-    convention in some other languages).
-    """
-    nanmedian(A; dims=:, dim=:) = __nanmedian(A, dims, dim)
-    __nanmedian(A, ::Colon, ::Colon) = _nanmedian(A, :)
-    __nanmedian(A, region, ::Colon) = _nanmedian(A, region)
-    __nanmedian(A, ::Colon, region) = _reducedims(_nanmedian(A, region), region)
-    function _nanmedian(A, ::Colon)
-        t = nanmask(A)
-        return any(t) ? median(A[t]) : float(eltype(A))(NaN)
-    end
-    function _nanmedian(A, region)
-        s = size(A)
-        if region == 2
-            t = Array{Bool}(undef, s[2])
-            result = Array{float(eltype(A))}(undef, s[1], 1)
-            for i=1:s[1]
-                nanmask!(t, A[i,:])
-                result[i] = any(t) ? median(A[i,t]) : float(eltype(A))(NaN)
-            end
-        elseif region == 1
-            t = Array{Bool}(undef, s[1])
-            result = Array{float(eltype(A))}(undef, 1, s[2])
-            for i=1:s[2]
-                nanmask!(t, A[:,i])
-                result[i] = any(t) ? median(A[t,i]) : float(eltype(A))(NaN)
-            end
-        else
-            result = _nanmedian(A, :)
-        end
-        return result
-    end
-    export nanmedian
-
-
-    """
-    ```julia
     nanmad(A; dims)
     ```
     Median absolute deviation from the median, ignoring NaNs, of an indexable
@@ -447,8 +404,9 @@
     convention in some other languages).
     """
     nanmad(A; dims=:, dim=:) = __nanmad(A, dims, dim)
-    __nanmad(A, dims, dim) = __nanmedian(abs.(A .- _nanmedian(A, dims)), dims, dim)
-    __nanmad(A, ::Colon, dim) = __nanmedian(abs.(A .- _nanmedian(A, dim)), :, dim)
+    __nanmad(A::AbstractArray{N,T}, dims, dim) where {N,T} = __nanmad!(copyto!(Array{N,T}(undef, size(A)), A), dims, dim)
+    __nanmad!(A, dims, dim) = __nanmedian!(abs.(A .- _nanmedian!(A, dims)), dims, dim)
+    __nanmad!(A, ::Colon, dim) = __nanmedian!(abs.(A .- _nanmedian!(A, dim)), :, dim)
     export nanmad
 
 
