@@ -121,7 +121,7 @@ end
 _nanquantile!(A, q::Real, ::Tuple{Colon}) = _nanquantile!(A, q, :)
 function _nanquantile!(A, q::Real, ::Colon)
     iₗ, iᵤ = firstindex(A), lastindex(A)
-    A, iₗ, iᵤ₋ = sortnans!(A, iₗ, iᵤ)
+    A, iₗ, iᵤ = sortnans!(A, iₗ, iᵤ)
 
     N₋ = iᵤ - iₗ
     iₚ = q*N₋ + iₗ

@@ -97,7 +97,7 @@ end
 _nanmedian!(A, ::Tuple{Colon}) = _nanmedian!(A, :)
 function _nanmedian!(A, ::Colon)
     iₗ, iᵤ = firstindex(A), lastindex(A)
-    A, iₗ, iᵤ₋ = sortnans!(A, iₗ, iᵤ)
+    A, iₗ, iᵤ = sortnans!(A, iₗ, iᵤ)
 
     N = iᵤ - iₗ + 1
     i½ = (iₗ + iᵤ) ÷ 2
