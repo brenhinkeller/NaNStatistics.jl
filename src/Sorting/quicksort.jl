@@ -118,8 +118,8 @@ function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
 
         # Count up elements that must be moved to upper partition
         Nᵤ = 0
-        @turbo for i = iₗ:iᵤ
-            Nᵤ += A[i] > pivot
+        @turbo for i = (iₗ+1):iᵤ
+            Nᵤ += A[i] >= pivot
         end
         Nₗ = N - Nᵤ
 
@@ -128,8 +128,8 @@ function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
         j = iᵤ
         @inbounds for n = 1:Nₗ-1
             i = iₗ + n
-            if A[i] > pivot
-                while A[j] > pivot
+            if A[i] >= pivot
+                while A[j] >= pivot
                     j -= 1
                 end
                 j <= i && break
@@ -198,8 +198,8 @@ function quicksortt!(A, iₗ=firstindex(A), iᵤ=lastindex(A), level=1)
 
         # Count up elements that must be moved to upper partition
         Nᵤ = 0
-        @turbo for i = iₗ:iᵤ
-            Nᵤ += A[i] > pivot
+        @turbo for i = (iₗ+1):iᵤ
+            Nᵤ += A[i] >= pivot
         end
         Nₗ = N - Nᵤ
 
@@ -208,8 +208,8 @@ function quicksortt!(A, iₗ=firstindex(A), iᵤ=lastindex(A), level=1)
         j = iᵤ
         @inbounds for n = 1:Nₗ-1
             i = iₗ + n
-            if A[i] > pivot
-                while A[j] > pivot
+            if A[i] >= pivot
+                while A[j] >= pivot
                     j -= 1
                 end
                 j <= i && break
