@@ -75,6 +75,16 @@ function issortedrange(A, iₗ, iᵤ)
     return true
 end
 
+# Check for anti-sortedness, assuming no NaNs
+function isantisortedrange(A, iₗ, iᵤ)
+    @inbounds for i = iₗ+1:iᵤ
+        if A[i-1] < A[i]
+            return false
+        end
+    end
+    return true
+end
+
 # Sort `A`, assuming no NaNs
 function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
     if issortedrange(A, iₗ, iᵤ)
@@ -83,37 +93,31 @@ function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
     end
     # Otherwise, we have to sort
     N = iᵤ - iₗ + 1
-    if  N == 2
-        # If we've gotten here, we know we're not sorted, so reverse elements
-        A[iᵤ], A[iₗ] = A[iₗ], A[iᵤ]
+    if isantisortedrange(A, iₗ, iᵤ)
+        reverse!(A, iₗ, iᵤ)
         return A
     elseif N == 3
-        # For N==3, can sort with 3 more comparisons, worst-case
+        # We know we are neither sorted nor antisorted, so only four possibilities remain
         iₘ = iₗ + 1
         a,b,c = A[iₗ], A[iₘ], A[iᵤ]
-        if a > b
-            if b > c
-                # c < b < a
-                A[iₗ], A[iᵤ] = c, a
-            elseif c > a
-                # b < a < c
-                A[iₗ], A[iₘ] = b, a
+        if a <= b
+            if a <= c
+                A[iₘ], A[iᵤ] = c, b             # a ≤ c ≤ b
             else
-                # b <= c <= a
-                A[iₗ], A[iₘ], A[iᵤ] = b, c, a
+                A[iₗ], A[iₘ], A[iᵤ] = c, a, b   # c ≤ a ≤ b
             end
-        else # a <= b
-            if c > a
-                # a < c < b
-                A[iₘ], A[iᵤ] = c, b
+        else
+            if a <= c
+                A[iₗ], A[iₘ] = b, a             # b ≤ a ≤ c
             else
-                # c <= a <= b
-                A[iₗ], A[iₘ], A[iᵤ] = c, a, b
+                A[iₗ], A[iₘ], A[iᵤ] = b, c, a   # b ≤ c ≤ a
             end
         end
         return A
     else
         # Pick a pivot for partitioning
+        iₚ = iₗ + (N >> 2)
+        A[iₗ], A[iₚ] = A[iₚ], A[iₗ]
         pivot = A[iₗ]
 
         # Count up elements that must be moved to upper partition
@@ -154,47 +158,32 @@ function quicksortt!(A, iₗ=firstindex(A), iᵤ=lastindex(A), level=1)
     end
     # Otherwise, we have to sort
     N = iᵤ - iₗ + 1
-    if  N == 2
-        # If we've gotten here, we know we're not sorted, so reverse elements
-        A[iᵤ], A[iₗ] = A[iₗ], A[iᵤ]
+    if isantisortedrange(A, iₗ, iᵤ)
+        reverse!(A, iₗ, iᵤ)
         return A
     elseif N == 3
-        # For N==3, can sort with 3 more comparisons, worst-case
+        # We know we are neither sorted nor antisorted, so only four possibilities remain
         iₘ = iₗ + 1
         a,b,c = A[iₗ], A[iₘ], A[iᵤ]
-        if a > b
-            if b > c
-                # c < b < a
-                A[iₗ], A[iᵤ] = c, a
-            elseif c > a
-                # b < a < c
-                A[iₗ], A[iₘ] = b, a
+        if a <= b
+            if a <= c
+                A[iₘ], A[iᵤ] = c, b             # a ≤ c ≤ b
             else
-                # b <= c <= a
-                A[iₗ], A[iₘ], A[iᵤ] = b, c, a
+                A[iₗ], A[iₘ], A[iᵤ] = c, a, b   # c ≤ a ≤ b
             end
-        else # a <= b
-            if c > a
-                # a < c < b
-                A[iₘ], A[iᵤ] = c, b
+        else
+            if a <= c
+                A[iₗ], A[iₘ] = b, a             # b ≤ a ≤ c
             else
-                # c <= a <= b
-                A[iₗ], A[iₘ], A[iᵤ] = c, a, b
+                A[iₗ], A[iₘ], A[iᵤ] = b, c, a   # b ≤ c ≤ a
             end
         end
         return A
     else
         # Pick a pivot for partitioning
-        if iᵤ-iₗ < 4096
-            # Just use first element as pivot
-            pivot = A[iₗ]
-        else
-            # Put a modicum of effort into choosing a pivot
-            # This little maneuver will cost us about 32 ns
-            pivot = semimedian(A, iₗ, iₗ+32)
-            iₚ = findfirstinrange(A, pivot, iₗ, iₗ+32)
-            A[iₗ], A[iₚ] = A[iₚ], A[iₗ]
-        end
+        iₚ = iₗ + (N >> 2)
+        A[iₗ], A[iₚ] = A[iₚ], A[iₗ]
+        pivot = A[iₗ]
 
         # Count up elements that must be moved to upper partition
         Nᵤ = 0
@@ -232,40 +221,4 @@ function quicksortt!(A, iₗ=firstindex(A), iᵤ=lastindex(A), level=1)
         end
         return A
     end
-end
-
-# Find the exact median of three elements, assuming no NaNs
-function median_of_three(a,b,c)
-    if a < b
-        if b < c
-            b
-        else
-            max(a,c)
-        end
-    else
-        if b < c
-            min(a,c)
-        else
-            b
-        end
-    end
-end
-
-# Find an approximate median for pivoting
-function semimedian(A, iₗ=firstindex(A), iᵤ=lastindex(A))
-    m = A[iₗ]
-    @inbounds for i = iₗ+2:3:iᵤ
-        m = median_of_three(m, A[i-1], A[i])
-    end
-    return m
-end
-
-# Return fist matching linear index within range
-function findfirstinrange(A, target, iₗ, iᵤ)
-    @inbounds for i = iₗ:iᵤ-1
-        if A[i] == target
-            return i
-        end
-    end
-    return iᵤ
 end
