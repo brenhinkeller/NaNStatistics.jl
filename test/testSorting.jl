@@ -65,27 +65,27 @@
 
 ## --- Test nanpctile! / nanquantile!
 
-    @test nanpctile!(0:10, 0) == 0
-    @test nanpctile!(0:10, 1) ≈ 0.1
-    @test nanpctile!(0:10, 100) == 10
-    @test nanpctile!(0:10, 13.582) ≈ 1.3582
-    @test nanpctile!(collect(1:10), 50) == 5.5
-
-    A = rand(100)
-    @test nanpctile!(copy(A), 50) == median(A)
-
-    A = rand(55,82)
-    @test nanpctile!(copy(A), 50) == median(A)
-    @test nanpctile!(copy(A), 50, dims=1) == median(A, dims=1)
-    @test nanpctile!(copy(A), 50, dims=2) == median(A, dims=2)
-
-    A = rand(10,11,12)
-    @test nanpctile!(copy(A), 50) == median(A)
-    @test nanpctile!(copy(A), 50, dims=1) == median(A, dims=1)
-    @test nanpctile!(copy(A), 50, dims=2) == median(A, dims=2)
-    @test nanpctile!(copy(A), 50, dims=3) == median(A, dims=3)
-    @test nanpctile!(copy(A), 50, dims=(1,2)) == median(A, dims=(1,2))
-    @test nanpctile!(copy(A), 50, dims=(2,3)) == median(A, dims=(2,3))
+    # @test nanpctile!(0:10, 0) == 0
+    # @test nanpctile!(0:10, 1) ≈ 0.1
+    # @test nanpctile!(0:10, 100) == 10
+    # @test nanpctile!(0:10, 13.582) ≈ 1.3582
+    # @test nanpctile!(collect(1:10), 50) == 5.5
+    #
+    # A = rand(100)
+    # @test nanpctile!(copy(A), 50) == median(A)
+    #
+    # A = rand(55,82)
+    # @test nanpctile!(copy(A), 50) == median(A)
+    # @test nanpctile!(copy(A), 50, dims=1) == median(A, dims=1)
+    # @test nanpctile!(copy(A), 50, dims=2) == median(A, dims=2)
+    #
+    # A = rand(10,11,12)
+    # @test nanpctile!(copy(A), 50) == median(A)
+    # @test nanpctile!(copy(A), 50, dims=1) == median(A, dims=1)
+    # @test nanpctile!(copy(A), 50, dims=2) == median(A, dims=2)
+    # @test nanpctile!(copy(A), 50, dims=3) == median(A, dims=3)
+    # @test nanpctile!(copy(A), 50, dims=(1,2)) == median(A, dims=(1,2))
+    # @test nanpctile!(copy(A), 50, dims=(2,3)) == median(A, dims=(2,3))
 
 
 ## ---
