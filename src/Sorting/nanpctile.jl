@@ -148,6 +148,8 @@ function _nanquantile!(A, q::Real, ::Colon)
     A, iₗ, iᵤ = sortnans!(A, iₗ, iᵤ)
 
     N₋ = iᵤ - iₗ
+    N < 0 && return float(T)(NaN)
+    N < 1 && return float(T)(A[iₗ])
     iₚ = q*N₋ + iₗ
     iₚ₋ = floor(Int, iₚ)
     iₚ₊ = ceil(Int, iₚ)

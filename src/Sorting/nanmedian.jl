@@ -95,11 +95,13 @@ end
 
 # Reduce all the dims!
 _nanmedian!(A, ::Tuple{Colon}) = _nanmedian!(A, :)
-function _nanmedian!(A, ::Colon)
+function _nanmedian!(A::AbstractArray{T}, ::Colon) where T
     iₗ, iᵤ = firstindex(A), lastindex(A)
     A, iₗ, iᵤ = sortnans!(A, iₗ, iᵤ)
 
     N = iᵤ - iₗ + 1
+    N < 1 && return float(T)(NaN)
+    N < 2 && return float(T)(A[iₗ])
     i½ = (iₗ + iᵤ) ÷ 2
     if iseven(N)
         if N < 384
