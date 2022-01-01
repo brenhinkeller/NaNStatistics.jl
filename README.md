@@ -131,10 +131,6 @@ julia> movmean(A, 3)
  De-mean and set to unit variance
 
 
-### Room for future improvement (PRs welcome!):
-* Currently, `nanmedian`, `nanbinmedian`, etc. simply filter for `NaN`s and then fall back to `Statistics.median`. Similarly, `nanpctile` falls back to `StatsBase.percentile`. Adding fast pure-julia SIMD median and percentile implementations would allow for significant performance improvement.
-* Consequently, sufficiently high-dimensional or multidiminsional summary statistics (e.g. `nanmean(ones(10,10,10,10), dims=(2,4))`) are not currently supported for `nanmedian` or `nanpctile`
-
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://brenhinkeller.github.io/NaNStatistics.jl/stable/
 [docs-dev-img]: https://img.shields.io/badge/docs-dev-blue.svg
