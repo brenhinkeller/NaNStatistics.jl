@@ -12,11 +12,20 @@
     sort!(B)
     @test A == B
 
+    A = rand(1_000_000)
+    B = sort(A)
+    NaNStatistics.quicksortt!(A)
+    @test A == B
+
     # Multithreaded quicksort
     A = rand(100)
-    B = copy(A)
+    B = sort(A)
     NaNStatistics.quicksortt!(A)
-    sort!(B)
+    @test A == B
+
+    A = rand(1_000_000)
+    B = sort(A)
+    NaNStatistics.quicksortt!(A)
     @test A == B
 
     # Partialsort
@@ -24,6 +33,11 @@
     m = median(A)
     NaNStatistics.quickselect!(A, 1, 101, 51)
     @test A[51] == m
+
+    A = rand(1_000_001)
+    m = median(A)
+    NaNStatistics.quickselect!(A, 1, 1_000_001, 500_001)
+    @test A[500_001] == m
 
     # # Vsort, Float64
     # A = rand(100)
@@ -49,6 +63,16 @@
 
     A = rand(100)
     @test nanmedian!(copy(A)) == median(A)
+    A[rand(1:100, 20)] .= NaN; B = A[.!isnan.(A)];
+    @test nanmedian!(A) == median(B)
+    A = rand(10_000)
+    @test nanmedian!(copy(A)) == median(A)
+    A[rand(1:10_000, 100)] .= NaN; B = A[.!isnan.(A)]
+    @test nanmedian!(A) == median(B)
+    A = rand(100_000)
+    @test nanmedian!(copy(A)) == median(A)
+    A[rand(1:100_000, 100)] .= NaN; B = A[.!isnan.(A)]
+    @test nanmedian!(A) == median(B)
 
     A = rand(55,82)
     @test nanmedian!(copy(A)) == median(A)
@@ -73,6 +97,16 @@
 
     A = rand(100)
     @test nanpctile!(copy(A), 50) == median(A)
+    A[rand(1:100, 20)] .= NaN; B = A[.!isnan.(A)];
+    @test nanpctile!(A, 50) == median(B)
+    A = rand(10_000)
+    @test nanpctile!(copy(A), 50) == median(A)
+    A[rand(1:10_000, 100)] .= NaN; B = A[.!isnan.(A)];
+    @test nanpctile!(A, 50) == median(B)
+    A = rand(100_000)
+    @test nanpctile!(copy(A), 50) == median(A)
+    A[rand(1:100_000, 100)] .= NaN; B = A[.!isnan.(A)];
+    @test nanpctile!(A, 50) == median(B)
 
     A = rand(55,82)
     @test nanpctile!(copy(A), 50) == median(A)

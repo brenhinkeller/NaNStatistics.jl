@@ -182,7 +182,7 @@ function quicksortt!(A, iₗ=firstindex(A), iᵤ=lastindex(A), level=1)
     # Otherwise, we have to sort
     N = iᵤ - iₗ + 1
     if isantisortedrange(A, iₗ, iᵤ)
-        reverse!(A, iₗ, iᵤ)
+        vreverse!(A, iₗ, iᵤ)
         return A
     elseif N == 3
         # We know we are neither sorted nor antisorted, so only four possibilities remain
