@@ -113,6 +113,7 @@
     @test nanminimum(A, dims=2) == minimum(A, dims=2)
     @test nanmaximum(A, dims=1) == maximum(A, dims=1)
     @test nanmaximum(A, dims=2) == maximum(A, dims=2)
+    @test nanextrema(A, dims=1) == [(1.0, 100.0) (101.0, 200.0) (201.0, 300.0)]
     @test nanmean(A, dims=1) == mean(A, dims=1)
     @test nanmean(A, dims=2) == mean(A, dims=2)
     @test nanmean(A, ones(size(A)), dims=1) == mean(A, dims=1) # weighted
@@ -143,6 +144,7 @@
     @test nanminimum(A, dims=2) == minimum(A, dims=2)
     @test nanmaximum(A, dims=1) == maximum(A, dims=1)
     @test nanmaximum(A, dims=2) == maximum(A, dims=2)
+    @test nanextrema(A, dims=1) == [(1.0, 100.0) (101.0, 200.0) (201.0, 300.0)]
     @test nanmean(A, dims=1) == mean(A, dims=1)
     @test nanmean(A, dims=2) == mean(A, dims=2)
     @test nanmean(A, ones(size(A)), dims=1) == mean(A, dims=1) # weighted
@@ -186,6 +188,7 @@
     @test nanminimum(A, dim=2) == vec(minimum(A, dims=2))
     @test nanmaximum(A, dim=1) == vec(maximum(A, dims=1))
     @test nanmaximum(A, dim=2) == vec(maximum(A, dims=2))
+    @test nanextrema(A, dim=1) == [(1.0, 100.0), (101.0, 200.0), (201.0, 300.0)]
     @test nanmean(A, dim=1) == vec(mean(A, dims=1))
     @test nanmean(A, dim=2) == vec(mean(A, dims=2))
     @test nanmean(A, ones(size(A)), dim=1) == vec(mean(A, dims=1)) # weighted
