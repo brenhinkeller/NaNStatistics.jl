@@ -274,7 +274,7 @@
             t .= (xedges[i] .<= x .< xedges[i+1]) .& (y.==y)
             yₜ = y[t]
             M[i] = _nanmedian!(yₜ,:)
-            N[i] = countnans(yₜ)
+            N[i] = length(yₜ) - countnans(yₜ)
         end
         return M
     end
@@ -288,7 +288,7 @@
                 for j = 1:size(y,2)
                     yₜ = y[t,j]
                     M[i,j] = _nanmedian!(yₜ,:)
-                    N[i,j] = countnans(yₜ)
+                    N[i,j] = length(yₜ) - countnans(yₜ)
                 end
             else
                 M[i,j] = float(eltype(y))(NaN)
