@@ -1,5 +1,5 @@
 using NaNStatistics
-using Test, Statistics, LinearAlgebra
+using Test, StatsBase, Statistics, LinearAlgebra
 
 @testset "ArrayStats" begin include("testArrayStats.jl") end
 @testset "Covariance and Correlation" begin include("testCovCor.jl") end

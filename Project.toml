@@ -7,15 +7,12 @@ version = "0.6.0"
 IfElse = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
 LoopVectorization = "bdcacae8-1622-11e9-2a5c-532679323890"
 Static = "aedffcd0-7271-4cad-89d0-dc628f76c6d3"
-Statistics = "10745b16-79ce-11e8-11f9-7d13ad32a3b2"
-StatsBase = "2913bbd2-ae8a-5f71-8c99-4fb6c76f3a91"
 VectorizationBase = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
 
 [compat]
 IfElse = "0.1"
 LoopVectorization = "0.12.42"
 Static = "0.2, 0.3, 0.4"
-StatsBase = "0.28 - 0.33"
 VectorizationBase = "0.20, 0.21"
 julia = "1.6"
 
