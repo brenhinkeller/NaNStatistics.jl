@@ -79,8 +79,8 @@ function quickselect!(A::AbstractArray, iₗ=firstindex(A), iᵤ=lastindex(A), k
 
     # Count up elements that must be moved to upper partition
     Nᵤ = 0
-    @turbo for i = iₗ:iᵤ
-        Nᵤ += A[i] > pivot
+    @turbo for i = (iₗ+1):iᵤ
+        Nᵤ += A[i] >= pivot
     end
     Nₗ = N - Nᵤ
 
@@ -89,8 +89,8 @@ function quickselect!(A::AbstractArray, iₗ=firstindex(A), iᵤ=lastindex(A), k
     j = iᵤ
     @inbounds for n = 1:Nₗ-1
         i = iₗ + n
-        if A[i] > pivot
-            while A[j] > pivot
+        if A[i] >= pivot
+            while A[j] >= pivot
                 j -= 1
             end
             j <= i && break
