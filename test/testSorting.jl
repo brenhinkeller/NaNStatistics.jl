@@ -12,17 +12,23 @@
     sort!(B)
     @test A == B
 
+    A = rand(1_000)
+    B = sort(A)
+    NaNStatistics.quicksort!(A)
+    @test A == B
+
     A = rand(1_000_000)
     B = sort(A)
     NaNStatistics.quicksort!(A)
     @test A == B
 
-    # quicksort of already-sorted arrays
-    @test NaNStatistics.quicksort!(collect(1:100)) == 1:100
-    @test NaNStatistics.quicksort!(collect(100:-1:1)) == 1:100
-
     # Multithreaded quicksort
     A = rand(100)
+    B = sort(A)
+    NaNStatistics.quicksortt!(A)
+    @test A == B
+
+    A = rand(1_000)
     B = sort(A)
     NaNStatistics.quicksortt!(A)
     @test A == B
@@ -42,6 +48,12 @@
     m = median(A)
     NaNStatistics.quickselect!(A, 1, 1_000_001, 500_001)
     @test A[500_001] == m
+
+    # Quicksort of already-sorted arrays
+    @test NaNStatistics.quicksort!(collect(1:100)) == 1:100
+    @test NaNStatistics.quicksort!(collect(100:-1:1)) == 1:100
+    @test NaNStatistics.quicksortt!(collect(1:100)) == 1:100
+    @test NaNStatistics.quicksortt!(collect(100:-1:1)) == 1:100
 
     # # Vsort, Float64
     # A = rand(100)
