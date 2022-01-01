@@ -14,8 +14,12 @@
 
     A = rand(1_000_000)
     B = sort(A)
-    NaNStatistics.quicksortt!(A)
+    NaNStatistics.quicksort!(A)
     @test A == B
+
+    # quicksort of already-sorted arrays
+    @test NaNStatistics.quicksort!(collect(1:100)) == 1:100
+    @test NaNStatistics.quicksort!(collect(100:-1:1)) == 1:100
 
     # Multithreaded quicksort
     A = rand(100)
