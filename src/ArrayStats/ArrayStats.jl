@@ -8,6 +8,13 @@
         end
     end
 
+
+    """
+    ```julia
+    countnans(A)
+    ```
+    Return the number of elements of `A` that are `NaN`s.
+    """
     function countnans(A)
         n = 0
         @turbo for i ∈ eachindex(A)
@@ -15,6 +22,22 @@
         end
         return n
     end
+    export countnans
+
+    """
+    ```julia
+    countnonnans(A)
+    ```
+    Return the number of elements of `A` that are not `NaN`s.
+    """
+    function countnotnans(A)
+        n = 0
+        @turbo for i ∈ eachindex(A)
+            n += A[i]==A[i]
+        end
+        return n
+    end
+    export countnotnans
 
     """
     ```julia
