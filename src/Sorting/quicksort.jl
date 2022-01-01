@@ -28,6 +28,48 @@ end
 # For integers, don't need to check for NaNs
 sortnans!(A::AbstractArray{<:Integer}, iₗ=firstindex(A), iᵤ=lastindex(A)) = A, iₗ, iᵤ
 
+# Check for sortedness, assuming no NaNs
+@inline function issortedrange(A, iₗ, iᵤ)
+    @inbounds for i = iₗ+1:iᵤ
+        if A[i-1] > A[i]
+            return false
+        end
+    end
+    return true
+end
+
+# Check for anti-sortedness, assuming no NaNs
+@inline function isantisortedrange(A, iₗ, iᵤ)
+    @inbounds for i = iₗ+1:iᵤ
+        if A[i-1] < A[i]
+            return false
+        end
+    end
+    return true
+end
+
+# Reverse an array, faster than Base.reverse!
+@inline function vreverse!(A, iₗ, iᵤ)
+    N = (iᵤ - iₗ) + 1
+    n = (N ÷ 2) - 1
+    if N < 32
+        @inbounds for i ∈ 0:n
+            𝔦ₗ, 𝔦ᵤ = iₗ+i, iᵤ-i
+            A[𝔦ₗ], A[𝔦ᵤ] = A[𝔦ᵤ], A[𝔦ₗ]
+        end
+    else
+        @turbo for i ∈ 0:n
+            𝔦ₗ = iₗ+i
+            𝔦ᵤ = iᵤ-i
+            l = A[𝔦ₗ]
+            u = A[𝔦ᵤ]
+            A[𝔦ₗ] = u
+            A[𝔦ᵤ] = l
+        end
+    end
+    return A
+end
+
 # Partially sort `A` around the `k`th sorted element and return that element
 function quickselect!(A::AbstractArray, iₗ=firstindex(A), iᵤ=lastindex(A), k=(iₗ+iᵤ)÷2)
     # Pick a pivot for partitioning
@@ -65,25 +107,6 @@ function quickselect!(A::AbstractArray, iₗ=firstindex(A), iᵤ=lastindex(A), k
     return A[k]
 end
 
-# Check for sortedness, assuming no NaNs
-function issortedrange(A, iₗ, iᵤ)
-    @inbounds for i = iₗ+1:iᵤ
-        if A[i-1] > A[i]
-            return false
-        end
-    end
-    return true
-end
-
-# Check for anti-sortedness, assuming no NaNs
-function isantisortedrange(A, iₗ, iᵤ)
-    @inbounds for i = iₗ+1:iᵤ
-        if A[i-1] < A[i]
-            return false
-        end
-    end
-    return true
-end
 
 # Sort `A`, assuming no NaNs
 function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
@@ -94,7 +117,7 @@ function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
     # Otherwise, we have to sort
     N = iᵤ - iₗ + 1
     if isantisortedrange(A, iₗ, iᵤ)
-        reverse!(A, iₗ, iᵤ)
+        vreverse!(A, iₗ, iᵤ)
         return A
     elseif N == 3
         # We know we are neither sorted nor antisorted, so only four possibilities remain

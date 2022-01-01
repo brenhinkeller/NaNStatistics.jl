@@ -79,62 +79,18 @@
 
     """
     ```julia
-    nanpctile(A, p; dims
-    ```
-    Find the `p`th percentile of an indexable collection `A`, ignoring NaNs,
-    optionally along a dimension specified by `dims`.
-
-    A valid percentile value must satisfy 0 <= `p` <= 100.
-
-    Also supports the `dim` keyword, which behaves identically to `dims`, but
-    also drops any singleton dimensions that have been reduced over (as is the
-    convention in some other languages).
-    """
-    nanpctile(A, p; dims=:, dim=:) = __nanpctile(A, p, dims, dim)
-    __nanpctile(A, p, ::Colon, ::Colon) = _nanpctile(A, p, :)
-    __nanpctile(A, p, region, ::Colon) = _nanpctile(A, p, region)
-    __nanpctile(A, p, ::Colon, region) = _reducedims(_nanpctile(A, p, region), region)
-    function _nanpctile(A, p, ::Colon)
-        t = nanmask(A)
-        return any(t) ? percentile(A[t],p) : NaN
-    end
-    function _nanpctile(A, p, region)
-        s = size(A)
-        if region == 2
-            t = Array{Bool}(undef, s[2])
-            result = Array{float(eltype(A))}(undef, s[1], 1)
-            for i=1:s[1]
-                nanmask!(t, A[i,:])
-                result[i] = any(t) ? percentile(A[i,t],p) : NaN
-            end
-        elseif region == 1
-            t = Array{Bool}(undef, s[1])
-            result = Array{float(eltype(A))}(undef, 1, s[2])
-            for i=1:s[2]
-                nanmask!(t, A[:,i])
-                result[i] = any(t) ? percentile(A[t,i],p) : NaN
-            end
-        else
-            result = _nanpctile(A, p, :)
-        end
-        return result
-    end
-    export nanpctile
-
-
-    """
-    ```julia
     inpctile(A, p::Number; dims)
     ```
     Return a boolean array that identifies which values of the iterable
     collection `A` fall within the central `p`th percentile, optionally along a
     dimension specified by `dims`.
 
-    A valid percentile value must satisfy 0 <= `p` <= 100.
+    A valid percentile value must satisfy `0 <= p <= 100`.
     """
-    function inpctile(A, p)
-        offset = (100 - p) / 2
-        return _nanpctile(A, offset, :) .< A .< _nanpctile(A, 100-offset, :)
+    function inpctile(A::AbstractArray{T}, p::Number) where {T}
+        q₊₋ = (100 - p) / 200
+        Aₜ = copyto!(Array{T,1}(undef, length(A)), A)
+        return _nanquantile!(Aₜ, q₊₋, :) .< A .< _nanquantile!(Aₜ, 1-q₊₋, :)
     end
     export inpctile
 

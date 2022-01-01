@@ -1,5 +1,26 @@
 """
 ```julia
+nanpctile(A, p; dims
+```
+Find the `p`th percentile of an indexable collection `A`, ignoring NaNs,
+optionally along a dimension specified by `dims`.
+
+A valid percentile value must satisfy 0 <= `p` <= 100.
+
+Also supports the `dim` keyword, which behaves identically to `dims`, but
+also drops any singleton dimensions that have been reduced over (as is the
+convention in some other languages).
+"""
+nanpctile(A, p::Number; dims=:, dim=:) = __nanpctile(A, p, dims, dim)
+function __nanpctile(A::AbstractArray{T,N}, p::Number, dims, dim) where {T,N}
+    Aₜ = copyto!(Array{T,N}(undef, size(A)), A)
+    __nanpctile!(Aₜ, p, dims, dim)
+end
+export nanpctile
+
+
+"""
+```julia
 nanpctile!(A, p; dims)
 ```
 Compute the `p`th percentile (where `p ∈ [0,100]`) of all elements in `A`,
@@ -19,7 +40,7 @@ all contiguous.
 
 ## Examples
 ```julia
-julia> using VectorizedStatistics
+julia> using NaNStatistics
 
 julia> A = [1 2 3; 4 5 6; 7 8 9]
 3×3 Matrix{Int64}:
@@ -47,7 +68,10 @@ julia> A = [1 2 3; 4 5 6; 7 8 9]
  3  6  9
 ```
 """
-nanpctile!(A, p::Number; dims=:) = _nanquantile!(A, 0.01*p, dims)
+nanpctile!(A, p::Number; dims=:, dim=:) = __nanpctile!(A, p, dims, dim)
+__nanpctile!(A, p, ::Colon, ::Colon) = _nanquantile!(A, p/100, :)
+__nanpctile!(A, p, region, ::Colon) = _nanquantile!(A, p/100, region)
+__nanpctile!(A, p, ::Colon, region) = _reducedims(_nanquantile!(A, p/100, region), region)
 export nanpctile!
 
 
@@ -58,7 +82,7 @@ nanquantile!(A, q; dims)
 Compute the `q`th quantile (where `q ∈ [0,1]`) of all elements in `A`,
 optionally over dimensions specified by `dims`.
 
-Similar to `StatsBase.quantile!`, but slightly vectorized, and supporting the `dims` keyword.
+Similar to `StatsBase.quantile!`, but ignoring `NaN`s, and supporting the `dims` keyword.
 
 Be aware that, like `StatsBase.quantile!`, this function modifies `A`, sorting or
 partially sorting the contents thereof (specifically, along the dimensions specified
@@ -72,7 +96,7 @@ all contiguous.
 
 ## Examples
 ```julia
-julia> using VectorizedStatistics
+julia> using NaNStatistics
 
 julia> A = [1 2 3; 4 5 6; 7 8 9]
 3×3 Matrix{Int64}:

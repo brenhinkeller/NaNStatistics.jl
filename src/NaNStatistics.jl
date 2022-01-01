@@ -19,6 +19,7 @@ module NaNStatistics
     include("ArrayStats/nancov.jl")
     include("Sorting/quicksort.jl")
     include("Sorting/nanmedian.jl")
+    include("Sorting/nanpctile.jl")
     include("Histograms.jl")
     include("Binning.jl")
 

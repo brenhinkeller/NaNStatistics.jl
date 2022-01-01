@@ -130,7 +130,7 @@
     @test nanaad(A, dims=2) ≈ fill(200/3,100,1)
     @test nanmedian(A, dims=1) == median(A, dims=1)
     @test nanmedian(A, dims=2) == median(A, dims=2)
-    @test nanpctile(A, 10, dims=1) == [10.9  110.9  210.9]
+    @test nanpctile(A, 10, dims=1) ≈ [10.9  110.9  210.9]
     @test nanpctile(A, 10, dims=2) ≈ 21:120
 
 
@@ -170,7 +170,7 @@
     @test nanstd(A, ones(size(A)), dims=2) ≈ fill(100, 100, 1) # weighted
     @test nanmedian(A, dims=1) == [50.5 150.5 250.5]
     @test dropdims(nanmedian(A, dims=2), dims=2) == 101:200
-    @test nanpctile(A, 10, dims=1) == [10.9 110.9 210.9]
+    @test nanpctile(A, 10, dims=1) ≈ [10.9 110.9 210.9]
     @test nanpctile(A, 10, dims=2) ≈ 21:120
     @test nanmad(A, dims=1) == [25.0 25.0 25.0]
     @test nanmad(A, dims=2) == fill(100.0, 100, 1)
@@ -213,7 +213,7 @@
     @test nanstd(A, ones(size(A)), dim=2) ≈ fill(100, 100) # weighted
     @test nanmedian(A, dim=1) == [50.5, 150.5, 250.5]
     @test nanmedian(A, dim=2) == 101:200
-    @test nanpctile(A, 10, dim=1) == [10.9, 110.9, 210.9]
+    @test nanpctile(A, 10, dim=1) ≈ [10.9, 110.9, 210.9]
     @test nanpctile(A, 10, dim=2) ≈ 21:120
     @test nanmad(A, dim=1) == [25.0, 25.0, 25.0]
     @test nanmad(A, dim=2) == fill(100.0, 100)

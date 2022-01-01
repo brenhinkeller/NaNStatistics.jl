@@ -45,7 +45,7 @@ convention in some other languages).
 
 ## Examples
 ```julia
-julia> using VectorizedStatistics
+julia> using NaNStatistics
 
 julia> A = [1 2 3; 4 5 6; 7 8 9]
 3×3 Matrix{Int64}:
