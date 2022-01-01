@@ -16,18 +16,23 @@ Summary statistics exported by NaNStatistics are generally named the same as the
 * `nanextrema`
 
 ##### Measures of central tendency
-* `nanmean`
-* `nanmedian`
+* `nanmean` &emsp; arithmetic mean, ignoring `NaN`s
+* `nanmedian` &emsp; median, ignoring `NaN`s
+* `nanmedian!` &emsp; as `nanmedian` but quicksorts in-place for efficiency
 
 ##### Measures of dispersion
 * `nanvar` &emsp; variance
 * `nanstd` &emsp; standard deviation
-* `nanmad` &emsp; median absolute deviation from the median
-* `nanaad` &emsp; mean (average) absolute deviation from the mean
 * `nancov` &emsp; covariance
 * `nancor` &emsp; Pearson's product-moment correlation
+* `nanaad` &emsp; mean (average) absolute deviation from the mean
+* `nanmad` &emsp; median absolute deviation from the median
+* `nanmad!` &emsp; as `nanmad` but quicksorts in-place for efficiency
 * `nanrange` &emsp; range between nanmaximum and nanminimum
 * `nanpctile` &emsp; percentile
+* `nanpctile!` &emsp; as `nanpctile` but quicksorts in-place for efficiency
+
+Note that, regardless of implementation, functions involving medians or percentiles are generally significantly slower than other summary statistics, since calculating a median or percentile requires a quicksort or quickselect of the input array; if not done in-place as in `nanmedian!` and `nanpctile!` then a copy of the entire array must also be made.
 
 These functions will generally support the same `dims` keyword argument as their normal Julia counterparts (though are most efficient when operating on an entire collection).
 As an alternative to `dims`, the `dim` keyword is also supported, which behaves identially to `dims` except that it also (as is the norm in some other languages) drops any singleton dimensions that have been reduced over.
