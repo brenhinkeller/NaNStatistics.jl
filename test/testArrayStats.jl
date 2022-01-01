@@ -222,6 +222,7 @@
 
 ## --- Test fallbacks for complex reductions
     A = randn((2 .+ (1:6))...);
+    @test nansum(A, dims=(4,5,6)) ≈ sum(A, dims=(4,5,6))
     @test nanmean(A, dims=(4,5,6)) ≈ mean(A, dims=(4,5,6))
     @test nanstd(A, dims=(4,5,6)) ≈ std(A, dims=(4,5,6))
     @test nanstd(A, dims=(4,5,6)) ≈ nanstd(A, dims=(4,5,6), mean=nanmean(A, dims=(4,5,6)))
