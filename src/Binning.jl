@@ -247,20 +247,22 @@
         nbins = length(xedges) - 1
         t = Array{Bool}(undef, length(x))
         @inbounds for i = 1:nbins
-            t .= (xedges[i] .<= x .< xedges[i+1]) .& (y.==y)
-            M[i] = any(t) ? median(y[t]) : eltype(M)(NaN)
+            t .= (xedges[i] .<= x .< xedges[i+1])
+            M[i] = _nanmedian!(y[t],:)
         end
         return M
     end
     function nanbinmedian!(M::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, xedges::AbstractRange)
         nbins = length(xedges) - 1
         t = Array{Bool}(undef, length(x))
-        tj = Array{Bool}(undef, length(x))
         @inbounds for i = 1:nbins
             t .= xedges[i] .<= x .< xedges[i+1]
-            for j = 1:size(y,2)
-                tj .= t .& .!isnan.(y[:,j])
-                M[i,j] = any(tj) ? median(y[tj,j]) : eltype(M)(NaN)
+            if any(t)
+                for j = 1:size(y,2)
+                    M[i,j] = _nanmedian!(y[t,j],:)
+                end
+            else
+                M[i,:] .= float(eltype(y))(NaN)
             end
         end
         return M
@@ -270,8 +272,9 @@
         t = Array{Bool}(undef, length(x))
         @inbounds for i = 1:nbins
             t .= (xedges[i] .<= x .< xedges[i+1]) .& (y.==y)
-            M[i] = any(t) ? median(y[t]) : eltype(M)(NaN)
-            N[i] = count(t)
+            yₜ = y[t]
+            M[i] = _nanmedian!(yₜ,:)
+            N[i] = countnans(yₜ)
         end
         return M
     end
@@ -281,10 +284,15 @@
         tj = Array{Bool}(undef, length(x))
         @inbounds for i = 1:nbins
             t .= xedges[i] .<= x .< xedges[i+1]
-            for j = 1:size(y,2)
-                tj .= t .& .!isnan.(y[:,j])
-                M[i,j] = any(tj) ? median(y[tj,j]) : eltype(M)(NaN)
-                N[i,j] = count(tj)
+            if any(t)
+                for j = 1:size(y,2)
+                    yₜ = y[t,j]
+                    M[i,j] = _nanmedian!(yₜ,:)
+                    N[i,j] = countnans(yₜ)
+                end
+            else
+                M[i,j] = float(eltype(y))(NaN)
+                N[i,j] = 0
             end
         end
         return M

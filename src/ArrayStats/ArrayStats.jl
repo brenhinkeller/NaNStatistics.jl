@@ -8,6 +8,13 @@
         end
     end
 
+    function countnans(A)
+        N = 0
+        @turbo for i ∈ eachindex(A)
+            N += A[i]!=A[i]
+        end
+        return N
+    end
 
     """
     ```julia
