@@ -375,6 +375,16 @@
 
     """
     ```julia
+    nanmad!(A; dims)
+    ```
+    As `nanmad` but in-place.
+    """
+    nanmad!(A; dims=:, dim=:) = __nanmad!(A, dims, dim)
+    export nanmad!
+
+
+    """
+    ```julia
     nanaad(A; dims)
     ```
     Mean (average) absolute deviation from the mean, ignoring NaNs, of an
