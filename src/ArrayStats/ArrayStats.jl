@@ -9,11 +9,11 @@
     end
 
     function countnans(A)
-        N = 0
+        n = 0
         @turbo for i ∈ eachindex(A)
-            N += A[i]!=A[i]
+            n += A[i]!=A[i]
         end
-        return N
+        return n
     end
 
     """

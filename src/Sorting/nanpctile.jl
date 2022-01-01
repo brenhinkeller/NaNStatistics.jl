@@ -147,13 +147,13 @@ function _nanquantile!(A, q::Real, ::Colon)
     iₗ, iᵤ = firstindex(A), lastindex(A)
     A, iₗ, iᵤ = sortnans!(A, iₗ, iᵤ)
 
-    N₋ = iᵤ - iₗ
-    N < 0 && return float(T)(NaN)
-    N < 1 && return float(T)(A[iₗ])
-    iₚ = q*N₋ + iₗ
+    n₋ = iᵤ - iₗ
+    n₋ < 0 && return float(T)(NaN)
+    n₋ < 1 && return float(T)(A[iₗ])
+    iₚ = q*n₋ + iₗ
     iₚ₋ = floor(Int, iₚ)
     iₚ₊ = ceil(Int, iₚ)
-    if N₋ < 384
+    if n₋ < 384
         quicksort!(A, iₗ, iᵤ)
     else
         quickselect!(A, iₗ, iᵤ, iₚ₋)

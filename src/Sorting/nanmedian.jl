@@ -99,12 +99,12 @@ function _nanmedian!(A::AbstractArray{T}, ::Colon) where T
     iₗ, iᵤ = firstindex(A), lastindex(A)
     A, iₗ, iᵤ = sortnans!(A, iₗ, iᵤ)
 
-    N = iᵤ - iₗ + 1
-    N < 1 && return float(T)(NaN)
-    N < 2 && return float(T)(A[iₗ])
+    n = iᵤ - iₗ + 1
+    n < 1 && return float(T)(NaN)
+    n < 2 && return float(T)(A[iₗ])
     i½ = (iₗ + iᵤ) ÷ 2
-    if iseven(N)
-        if N < 384
+    if iseven(n)
+        if n < 384
             quicksort!(A, iₗ, iᵤ)
         else
             quickselect!(A, iₗ, iᵤ, i½)
@@ -112,7 +112,7 @@ function _nanmedian!(A::AbstractArray{T}, ::Colon) where T
         end
         return (A[i½] + A[i½+1]) / 2
     else
-        if N < 192
+        if n < 192
             quicksort!(A, iₗ, iᵤ)
         else
             quickselect!(A, iₗ, iᵤ, i½)
