@@ -1,10 +1,10 @@
 ## --- ArrayStats.jl
 
-    # Filtering
+## --- Filtering
     A = 1:100
     @test A[inpctile(A,80)] == 11:90
 
-    # NaN handling functions, simple cases
+## --- NaN handling functions, simple cases
     A = [1:10; fill(NaN,10)]
     B = [fill(NaN,10); 11:20]
     @test A[nanmask(A)] == 1:10
@@ -12,7 +12,7 @@
     @test nanadd!(A,B) == 1:20
     @test zeronan!(B) == [fill(0,10); 11:20]
 
-    # Summary statistics: simple cases, Float64
+## --- Summary statistics: simple cases, Float64
     A = [1:10.0..., NaN]
     @test nansum(A) == 55.0
     @test nanmean(A) == 5.5
@@ -31,7 +31,7 @@
     @test nanmin(1.,2.) == 1.
     @test nanmax(1.,2.) == 2.
 
-    # Arrays containing only NaNs should yield NaN
+## --- Arrays containing only NaNs should yield NaN
     A = fill(NaN,10)
     @test nansum(A) == 0
     @test isnan(nanmean(A))
@@ -48,7 +48,7 @@
     @test isnan(nanmin(NaN,NaN))
     @test isnan(nanmax(NaN,NaN))
 
-    # Summary statistics: simple cases, Int64
+## --- Summary statistics: simple cases, Int64
     A = collect(1:10)
     @test nansum(A) == 55.0
     @test nanmean(A) == 5.5
@@ -68,7 +68,7 @@
     @test nanmin(1,2) == 1
     @test nanmax(1,2) == 2
 
-    # Summary statistics: simple cases, ranges
+## --- Summary statistics: simple cases, ranges
     A = 1:10
     @test nansum(A) == 55.0
     @test nanmean(A) == 5.5
@@ -104,8 +104,8 @@
     @test nanmedian(1:3.) == 2.0
     @test nanpctile(0:100.,99) == 99.0
 
-    # Summary statistics: dimensional tests, Int64
-    A = reshape(1:300,100,3)
+## --- Summary statistics: dimensional tests, Int64
+    A = collect(reshape(1:300,100,3))
     @test nansum(A, dims=1) == sum(A, dims=1)
     @test nansum(A, dims=2) == sum(A, dims=2)
     @test nanminimum(A, dims=1) == minimum(A, dims=1)
@@ -126,7 +126,7 @@
     @test nanstd(A, ones(size(A)), dims=2) ≈ std(A, dims=2) # weighted
     @test nanmad(A, dims=1) == [25.0 25.0 25.0]
     @test nanmad(A, dims=2) == fill(100.0,100,1)
-    @test nanaad(A, dims=1) == [25.0 25.0 25.0]
+    @test nanaad(A, dims=1) == [25.0 25.0 25.0] #
     @test nanaad(A, dims=2) ≈ fill(200/3,100,1)
     @test nanmedian(A, dims=1) == median(A, dims=1)
     @test nanmedian(A, dims=2) == median(A, dims=2)
@@ -134,8 +134,8 @@
     @test nanpctile(A, 10, dims=2) ≈ 21:120
 
 
-    # Summary statistics: dimensional tests, Float64
-    A = reshape(1:300.,100,3)
+## --- Summary statistics: dimensional tests, Float64
+    A = collect(reshape(1:300.,100,3))
     @test nansum(A, dims=1) == sum(A, dims=1)
     @test nansum(A, dims=2) == sum(A, dims=2)
     @test nanminimum(A, dims=1) == minimum(A, dims=1)
@@ -177,8 +177,8 @@
     @test nanaad(A, dims=1) == [25.0 25.0 25.0]
     @test nanaad(A, dims=2) ≈ fill(200/3, 100, 1)
 
-    # Summary statistics: dimensional tests, Float64
-    A = reshape(1:300.,100,3)
+## --- Summary statistics: dimensional tests, Float64
+    A = collect(reshape(1:300.,100,3))
     @test nansum(A, dim=1) == vec(sum(A, dims=1))
     @test nansum(A, dim=2) == vec(sum(A, dims=2))
     @test nanminimum(A, dim=1) == vec(minimum(A, dims=1))
@@ -220,30 +220,35 @@
     @test nanaad(A, dim=1) == [25.0, 25.0, 25.0]
     @test nanaad(A, dim=2) ≈ fill(200/3, 100)
 
-    # Test fallbacks for complex reductions
+## --- Test fallbacks for complex reductions
     A = randn((2 .+ (1:6))...);
     @test nanmean(A, dims=(4,5,6)) ≈ mean(A, dims=(4,5,6))
     @test nanstd(A, dims=(4,5,6)) ≈ std(A, dims=(4,5,6))
     @test nanstd(A, dims=(4,5,6)) ≈ nanstd(A, dims=(4,5,6), mean=nanmean(A, dims=(4,5,6)))
 
-    # A few tests with other types
+## --- A few tests with other types
     for T in (Bool, Float16, Float32)
-        A = rand(T, 100)
-        @test nansum(A) ≈ sum(A)
-        @test nanmean(A) ≈ mean(A)
-        @test nanstd(A) ≈ std(A)
+        let A = rand(T, 100)
+            @test nansum(A) ≈ sum(A)
+            @test nanmean(A) ≈ mean(A)
+            @test nanstd(A) ≈ std(A)
+        end
     end
 
     for T in (UInt8, UInt16, UInt32, Int8, Int16, Int32)
-        A = collect(T, 1:100)
-        @test nansum(A) == 5050
-        @test nanmean(A) == 50.5
-        @test nanstd(A) ≈ 29.011491975882016
+        let A = collect(T, 1:100)
+            @test nansum(A) == 5050
+            @test nanmean(A) == 50.5
+            @test nanstd(A) ≈ 29.011491975882016
+        end
     end
 
-    # Standardization
+## --- Standardization
+
     @test nanstandardize!(collect(1:10.)) ≈ ((1:10) .- mean(1:10)) / std(1:10)
     @test nanstandardize(1:10.) ≈ ((1:10) .- mean(1:10)) / std(1:10)
+
+## --- Moving averages
 
     # Moving average: 1D
     @test movmean(collect(1:10.),5) == movmean(1:10,5)
