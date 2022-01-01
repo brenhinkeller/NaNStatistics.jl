@@ -227,6 +227,14 @@
     @test nanstd(A, dims=(4,5,6)) ≈ std(A, dims=(4,5,6))
     @test nanstd(A, dims=(4,5,6)) ≈ nanstd(A, dims=(4,5,6), mean=nanmean(A, dims=(4,5,6)))
 
+## --- Test in-place vs. out-of-place versions
+
+    A = rand(100)
+    @test nanpctile(A, 25) == nanpctile!(A, 25)
+    @test nanmedian(A) == nanmedian!(A)
+    @test nanmad(A) == nanmad!(A)
+
+
 ## --- A few tests with other types
     for T in (Bool, Float16, Float32)
         let A = rand(T, 100)
