@@ -234,7 +234,7 @@
 ## --- Test in-place vs. out-of-place versions
 
     A = rand(100)
-    @test nanpctile(A, 25) == nanpctile!(A, 25)
+    @test nanpctile(A, 25) == nanpctile!(A, 25) == nanquantile!(A, 0.25)
     @test nanmedian(A) == nanmedian!(A)
     @test nanmad(A) == nanmad!(A)
 
