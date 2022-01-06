@@ -11,6 +11,9 @@
     @test histcounts(1:100,0,100,10) == fill(10,10)
     @test histcounts(1:100.,0.,100.,10) == fill(10,10)
 
+    N, bin = histcounts(1:100,0:10:100)
+
+
     # Test results and warnings when N is too small to hold results
     w = "length(N) < nbins; any bins beyond length(N) will not be filled"
     @test (@test_logs (:warn, w) histcounts!(zeros(5), 1:100 ,0:10:100)) == fill(10,5)
