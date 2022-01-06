@@ -11,8 +11,9 @@
     @test histcounts(1:100,0,100,10) == fill(10,10)
     @test histcounts(1:100.,0.,100.,10) == fill(10,10)
 
-    N, bin = histcounts(1:100,0:10:100)
-
+    N, bin = histcountindices(1:100,0:10:100)
+    @test N == fill(10,10)
+    @test bin == vec(repeat((1:10)', 10, 1))
 
     # Test results and warnings when N is too small to hold results
     w = "length(N) < nbins; any bins beyond length(N) will not be filled"
