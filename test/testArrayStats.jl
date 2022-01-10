@@ -3,8 +3,8 @@
 ## --- Filtering
     A = 1:100
     @test A[inpctile(A,80)] == 11:90
-    @test nanmask(A) = trues(100)
-    @test nanmask([1//1, 1//2, 1//3]) = trues(3)
+    @test nanmask(A) == trues(100)
+    @test nanmask([1//1, 1//2, 1//3]) == trues(3)
 
 ## --- NaN handling functions, simple cases
     A = [1:10; fill(NaN,10)]
