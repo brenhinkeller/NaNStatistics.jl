@@ -3,6 +3,8 @@
 ## --- Filtering
     A = 1:100
     @test A[inpctile(A,80)] == 11:90
+    @test nanmask(A) = trues(100)
+    @test nanmask([1//1, 1//2, 1//3]) = trues(3)
 
 ## --- NaN handling functions, simple cases
     A = [1:10; fill(NaN,10)]
@@ -264,6 +266,8 @@
     @test nansum((1,2,3,4,5)) === 15
     @test nanmean((1,2,3,4,5)) === 3.0
     @test nanstd((1,2,3)) === 1.0
+    @test nanstd((1,2,3), mean=2.0) === 1.0
+
 
 ## --- Standardization
 

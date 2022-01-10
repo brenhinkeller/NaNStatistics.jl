@@ -50,7 +50,7 @@ function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
 end
 
 # Reduce all the dims!
-function _nansum(A, ::Colon)
+function _nansum(A::AbstractArray, ::Colon)
     Tₒ = Base.promote_op(+, eltype(A), Int)
     Σ = ∅ = zero(Tₒ)
     @turbo for i ∈ eachindex(A)
