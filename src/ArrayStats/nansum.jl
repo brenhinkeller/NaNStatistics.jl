@@ -68,6 +68,17 @@ function _nansum(A::AbstractArray{<:Integer}, ::Colon)
     end
     return Σ
 end
+# Fallback method for non-arrays
+function _nansum(A, ::Colon)
+    Tₒ = Base.promote_op(+, eltype(A), Int)
+    Σ = ∅ = zero(Tₒ)
+    @inbounds for i ∈ eachindex(A)
+        Aᵢ = A[i]
+        notnan = Aᵢ==Aᵢ
+        Σ += ifelse(notnan, A[i], ∅)
+    end
+    return Σ
+end
 
 
 # Metaprogramming magic adapted from Chris Elrod example:

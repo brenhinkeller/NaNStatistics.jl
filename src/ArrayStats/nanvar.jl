@@ -44,8 +44,8 @@ _nanvar(μ, corrected::Bool, A, dims::Int) = _nanvar(μ, corrected, A, (dims,))
 
 # If the mean isn't known, compute it
 _nanvar(::Nothing, corrected::Bool, A, dims::Tuple) = _nanvar!(_nanmean(A, dims), corrected, A, dims)
-function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
-    # Reduce all the dims!
+# Reduce all the dims!
+function _nanvar(::Nothing, corrected::Bool, A::AbstractArray, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
     Σ = ∅ = zero(Tₒ)
@@ -65,7 +65,6 @@ function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
     return σ² / max(n-corrected,0)
 end
 function _nanvar(::Nothing, corrected::Bool, A::AbstractArray{<:Integer}, ::Colon)
-    # Reduce all the dims!
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = length(A)
     Σ = zero(Tₒ)
@@ -80,13 +79,34 @@ function _nanvar(::Nothing, corrected::Bool, A::AbstractArray{<:Integer}, ::Colo
     end
     return σ² / max(n-corrected,0)
 end
+# Fallback method for non-arrays
+function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
+    Tₒ = Base.promote_op(/, eltype(A), Int)
+    n = 0
+    Σ = ∅ = zero(Tₒ)
+    @inbounds for i ∈ eachindex(A)
+        Aᵢ = A[i]
+        notnan = Aᵢ==Aᵢ
+        n += notnan
+        Σ += ifelse(notnan, Aᵢ, ∅)
+    end
+    μ = Σ / n
+    σ² = ∅ = zero(typeof(μ))
+    @inbounds for i ∈ eachindex(A)
+        δ = A[i] - μ
+        notnan = δ==δ
+        σ² += ifelse(notnan, δ * δ, ∅)
+    end
+    return σ² / max(n-corrected,0)
+end
+
 
 # If the mean is known, pass it on in the appropriate form
 _nanvar(μ, corrected::Bool, A, dims::Tuple) = _nanvar!(collect(μ), corrected, A, dims)
 _nanvar(μ::Array, corrected::Bool, A, dims::Tuple) = _nanvar!(copy(μ), corrected, A, dims)
 _nanvar(μ::Number, corrected::Bool, A, dims::Tuple) = _nanvar!([μ], corrected, A, dims)
-function _nanvar(μ::Number, corrected::Bool, A, ::Colon)
-    # Reduce all the dims!
+# Reduce all the dims!
+function _nanvar(μ::Number, corrected::Bool, A::AbstractArray, ::Colon)
     n = 0
     σ² = ∅ = zero(typeof(μ))
     @turbo for i ∈ eachindex(A)
@@ -98,7 +118,6 @@ function _nanvar(μ::Number, corrected::Bool, A, ::Colon)
     return σ² / max(n-corrected, 0)
 end
 function _nanvar(μ::Number, corrected::Bool, A::AbstractArray{<:Integer}, ::Colon)
-    # Reduce all the dims!
     σ² = zero(typeof(μ))
     if μ==μ
         @turbo for i ∈ eachindex(A)
@@ -108,6 +127,18 @@ function _nanvar(μ::Number, corrected::Bool, A::AbstractArray{<:Integer}, ::Col
         n = length(A)
     else
         n = 0
+    end
+    return σ² / max(n-corrected, 0)
+end
+# Fallback method for non-arrays
+function _nanvar(μ::Number, corrected::Bool, A, ::Colon)
+    n = 0
+    σ² = ∅ = zero(typeof(μ))
+    @inbounds for i ∈ eachindex(A)
+        δ = A[i] - μ
+        notnan = δ==δ
+        n += notnan
+        σ² += ifelse(notnan, δ * δ, ∅)
     end
     return σ² / max(n-corrected, 0)
 end

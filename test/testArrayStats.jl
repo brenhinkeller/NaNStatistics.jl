@@ -256,6 +256,15 @@
         end
     end
 
+## --- Test stats on nontraditional types
+
+    @test nanminimum((1,2,3,4,5)) === 1
+    @test nanmaximum((1,2,3,4,5)) === 5
+    @test nanrange((1,2,3,4,5)) === 4
+    @test nansum((1,2,3,4,5)) === 15
+    @test nanmean((1,2,3,4,5)) === 3.0
+    @test nanstd((1,2,3)) === 1.0
+
 ## --- Standardization
 
     @test nanstandardize!(collect(1:10.)) ≈ ((1:10) .- mean(1:10)) / std(1:10)
