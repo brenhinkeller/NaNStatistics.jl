@@ -19,6 +19,7 @@
     w = "length(N) < nbins; any bins beyond length(N) will not be filled"
     @test (@test_logs (:warn, w) histcounts!(zeros(5), 1:100 ,0:10:100)) == fill(10,5)
     @test (@test_logs (:warn, w) histcounts!(zeros(5), 1:100. ,0:10:100)) == fill(10,5)
+    @test (@test_logs (:warn, w) NaNStatistics.histcountindices!(zeros(5), zeros(100), 1:100. ,0:10:100))[1] == fill(10,5)
 
 ## --- 2D histograms
 
