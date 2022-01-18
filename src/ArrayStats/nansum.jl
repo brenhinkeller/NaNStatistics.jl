@@ -56,7 +56,7 @@ function _nansum(A::AbstractArray, ::Colon)
     @turbo for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ
-        Σ += ifelse(notnan, A[i], ∅)
+        Σ += ifelse(notnan, Aᵢ, ∅)
     end
     return Σ
 end
@@ -75,7 +75,7 @@ function _nansum(A, ::Colon)
     @inbounds for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ
-        Σ += ifelse(notnan, A[i], ∅)
+        Σ += ifelse(notnan, Aᵢ, ∅)
     end
     return Σ
 end
