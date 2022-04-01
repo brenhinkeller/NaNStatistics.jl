@@ -1,15 +1,15 @@
 """
 ```julia
-nanpctile(A, p; dims
+nanpctile(A, p; dims)
 ```
-Find the `p`th percentile of an indexable collection `A`, ignoring NaNs,
-optionally along a dimension specified by `dims`.
-
-A valid percentile value must satisfy 0 <= `p` <= 100.
+Find the `p`th percentile (where `0 <= p <= 100`) of an indexable collection `A`,
+ignoring NaNs, optionally along a dimension specified by `dims`.
 
 Also supports the `dim` keyword, which behaves identically to `dims`, but
 also drops any singleton dimensions that have been reduced over (as is the
 convention in some other languages).
+
+See also `nanpctile!` for a more efficient in-place variant.
 """
 nanpctile(A, p::Number; dims=:, dim=:) = __nanpctile(A, p, dims, dim)
 function __nanpctile(A::AbstractArray{T,N}, p::Number, dims, dim) where {T,N}
@@ -24,7 +24,7 @@ export nanpctile
 nanpctile!(A, p; dims)
 ```
 Compute the `p`th percentile (where `p ∈ [0,100]`) of all elements in `A`,
-optionally over dimensions specified by `dims`.
+ignoring `NaN`s, optionally over dimensions specified by `dims`.
 
 As `StatsBase.percentile`, but in-place, ignoring `NaN`s, and supporting the `dims` keyword.
 
@@ -75,12 +75,33 @@ __nanpctile!(A, p, ::Colon, region) = _reducedims(_nanquantile!(A, p/100, region
 export nanpctile!
 
 
+
+"""
+```julia
+nanquantile(A, q; dims)
+```
+Compute the `q`th quantile (where `q ∈ [0,1]`) of all elements in `A`,
+ignoring `NaN`s, optionally over dimensions specified by `dims`.
+
+Reduction over multiple `dims` is not officially supported, though does work
+(in generally suboptimal time) as long as the dimensions being reduced over are
+all contiguous.
+
+See also `nanquantile!` for a more efficient in-place variant.
+"""
+function nanquantile(A::AbstractArray{T,N}, q::Number; dims=:) where {T,N}
+    Aₜ = copyto!(Array{T,N}(undef, size(A)), A)
+    _nanquantile!(Aₜ, q, dims)
+end
+export nanquantile
+
+
 """
 ```julia
 nanquantile!(A, q; dims)
 ```
 Compute the `q`th quantile (where `q ∈ [0,1]`) of all elements in `A`,
-optionally over dimensions specified by `dims`.
+ignoring `NaN`s, optionally over dimensions specified by `dims`.
 
 Similar to `StatsBase.quantile!`, but ignoring `NaN`s, and supporting the `dims` keyword.
 
