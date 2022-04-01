@@ -137,5 +137,40 @@
     @test nanpctile!(copy(A), 50, dims=(1,2)) == median(A, dims=(1,2))
     @test nanpctile!(copy(A), 50, dims=(2,3)) == median(A, dims=(2,3))
 
+## ---
+
+    @test nanquantile(0:10, 0) == 0
+    @test nanquantile(0:10, 1/100) ≈ 0.1
+    @test nanquantile(0:10, 1.) == 10
+    @test nanquantile(0:10, 0.13582) ≈ 1.3582
+    @test nanquantile(collect(1:10), 0.5) == 5.5
+
+    A = rand(100)
+    @test nanquantile(A, 0.5) == median(A)
+    A[rand(1:100, 20)] .= NaN; B = A[.!isnan.(A)];
+    @test nanquantile(A, 0.5) == median(B)
+    A = rand(10_000)
+    @test nanquantile(A, 0.5) == median(A)
+    A[rand(1:10_000, 100)] .= NaN; B = A[.!isnan.(A)];
+    @test nanquantile(A, 0.5) == median(B)
+    A = rand(100_000)
+    @test nanquantile(A, 0.5) == median(A)
+    A[rand(1:100_000, 100)] .= NaN; B = A[.!isnan.(A)];
+    @test nanquantile(A, 0.5) == median(B)
+
+    A = rand(55,82)
+    @test nanquantile(A, 0.5) == median(A)
+    @test nanquantile(A, 0.5, dims=1) == median(A, dims=1)
+    @test nanquantile(A, 0.5, dims=2) == median(A, dims=2)
+
+    A = rand(10,11,12)
+    @test nanquantile(A, 0.5) == median(A)
+    @test nanquantile(A, 0.5, dims=1) == median(A, dims=1)
+    @test nanquantile(A, 0.5, dims=2) == median(A, dims=2)
+    @test nanquantile(A, 0.5, dims=3) == median(A, dims=3)
+    @test nanquantile(A, 0.5, dims=(1,2)) == median(A, dims=(1,2))
+    @test nanquantile(A, 0.5, dims=(2,3)) == median(A, dims=(2,3))
+
+
 
 ## ---
