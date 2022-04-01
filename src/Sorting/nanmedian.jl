@@ -95,7 +95,7 @@ end
 
 # Reduce all the dims!
 _nanmedian!(A, ::Tuple{Colon}) = _nanmedian!(A, :)
-function _nanmedian!(A::AbstractArray{T}, ::Colon) where T
+function _nanmedian!(A::AbstractArray{T}, ::Colon) where {T}
     iₗ, iᵤ = firstindex(A), lastindex(A)
     A, iₗ, iᵤ = sortnans!(A, iₗ, iᵤ)
 

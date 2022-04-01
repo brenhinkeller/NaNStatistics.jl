@@ -76,6 +76,7 @@
 
     @test nanmedian!(0:10) == 5
     @test nanmedian!(1:10) == 5.5
+    @test nanmedian!(fill(NaN, 10)) === NaN
 
     A = rand(100)
     @test nanmedian!(copy(A)) == median(A)
@@ -110,6 +111,7 @@
     @test nanpctile!(0:10, 100) == 10
     @test nanpctile!(0:10, 13.582) ≈ 1.3582
     @test nanpctile!(collect(1:10), 50) == 5.5
+    @test nanpctile!(fill(NaN, 10), 50) === NaN
 
     A = rand(100)
     @test nanpctile!(copy(A), 50) == median(A)
@@ -144,6 +146,7 @@
     @test nanquantile(0:10, 1.) == 10
     @test nanquantile(0:10, 0.13582) ≈ 1.3582
     @test nanquantile(collect(1:10), 0.5) == 5.5
+    @test nanquantile(fill(NaN,10), 0.5) === NaN
 
     A = rand(100)
     @test nanquantile(A, 0.5) == median(A)

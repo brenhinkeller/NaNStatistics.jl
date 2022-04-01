@@ -164,7 +164,7 @@ end
 
 # Reduce all the dims!
 _nanquantile!(A, q::Real, ::Tuple{Colon}) = _nanquantile!(A, q, :)
-function _nanquantile!(A, q::Real, ::Colon)
+function _nanquantile!(A::AbstractArray{T}, q::Real, ::Colon) where {T}
     iₗ, iᵤ = firstindex(A), lastindex(A)
     A, iₗ, iᵤ = sortnans!(A, iₗ, iᵤ)
 
