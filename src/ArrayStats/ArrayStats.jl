@@ -89,9 +89,7 @@
     ```
     As `max(a,b)`, but if either argument is `NaN`, return the other one
     """
-    nanmax(a, b) = ifelse(a > b, a, b)
-    nanmax(a, b::AbstractFloat) = ifelse(a==a, ifelse(b > a, b, a), b)
-    nanmax(a, b::Vec{N,<:AbstractFloat}) where N = ifelse(a==a, ifelse(b > a, b, a), b)
+    nanmax(a, b) = ifelse(a==a, ifelse(b > a, b, a), b)
     export nanmax
 
     """
@@ -100,9 +98,7 @@
     ```
     As `min(a,b)`, but if either argument is `NaN`, return the other one
     """
-    nanmin(a, b) = ifelse(a < b, a, b)
-    nanmin(a, b::AbstractFloat) = ifelse(a==a, ifelse(b < a, b, a), b)
-    nanmin(a, b::Vec{N,<:AbstractFloat}) where N = ifelse(a==a, ifelse(b < a, b, a), b)
+    nanmin(a, b) = ifelse(a==a, ifelse(b < a, b, a), b)
     export nanmin
 
 ## --- Percentile statistics, excluding NaNs
