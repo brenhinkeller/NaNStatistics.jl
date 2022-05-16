@@ -55,7 +55,7 @@
     Fill a Boolean mask of dimensions `size(A)` that is false wherever `A` is `NaN`
     """
     function nanmask!(mask, A)
-        @turbo for i=1:length(A)
+        @turbo for i ∈ eachindex(A)
             mask[i] = A[i]==A[i]
         end
         return mask
