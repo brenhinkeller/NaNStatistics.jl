@@ -3,7 +3,6 @@ module NaNStatistics
     # AVX vectorziation tools
     using IfElse: ifelse
     using LoopVectorization
-    using VectorizationBase: Vec
 
     using Static
     _dim(::Type{StaticInt{N}}) where {N} = N::Int

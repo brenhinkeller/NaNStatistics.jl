@@ -16,6 +16,13 @@
     @test nanadd!(A,B) == 1:20
     @test zeronan!(B) == [fill(0,10); 11:20]
 
+    # Test arrays that are mostly NaN
+    x = [1.:100;]
+    x[34:end] .= NaN
+    @test nanminimum(x) == 1
+    @test nanmaximum(x) == 33
+
+
 ## --- Summary statistics: simple cases, Float64
     A = [1:10.0..., NaN]
     @test nansum(A) == 55.0
