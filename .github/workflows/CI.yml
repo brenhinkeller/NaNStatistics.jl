@@ -1,7 +1,15 @@
 name: CI
 on:
-  - push
-  - pull_request
+  push:
+    branches:
+      - '**'
+    paths-ignore:
+      - 'README.md'
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
 jobs:
   test:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
@@ -11,9 +19,11 @@ jobs:
       matrix:
         version:
           - 'nightly'
+          - '~1.8.0-0'
           - '1.6'
         os:
           - ubuntu-latest
+          - macos-latest
         arch:
           - x64
           - x86
