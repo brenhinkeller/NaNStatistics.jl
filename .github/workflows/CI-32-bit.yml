@@ -1,4 +1,4 @@
-name: CI
+name: CI (32-bit)
 on:
   push:
     branches:
@@ -11,21 +11,18 @@ on:
     paths-ignore:
       - 'README.md'
 jobs:
-  test:
+  test-x86:
     name: Julia ${{ matrix.version }} - ${{ matrix.os }} - ${{ matrix.arch }} - ${{ github.event_name }}
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         version:
-          - 'nightly'
-          - '~1.8.0-0'
-          - '1.6'
+          - '1'
         os:
           - ubuntu-latest
-          - macos-latest
         arch:
-          - x64
+          - x86
     steps:
       - uses: actions/checkout@v2
       - uses: julia-actions/setup-julia@v1
