@@ -286,7 +286,7 @@ function branches_quantile_quote(N::Int, M::Int, D)
 end
 
 # Efficient @generated in-place quantile
-@generated function _nanquantile!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, q::Real, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{Integer,M}}}
+@generated function _nanquantile!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, q::Real, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
   branches_quantile_quote(N, M, D)
 end
 @generated function _nanquantile!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, q::Real, dims::Tuple{}) where {Tₒ,T,N}

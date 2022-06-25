@@ -187,7 +187,7 @@ function branches_nanmean_quote(N::Int, M::Int, D)
 end
 
 # Efficient @generated in-place mean
-@generated function _nanmean!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{Integer,M}}}
+@generated function _nanmean!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
   N == M && return :(B[1] = _nanmean(A, :); B)
   branches_nanmean_quote(N, M, D)
 end
