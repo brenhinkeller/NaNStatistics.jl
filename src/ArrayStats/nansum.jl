@@ -181,7 +181,7 @@ function branches_nansum_quote(N::Int, M::Int, D)
 end
 
 # Efficient @generated in-place sum
-@generated function _nansum!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{Integer,M}}}
+@generated function _nansum!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
   N == M && return :(B[1] = _nansum(A, :); B)
   branches_nansum_quote(N, M, D)
 end

@@ -265,7 +265,7 @@ function branches_nanvar_quote(N::Int, M::Int, D)
 end
 
 # Efficient @generated in-place var
-@generated function _nanvar!(B::AbstractArray{Tₒ,N}, corrected::Bool, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{Integer,M}}}
+@generated function _nanvar!(B::AbstractArray{Tₒ,N}, corrected::Bool, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
   N == M && return :(B[1] = _nanvar(B[1], corrected, A, :); B)
   # total_combinations = binomial(N,M)
   # if total_combinations > 6

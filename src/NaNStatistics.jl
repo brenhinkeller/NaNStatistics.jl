@@ -6,6 +6,7 @@ module NaNStatistics
 
     using Static
     _dim(::Type{StaticInt{N}}) where {N} = N::Int
+    const IntOrStaticInt = Union{Integer, StaticInt}
 
     include("ArrayStats/ArrayStats.jl")
     include("ArrayStats/nanmean.jl")
