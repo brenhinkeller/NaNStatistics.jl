@@ -26,6 +26,7 @@
 ## --- Summary statistics: simple cases, Float64
     A = [1:10.0..., NaN]
     @test nansum(A) == 55.0
+    @test nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0, 55.0]
     @test nanmean(A) == 5.5
     @test nanmean(A, ones(11)) == 5.5 # weighted
     @test nanrange(A) == 9.0
@@ -42,9 +43,10 @@
     @test nanmin(1.,2.) == 1.
     @test nanmax(1.,2.) == 2.
 
-## --- Arrays containing only NaNs should yield NaN
+## --- Arrays containing only NaNs should yield NaN (or 0 for sums)
     A = fill(NaN,10)
     @test nansum(A) == 0
+    @test nancumsum(A) == zeros(10)
     @test isnan(nanmean(A))
     @test isnan(nanmean(A, ones(10))) # weighted
     @test isnan(nanrange(A))
@@ -62,6 +64,7 @@
 ## --- Summary statistics: simple cases, Int64
     A = collect(1:10)
     @test nansum(A) == 55.0
+    @test nancumsum(A) == [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
     @test nanmean(A) == 5.5
     @test nanmean(A, ones(10)) == 5.5 # weighted
     @test nanrange(A) == 9.0
@@ -82,6 +85,7 @@
 ## --- Summary statistics: simple cases, ranges
     A = 1:10
     @test nansum(A) == 55.0
+    @test nancumsum(A) == [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
     @test nanmean(A) == 5.5
     @test nanmean(A, ones(10)) == 5.5 # weighted
     @test nanrange(A) == 9.0
@@ -97,9 +101,9 @@
     @test nanmedian(1:3) == 2.0
     @test nanpctile(0:100,99) == 99.0
 
-
     A = 1:10.
     @test nansum(A) == 55.0
+    @test nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0]
     @test nanmean(A) == 5.5
     @test nanmean(A, ones(10)) == 5.5 # weighted
     @test nanrange(A) == 9.0
@@ -119,6 +123,8 @@
     A = collect(reshape(1:300,100,3))
     @test nansum(A, dims=1) == sum(A, dims=1)
     @test nansum(A, dims=2) == sum(A, dims=2)
+    @test nancumsum(A, dims=1) == cumsum(A, dims=1)
+    @test nancumsum(A, dims=2) == cumsum(A, dims=2)
     @test nanminimum(A, dims=1) == minimum(A, dims=1)
     @test nanminimum(A, dims=2) == minimum(A, dims=2)
     @test nanmaximum(A, dims=1) == maximum(A, dims=1)
@@ -150,6 +156,8 @@
     A = collect(reshape(1:300.,100,3))
     @test nansum(A, dims=1) == sum(A, dims=1)
     @test nansum(A, dims=2) == sum(A, dims=2)
+    @test nancumsum(A, dims=1) == cumsum(A, dims=1)
+    @test nancumsum(A, dims=2) == cumsum(A, dims=2)
     @test nanminimum(A, dims=1) == minimum(A, dims=1)
     @test nanminimum(A, dims=2) == minimum(A, dims=2)
     @test nanmaximum(A, dims=1) == maximum(A, dims=1)
