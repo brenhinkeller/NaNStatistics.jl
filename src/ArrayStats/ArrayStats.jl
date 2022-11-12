@@ -470,8 +470,8 @@
         m = Array{mean_type}(undef, size(x))
         δ = ceil(Int, (n-1)/2)
         @inbounds for i ∈ eachindex(x)
-            iₗ = max(i-δ, 1)
-            iᵤ = min(i+δ, length(x))
+            iₗ = max(i-δ, firstindex(x))
+            iᵤ = min(i+δ, lastindex(x))
             m[i] = nanmean(view(x, iₗ:iᵤ))
         end
         return m
@@ -480,15 +480,15 @@
         mean_type = Base.promote_op(/, eltype(x), Int64)
         m = Array{mean_type}(undef, size(x))
         δ = ceil(Int, (n-1)/2)
-        𝐼 = repeat(1:size(x,1), 1, size(x,2))
-        𝐽 = repeat((1:size(x,2))', size(x,1), 1)
-        @inbounds for k ∈ eachindex(x)
+        𝐼 = repeat((firstindex(x,1):lastindex(x,1)), 1, size(x,2))
+        𝐽 = repeat((firstindex(x,2):lastindex(x,2))', size(x,1), 1)
+        @inbounds for k ∈ eachindex(𝐼,𝐽)
             i = 𝐼[k]
-            iₗ = max(i-δ, 1)
-            iᵤ = min(i+δ, size(x,1))
+            iₗ = max(i-δ, firstindex(x,1))
+            iᵤ = min(i+δ, lastindex(x,1))
             j = 𝐽[k]
-            jₗ = max(j-δ, 1)
-            jᵤ = min(j+δ, size(x,2))
+            jₗ = max(j-δ, firstindex(x,2))
+            jᵤ = min(j+δ, lastindex(x,2))
             m[i,j] = nanmean(view(x, iₗ:iᵤ, jₗ:jᵤ))
         end
         return m
