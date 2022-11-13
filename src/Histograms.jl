@@ -115,7 +115,9 @@ Note that counts will be added to `N`, not overwrite `N`, allowing you to produc
 cumulative histograms. However, this means you will have to initialize `N` with
 zeros before first use.
 """
-function histcounts!(N::Array, x::AbstractArray, xedges::AbstractRange)
+function histcounts!(N::AbstractArray, x::AbstractArray, xedges::AbstractRange)
+    @assert firstindex(N) === 1
+
     # What is the size of each bin?
     nbins = length(xedges) - 1
     xmin, xmax = extrema(xedges)
@@ -148,7 +150,10 @@ histcountindices!(N, bin, x, xedges::AbstractRange)
 Simple 1D histogram; as `histcounts!`, but also recording the bin index of each
 `x` value.
 """
-function histcountindices!(N::Array, bin::Array, x::AbstractArray, xedges::AbstractRange)
+function histcountindices!(N::AbstractArray, bin::AbstractArray, x::AbstractArray, xedges::AbstractRange)
+    @assert firstindex(N) === 1
+    @assert firstindex(bin) === 1
+
     # What is the size of each bin?
     nbins = length(xedges) - 1
     xmin, xmax = extrema(xedges)
@@ -187,6 +192,8 @@ cumulative histograms. However, this means you will have to initialize `N` with
 zeros before first use.
 """
 function histcounts!(N::AbstractMatrix, x::AbstractVector, y::AbstractVector, xedges::AbstractRange, yedges::AbstractRange)
+    @assert firstindex(N) === 1
+
     # Calculate bin index from x value
     nxbins = length(xedges)-1
     xmin, xmax = extrema(xedges)
