@@ -7,7 +7,7 @@
 
 Fast (often [LoopVectorization.jl](https://github.com/JuliaSIMD/LoopVectorization.jl)-based) summary statistics, histograms, and binning — all ignoring `NaN`s, as if `NaN` represented missing data.
 
-See also [JuliaSIMD/VectorizedStatistics.jl](https://github.com/JuliaSIMD/LoopVectorization.jl) for similar vectorized implementations that don't ignore` `NaN`s
+See also [JuliaSIMD/VectorizedStatistics.jl](https://github.com/JuliaSIMD/VectorizedStatistics.jl) for similar vectorized implementations that don't ignore `NaN`s.
 
 ### Summary statistics
 Summary statistics exported by NaNStatistics are generally named the same as their normal counterparts, but with "nan" in front of the name, similar to the Matlab and NumPy conventions. Options include:
