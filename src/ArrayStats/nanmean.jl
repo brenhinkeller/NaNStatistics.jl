@@ -31,7 +31,7 @@ julia> nanmean(A, dims=2)
 nanmean(A; dims=:, dim=:) = __nanmean(A, dims, dim)
 __nanmean(A, ::Colon, ::Colon) = _nanmean(A, :)
 __nanmean(A, region, ::Colon) = _nanmean(A, region)
-__nanmean(A, ::Colon, region) = _reducedims(_nanmean(A, region), region)
+__nanmean(A, ::Colon, region) = reducedims(_nanmean(A, region), region)
 export nanmean
 
 

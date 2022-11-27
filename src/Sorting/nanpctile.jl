@@ -71,7 +71,7 @@ julia> A = [1 2 3; 4 5 6; 7 8 9]
 nanpctile!(A, p::Number; dims=:, dim=:) = __nanpctile!(A, p, dims, dim)
 __nanpctile!(A, p, ::Colon, ::Colon) = _nanquantile!(A, p/100, :)
 __nanpctile!(A, p, region, ::Colon) = _nanquantile!(A, p/100, region)
-__nanpctile!(A, p, ::Colon, region) = _reducedims(_nanquantile!(A, p/100, region), region)
+__nanpctile!(A, p, ::Colon, region) = reducedims(_nanquantile!(A, p/100, region), region)
 export nanpctile!
 
 

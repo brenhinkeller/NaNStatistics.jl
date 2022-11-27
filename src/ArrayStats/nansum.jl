@@ -31,7 +31,7 @@ julia> nansum(A, dims=2)
 nansum(A; dims=:, dim=:) = __nansum(A, dims, dim)
 __nansum(A, ::Colon, ::Colon) = _nansum(A, :)
 __nansum(A, region, ::Colon) = _nansum(A, region)
-__nansum(A, ::Colon, region) = _reducedims(_nansum(A, region), region)
+__nansum(A, ::Colon, region) = reducedims(_nansum(A, region), region)
 export nansum
 
 

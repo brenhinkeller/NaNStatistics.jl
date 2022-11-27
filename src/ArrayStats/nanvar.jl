@@ -36,7 +36,7 @@ julia> nanvar(A, dims=2)
 nanvar(A; dims=:, dim=:, mean=nothing, corrected=true) = __nanvar(mean, corrected, A, dims, dim)
 __nanvar(mean, corrected, A, ::Colon, ::Colon) = _nanvar(mean, corrected, A, :)
 __nanvar(mean, corrected, A, region, ::Colon) = _nanvar(mean, corrected, A, region)
-__nanvar(mean, corrected, A, ::Colon, region) = _reducedims(_nanvar(mean, corrected, A, region), region)
+__nanvar(mean, corrected, A, ::Colon, region) = reducedims(_nanvar(mean, corrected, A, region), region)
 export nanvar
 
 # If dims is an integer, wrap it in a tuple

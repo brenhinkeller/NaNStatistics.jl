@@ -1,13 +1,9 @@
 ## --- Transformations of arrays with NaNs
 
-    function _reducedims(A, region)
-        if (ndims(A) > 1) && (size(A,region)==1)
-            return dropdims(A, dims=region)
-        else
-            return A
-        end
-    end
-
+    # Dropdims if there are dims to be dropped
+    reducedims(A, dims) = A
+    reducedims(A::AbstractVector, dims) = A
+    reducedims(A::AbstractArray, dims) = dropdims(A; dims)
 
     """
     ```julia
@@ -174,7 +170,7 @@
     nanminimum(A; dims=:, dim=:) = __nanminimum(A, dims, dim)
     __nanminimum(A, ::Colon, ::Colon) = _nanminimum(A, :)
     __nanminimum(A, region, ::Colon) = _nanminimum(A, region)
-    __nanminimum(A, ::Colon, region) = _reducedims(_nanminimum(A, region), region)
+    __nanminimum(A, ::Colon, region) = reducedims(_nanminimum(A, region), region)
     _nanminimum(A, region) = reduce(nanmin, A, dims=region, init=float(eltype(A))(NaN))
     _nanminimum(A, ::Colon) = reduce(nanmin, A, init=float(eltype(A))(NaN))
     _nanminimum(A::Array{<:Number}, ::Colon) = vreduce(nanmin, A)
@@ -195,7 +191,7 @@
     nanmaximum(A; dims=:, dim=:) = __nanmaximum(A, dims, dim)
     __nanmaximum(A, ::Colon, ::Colon) = _nanmaximum(A, :)
     __nanmaximum(A, region, ::Colon) = _nanmaximum(A, region)
-    __nanmaximum(A, ::Colon, region) = _reducedims(_nanmaximum(A, region), region)
+    __nanmaximum(A, ::Colon, region) = reducedims(_nanmaximum(A, region), region)
     _nanmaximum(A, region) = reduce(nanmax, A, dims=region, init=float(eltype(A))(NaN))
     _nanmaximum(A, ::Colon) = reduce(nanmax, A, init=float(eltype(A))(NaN))
     _nanmaximum(A::Array{<:Number}, ::Colon) = vreduce(nanmax, A)
@@ -249,7 +245,7 @@
     nanmean(A, W; dims=:, dim=:) = __nanmean(A, W, dims, dim)
     __nanmean(A, W, ::Colon, ::Colon) = _nanmean(A, W, :)
     __nanmean(A, W, region, ::Colon) = _nanmean(A, W, region)
-    __nanmean(A, W, ::Colon, region) = _reducedims(_nanmean(A, W, region), region)
+    __nanmean(A, W, ::Colon, region) = reducedims(_nanmean(A, W, region), region)
     function _nanmean(A, W, region)
         mask = nanmask(A)
         return sum(A.*W.*mask, dims=region) ./ sum(W.*mask, dims=region)
@@ -310,7 +306,7 @@
     nanstd(A, W; dims=:, dim=:) = __nanstd(A, W, dims, dim)
     __nanstd(A, W, ::Colon, ::Colon) = _nanstd(A, W, :)
     __nanstd(A, W, region, ::Colon) = _nanstd(A, W, region)
-    __nanstd(A, W, ::Colon, region) = _reducedims(_nanstd(A, W, region), region)
+    __nanstd(A, W, ::Colon, region) = reducedims(_nanstd(A, W, region), region)
     function _nanstd(A, W, region)
         mask = nanmask(A)
         n = sum(mask, dims=region)

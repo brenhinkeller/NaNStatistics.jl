@@ -5,8 +5,8 @@ module NaNStatistics
     using LoopVectorization
 
     using Static
-    _dim(::Type{StaticInt{N}}) where {N} = N::Int
     const IntOrStaticInt = Union{Integer, StaticInt}
+    _dim(::Type{StaticInt{N}}) where {N} = N::Int
 
     include("ArrayStats/ArrayStats.jl")
     include("ArrayStats/nanmean.jl")

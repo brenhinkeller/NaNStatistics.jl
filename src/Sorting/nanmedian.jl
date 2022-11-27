@@ -76,7 +76,7 @@ julia> A = [1 2 3; 4 5 6; 7 8 9]
 nanmedian!(A; dims=:, dim=:) = __nanmedian!(A, dims, dim)
 __nanmedian!(A, ::Colon, ::Colon) = _nanmedian!(A, :)
 __nanmedian!(A, region, ::Colon) = _nanmedian!(A, region)
-__nanmedian!(A, ::Colon, region) = _reducedims(_nanmedian!(A, region), region)
+__nanmedian!(A, ::Colon, region) = reducedims(_nanmedian!(A, region), region)
 export nanmedian!
 
 # Reduce one dim
