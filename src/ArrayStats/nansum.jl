@@ -41,7 +41,7 @@ _nansum(A, dims::Int) = _nansum(A, (dims,))
 # Reduce some dims
 function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
     sᵢ = size(A)
-    sₒ = ntuple(Val(N)) do d
+    sₒ = ntuple(Val{N}()) do d
         ifelse(d ∈ dims, 1, sᵢ[d])
     end
     Tₒ = Base.promote_op(+, T, Int)

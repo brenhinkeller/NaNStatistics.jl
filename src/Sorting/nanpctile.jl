@@ -154,7 +154,7 @@ _nanquantile!(A, q::Real, dims::Int) = _nanquantile!(A, q, (dims,))
 # Reduce some dims
 function _nanquantile!(A::AbstractArray{T,N}, q::Real, dims::Tuple) where {T,N}
     sᵢ = size(A)
-    sₒ = ntuple(Val(N)) do d
+    sₒ = ntuple(Val{N}()) do d
         ifelse(d ∈ dims, 1, sᵢ[d])
     end
     Tₒ = Base.promote_op(/, T, Int)
