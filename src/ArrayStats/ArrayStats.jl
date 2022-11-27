@@ -250,7 +250,7 @@
         mask = nanmask(A)
         return sum(A.*W.*mask, dims=region) ./ sum(W.*mask, dims=region)
     end
-    # Fallback method for non-Arrays
+    # Fallback method for non-StridedArrays
     function _nanmean(A, W, ::Colon)
         n = zero(eltype(W))
         m = zero(promote_type(eltype(W), eltype(A)))
@@ -264,7 +264,7 @@
         return m / n
     end
     # Can't have NaNs if array is all Integers
-    function _nanmean(A::Array{<:Integer}, W, ::Colon)
+    function _nanmean(A::StridedArray{<:Integer}, W, ::Colon)
         n = zero(eltype(W))
         m = zero(promote_type(eltype(W), eltype(A)))
         @turbo for i ∈ eachindex(A)
@@ -274,8 +274,7 @@
         end
         return m / n
     end
-    # Optimized AVX method for floats
-    function _nanmean(A::AbstractArray{<:AbstractFloat}, W, ::Colon)
+    function _nanmean(A::StridedArray, W, ::Colon)
         T1 = eltype(W)
         T2 = promote_type(eltype(W), eltype(A))
         n = zero(T1)
@@ -344,7 +343,7 @@
         end
         return sqrt(s / w * n / (n-1))
     end
-    function _nanstd(A::AbstractArray{<:AbstractFloat}, W, ::Colon)
+    function _nanstd(A::StridedArray, W::StridedArray, ::Colon)
         n = 0
         Tw = eltype(W)
         Tm = promote_type(eltype(W), eltype(A))

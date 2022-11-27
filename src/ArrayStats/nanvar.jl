@@ -45,7 +45,7 @@ _nanvar(μ, corrected::Bool, A, dims::Int) = _nanvar(μ, corrected, A, (dims,))
 # If the mean isn't known, compute it
 _nanvar(::Nothing, corrected::Bool, A, dims::Tuple) = _nanvar!(_nanmean(A, dims), corrected, A, dims)
 # Reduce all the dims!
-function _nanvar(::Nothing, corrected::Bool, A::AbstractArray, ::Colon)
+function _nanvar(::Nothing, corrected::Bool, A::StridedArray, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
     Σ = ∅ = zero(Tₒ)
@@ -64,7 +64,7 @@ function _nanvar(::Nothing, corrected::Bool, A::AbstractArray, ::Colon)
     end
     return σ² / max(n-corrected,0)
 end
-function _nanvar(::Nothing, corrected::Bool, A::AbstractArray{<:Integer}, ::Colon)
+function _nanvar(::Nothing, corrected::Bool, A::StridedArray{<:Integer}, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = length(A)
     Σ = zero(Tₒ)
@@ -79,7 +79,7 @@ function _nanvar(::Nothing, corrected::Bool, A::AbstractArray{<:Integer}, ::Colo
     end
     return σ² / max(n-corrected,0)
 end
-# Fallback method for non-arrays
+# Fallback method for non-StridedArrays
 function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0

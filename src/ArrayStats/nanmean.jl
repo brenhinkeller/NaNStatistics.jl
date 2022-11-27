@@ -50,7 +50,7 @@ function _nanmean(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
 end
 
 # Reduce all the dims!
-function _nanmean(A::AbstractArray, ::Colon)
+function _nanmean(A::StridedArray, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
     Σ = ∅ = zero(Tₒ)
@@ -62,7 +62,7 @@ function _nanmean(A::AbstractArray, ::Colon)
     end
     return Σ / n
 end
-function _nanmean(A::AbstractArray{<:Integer}, ::Colon)
+function _nanmean(A::StridedArray{<:Integer}, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     Σ = zero(Tₒ)
     @turbo for i ∈ eachindex(A)
@@ -70,7 +70,7 @@ function _nanmean(A::AbstractArray{<:Integer}, ::Colon)
     end
     return Σ / length(A)
 end
-# Fallback method for non-arrays
+# Fallback method for non-StridedArrays
 function _nanmean(A, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
