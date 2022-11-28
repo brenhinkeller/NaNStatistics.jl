@@ -42,9 +42,3 @@ function sqrt!(A::StridedArray)
     end
     return A
 end
-function sqrt!(A::AbstractArray)
-    @inbounds for i ∈ eachindex(A)
-        A[i] = sqrt(A[i])
-    end
-    return A
-end
