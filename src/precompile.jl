@@ -3,7 +3,7 @@
     R = rand(10000)
     x = [1:100..., 1]
     y = [1:100..., NaN]
-    Y = reshape(1:300,100,3)
+    Y = collect(reshape(1:300.,100,3))
 
     @precompile_all_calls begin
 
@@ -11,6 +11,12 @@
         histcounts(0.5:9.5,0.5:9.5, 0:10,0:10)
         nanbinmean(x, y, range(0,100,length=4))
         nanbinmean(1:100, Y, range(0,100,length=4))
+        movmean(R, 3)
+        movmean(Y, 3)
+        nanmedian(Y, dims=1)
+        nanmedian(Y, dims=2)
+        nanpctile(Y, 50, dims=1)
+        nanpctile(Y, 50, dims=2)
 
         for T in (Float64,)
             for nd in 1:4
@@ -21,6 +27,8 @@
                 nanvar(A)
                 nanminimum(A)
                 nanmaximum(A)
+                nanmedian(A)
+                nanpctile(A, 50)
 
                 for d in 1:nd
                     nansum(A, dims=d)
