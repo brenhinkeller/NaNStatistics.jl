@@ -13,10 +13,10 @@
         nanbinmean(1:100, Y, range(0,100,length=4))
         movmean(R, 3)
         movmean(Y, 3)
-        nanmedian(Y, dims=1)
-        nanmedian(Y, dims=2)
-        nanpctile(Y, 50, dims=1)
-        nanpctile(Y, 50, dims=2)
+        # nanmedian(Y, dims=1)
+        # nanmedian(Y, dims=2)
+        # nanpctile(Y, 50, dims=1)
+        # nanpctile(Y, 50, dims=2)
 
         for T in (Float64,)
             for nd in 1:4
@@ -27,8 +27,8 @@
                 nanvar(A)
                 nanminimum(A)
                 nanmaximum(A)
-                nanmedian(A)
-                nanpctile(A, 50)
+                # nanmedian(A)
+                # nanpctile(A, 50)
 
                 for d in 1:nd
                     nansum(A, dims=d)
