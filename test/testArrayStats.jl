@@ -58,8 +58,29 @@
     @test isnan(nanstd(A))
     @test isnan(nanstd(A, ones(10))) # weighted
     @test isnan(nanaad(A))
+    @test isnan(nanmad(A))
+    @test isnan(nanmedian(A))
+    @test isnan(nanpctile(A, 90))
+    @test isnan(nanquantile(A, 0.9))
     @test isnan(nanmin(NaN,NaN))
     @test isnan(nanmax(NaN,NaN))
+
+## --- empty arrays should yield NaN (or 0 for sums)
+
+    A = Float64[]
+    @test nansum(A) == 0
+    @test nancumsum(A) == Float64[]
+    @test isnan(nanmean(A))
+    @test isnan(nanmean(A, copy(A))) # weighted
+    @test isnan(nanvar(A))
+    @test isnan(nanvar(A, mean=0))
+    @test isnan(nanstd(A))
+    @test isnan(nanstd(A, copy(A))) # weighted
+    @test isnan(nanaad(A))
+    @test isnan(nanmad(A))
+    @test isnan(nanmedian(A))
+    @test isnan(nanpctile(A, 90))
+    @test isnan(nanquantile(A, 0.9))
 
 ## --- Summary statistics: simple cases, Int64
     A = collect(1:10)

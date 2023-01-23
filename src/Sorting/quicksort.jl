@@ -1,5 +1,8 @@
 # Move all NaNs to the end of the array A
 function sortnans!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
+    # Return early if range is empty
+    iₗ >= iᵤ && return A, iₗ, iᵤ
+
     # Count up NaNs
     Nₙₐₙ = 0
     @turbo for i = iₗ:iᵤ

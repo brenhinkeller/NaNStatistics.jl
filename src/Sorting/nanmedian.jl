@@ -16,8 +16,12 @@ convention in some other languages).
 """
 nanmedian(A; dims=:, dim=:) = __nanmedian(A, dims, dim)
 function __nanmedian(A::AbstractArray{T,N}, dims, dim) where {T,N}
-    Aₜ = copyto!(Array{T,N}(undef, size(A)), A)
-    __nanmedian!(Aₜ, dims, dim)
+    if isempty(A)
+        zero(eltype(A))/0
+    else
+        Aₜ = copyto!(Array{T,N}(undef, size(A)), A)
+        __nanmedian!(Aₜ, dims, dim)
+    end
 end
 export nanmedian
 
