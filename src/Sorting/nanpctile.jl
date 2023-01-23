@@ -13,8 +13,12 @@ See also `nanpctile!` for a more efficient in-place variant.
 """
 nanpctile(A, p::Number; dims=:, dim=:) = __nanpctile(A, p, dims, dim)
 function __nanpctile(A::AbstractArray{T,N}, p::Number, dims, dim) where {T,N}
-    Aₜ = copyto!(Array{T,N}(undef, size(A)), A)
-    __nanpctile!(Aₜ, p, dims, dim)
+    if isempty(A)
+        zero(eltype(A))/0
+    else
+        Aₜ = copyto!(Array{T,N}(undef, size(A)), A)
+        __nanpctile!(Aₜ, p, dims, dim)
+    end
 end
 export nanpctile
 
@@ -90,8 +94,12 @@ all contiguous.
 See also `nanquantile!` for a more efficient in-place variant.
 """
 function nanquantile(A::AbstractArray{T,N}, q::Number; dims=:) where {T,N}
-    Aₜ = copyto!(Array{T,N}(undef, size(A)), A)
-    _nanquantile!(Aₜ, q, dims)
+    if isempty(A)
+        zero(eltype(A))/0
+    else
+        Aₜ = copyto!(Array{T,N}(undef, size(A)), A)
+        _nanquantile!(Aₜ, q, dims)
+    end
 end
 export nanquantile
 
