@@ -23,3 +23,9 @@ xn = [1,2,3,NaN]
 xnn = [1,2,3]
 @test nancov(xn,xn) ≈ cov(xnn,xnn) ≈ 1
 @test nancor(xn,xn) ≈ cor(xnn,xnn) ≈ 1
+
+x[rand(1:length(x), 100)] .= NaN
+y[rand(1:length(y), 100)] .= NaN
+t = .!(isnan.(x) .| isnan.(y))
+@test nancov(x,y) ≈ cov(x[t],y[t])
+@test nancor(x,y) ≈ cor(x[t],y[t])

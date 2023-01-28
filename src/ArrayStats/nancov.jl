@@ -2,7 +2,7 @@ function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool, μᵪ::N
     # Calculate covariance
     σᵪᵧ = ∅ = zero(promote_type(typeof(μᵪ), typeof(μᵧ), Int))
     n = 0
-    @turbo for i ∈ indices((x,y))
+    @turbo for i ∈ eachindex(x,y)
             δᵪ = x[i] - μᵪ
             δᵧ = y[i] - μᵧ
             δ² = δᵪ * δᵧ
@@ -13,6 +13,25 @@ function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool, μᵪ::N
     σᵪᵧ = σᵪᵧ / (n-corrected)
     return σᵪᵧ
 end
+
+function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool)
+    # Parwise nan-means
+    n = 0
+    Σᵪ = ∅ᵪ = zero(eltype(x))
+    Σᵧ = ∅ᵧ = zero(eltype(y))
+    @turbo for i ∈ eachindex(x,y)
+        xᵢ, yᵢ = x[i], y[i]
+        notnan = (xᵢ==xᵢ) & (yᵢ==yᵢ)
+        n += notnan
+        Σᵪ += ifelse(notnan, xᵢ, ∅ᵪ)
+        Σᵧ += ifelse(notnan, yᵢ, ∅ᵧ)
+    end
+    μᵪ = Σᵪ/n
+    μᵧ = Σᵧ/n
+
+    return _nancov(x, y, corrected, μᵪ, μᵧ)
+end
+
 
 
 """
@@ -26,15 +45,8 @@ If `corrected` is `true` as is the default, _Bessel's correction_ will be applie
 such that the sum is scaled by `n-1` rather than `n`, where `n = length(x)`.
 """
 function nancov(x::AbstractVector, y::AbstractVector; corrected::Bool=true)
-    # Check lengths
-    nᵪ = length(x)
-    nᵧ = length(y)
-    @assert nᵪ == nᵧ
-
-    μᵪ = _nanmean(x,:)
-    μᵧ = _nanmean(y,:)
-    σᵪᵧ = _nancov(x, y, corrected, μᵪ, μᵧ)
-    return σᵪᵧ
+    @assert eachindex(x) == eachindex(y)
+    return _nancov(x, y, corrected)
 end
 
 """
@@ -54,26 +66,18 @@ function nancov(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
     Σ = similar(X, Tₒ, (m, m))
     # Only two dimensions are possible, so handle each manually
     if dims == 1
-        # Precalculate means for each column
-        μ = ntuple(m) do d
-            nanmean(view(X,:,d))
-        end
         # Fill covariance matrix symmetrically
         @inbounds for i = 1:m
             for j = 1:i
-                σᵢⱼ = _nancov(view(X,:,i), view(X,:,j), corrected, μ[i], μ[j])
+                σᵢⱼ = _nancov(view(X,:,i), view(X,:,j), corrected)
                 Σ[i,j] = Σ[j,i] = σᵢⱼ
             end
         end
     elseif dims == 2
-        # Precalculate means for each row
-        μ = ntuple(m) do d
-            nanmean(view(X,d,:))
-        end
         # Fill covariance matrix symmetrically
         @inbounds for i = 1:m
             for j = 1:i
-                σᵢⱼ = _nancov(view(X,i,:), view(X,j,:), corrected, μ[i], μ[j])
+                σᵢⱼ = _nancov(view(X,i,:), view(X,j,:), corrected)
                 Σ[i,j] = Σ[j,i] = σᵢⱼ
             end
         end
@@ -96,21 +100,46 @@ As `Statistics.cor`, but ignoring `NaN`s.
 Equivalent to `nancov(x,y) / (nanstd(x) * nanstd(y))`.
 """
 function nancor(x::AbstractVector, y::AbstractVector; corrected::Bool=true)
-    # Check lengths
-    nᵪ = length(x)
-    nᵧ = length(y)
-    @assert nᵪ == nᵧ
+    @assert eachindex(x) == eachindex(y)
+    return _nancor(x, y, corrected)
+end
 
-    μᵪ = nanmean(x)
-    μᵧ = nanmean(y)
-    σᵪ = nanstd(x, mean=μᵪ, corrected=corrected)
-    σᵧ = nanstd(y, mean=μᵧ, corrected=corrected)
+# Pair-wise nan-covariance
+function _nancor(x::AbstractVector, y::AbstractVector, corrected::Bool)
+    # Parwise nan-means
+    n = 0
+    Σᵪ = ∅ᵪ = zero(eltype(x))
+    Σᵧ = ∅ᵧ = zero(eltype(y))
+    @turbo for i ∈ eachindex(x,y)
+        xᵢ, yᵢ = x[i], y[i]
+        notnan = (xᵢ==xᵢ) & (yᵢ==yᵢ)
+        n += notnan
+        Σᵪ += ifelse(notnan, xᵢ, ∅ᵪ)
+        Σᵧ += ifelse(notnan, yᵢ, ∅ᵧ)
+    end
+    μᵪ = Σᵪ/n
+    μᵧ = Σᵧ/n
+    n == 0 && return (∅ᵪ+∅ᵧ)/0 # Return appropriate NaN if no data
+
+    # Pairwise nan-variances
+    σ²ᵪ = ∅ᵪ = zero(typeof(μᵪ))
+    σ²ᵧ = ∅ᵧ = zero(typeof(μᵧ))
+    @turbo for i ∈ eachindex(x,y)
+        δᵪ = x[i] - μᵪ
+        δᵧ = y[i] - μᵧ
+        notnan = (δᵪ==δᵪ) & (δᵧ==δᵧ)
+        σ²ᵪ += ifelse(notnan, δᵪ * δᵪ, ∅ᵪ)
+        σ²ᵧ += ifelse(notnan, δᵧ * δᵧ, ∅ᵧ)
+    end
+    σᵪ = sqrt(σ²ᵪ / max(n-corrected, 0))
+    σᵧ = sqrt(σ²ᵧ / max(n-corrected, 0))
+
+    # Covariance and correlation
     σᵪᵧ = _nancov(x, y, corrected, μᵪ, μᵧ)
     ρᵪᵧ = σᵪᵧ / (σᵪ * σᵧ)
 
     return ρᵪᵧ
 end
-
 
 """
 ```julia
@@ -130,32 +159,16 @@ function nancor(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
     end
     # Only two dimensions are possible, so handle each manually
     if dims == 1
-        # Precalculate means and standard deviations
-        μ = ntuple(m) do d
-            nanmean(view(X,:,d))
-        end
-        σ = ntuple(m) do d
-            nanstd(view(X,:,d), mean=μ[d], corrected=corrected)
-        end
         # Fill off-diagonals symmetrically
         @inbounds for i = 1:m
             for j = 1:i
-                σᵢⱼ = _nancov(view(X,:,i), view(X,:,j), corrected, μ[i], μ[j])
-                Ρ[i,j] = Ρ[j,i] = σᵢⱼ / (σ[i] * σ[j])
+                Ρ[i,j] = Ρ[j,i] = _nancor(view(X,:,i), view(X,:,j), corrected)
             end
         end
     elseif dims == 2
-        # Precalculate means and standard deviations
-        μ = ntuple(m) do d
-            nanmean(view(X,d,:))
-        end
-        σ = ntuple(m) do d
-            nanstd(view(X,d,:), mean=μ[d], corrected=corrected)
-        end
         @inbounds for i = 1:m
             for j = 1:i-1
-                σᵢⱼ = _nancov(view(X,i,:), view(X,j,:), corrected, μ[i], μ[j])
-                Ρ[i,j] = Ρ[j,i] = σᵢⱼ / (σ[i] * σ[j])
+                Ρ[i,j] = Ρ[j,i] = _nancor(view(X,i,:), view(X,j,:), corrected)
             end
         end
     else
