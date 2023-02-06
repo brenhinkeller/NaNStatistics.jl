@@ -1,5 +1,7 @@
 @precompile_setup begin
 
+    MAXDIMS = 3
+
     R = rand(10000)
     x = [1:100..., 1]
     y = [1:100..., NaN]
@@ -19,7 +21,7 @@
         # nanpctile(Y, 50, dims=2)
 
         for T in (Float64,)
-            for nd in 1:4
+            for nd in 1:MAXDIMS
                 A = ones(T, ntuple(i->10, nd))
                 nansum(A)
                 nanmean(A)
@@ -30,15 +32,16 @@
                 # nanmedian(A)
                 # nanpctile(A, 50)
 
-                for d in 1:nd
-                    nansum(A, dims=d)
-                    nanmean(A, dims=d)
-                    nanstd(A, dims=d)
-                    nanvar(A, dims=d)
-                    nanminimum(A, dims=d)
-                    nanmaximum(A, dims=d)
-                end
                 if nd > 1
+                    for d in 1:nd
+                        nansum(A, dims=d)
+                        nanmean(A, dims=d)
+                        nanstd(A, dims=d)
+                        nanvar(A, dims=d)
+                        nanminimum(A, dims=d)
+                        nanmaximum(A, dims=d)
+                    end
+
                     for i = 2:nd
                         for j = 1:i-1
                             nansum(A, dims=(j,i))
