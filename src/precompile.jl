@@ -46,12 +46,12 @@
 
                     for i = 2:nd
                         for j = 1:i-1
-                            nansum(A, dims=(j,i))
+                            # nansum(A, dims=(j,i))
                             nanmean(A, dims=(j,i))
-                            nanstd(A, dims=(j,i))
-                            nanvar(A, dims=(j,i))
-                            nanminimum(A, dims=(j,i))
-                            nanmaximum(A, dims=(j,i))
+                            # nanstd(A, dims=(j,i))
+                            # nanvar(A, dims=(j,i))
+                            # nanminimum(A, dims=(j,i))
+                            # nanmaximum(A, dims=(j,i))
                         end
                     end
                 end
