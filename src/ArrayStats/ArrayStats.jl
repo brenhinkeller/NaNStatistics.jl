@@ -141,7 +141,7 @@
     ```julia
     nanadd!(A, B)
     ```
-    Add the non-NaN elements of `B` to `A`, treating NaNs as zeros
+    Add the non-NaN elements of `B` to `A`, treating `NaN`s as zeros
     """
     function nanadd!(A::Array, B::AbstractArray)
         @inbounds @simd for i ∈ eachindex(A)
@@ -181,7 +181,7 @@
     ```julia
     nanmaximum(A; dims)
     ```
-    Find the largest non-NaN value of an indexable collection `A`, optionally
+    As `maximum` but ignoring `NaN`s: Find the largest non-`NaN` value of an indexable collection `A`, optionally
     along a dimension specified by `dims`.
 
     Also supports the `dim` keyword, which behaves identically to `dims`, but
@@ -197,13 +197,50 @@
     _nanmaximum(A::Array{<:Number}, ::Colon) = vreduce(nanmax, A)
     export nanmaximum
 
+    """
+    ```julia
+    nanargmin(A)
+    ```
+    As `argmin` but ignoring `NaN`s: Find the index of the smallest non-`NaN`
+    value (if any) of an indexable collection `A`
+    """
+    function nanargmin(x)
+        imin = firstindex(x)
+        @inbounds for i in eachindex(x)
+            xᵢ = x[i]
+            if xᵢ==xᵢ && !(xᵢ > x[imin])
+                imin = i
+            end
+        end
+        return imin
+    end
+    export nanargmin
+
+    """
+    ```julia
+    nanargmax(A)
+    ```
+    As `argmax` but ignoring `NaN`s: Find the index of the largest non-`NaN`
+    value (if any) of an indexable collection `A`
+    """
+    function nanargmax(x)
+        imax = firstindex(x)
+        @inbounds for i in eachindex(x)
+            xᵢ = x[i]
+            if xᵢ==xᵢ && !(xᵢ < x[imax])
+                imax = i
+            end
+        end
+        return imax
+    end
+    export nanargmax
 
     """
     ```julia
     nanextrema(A; dims)
     ```
     Find the extrema (maximum & minimum) of an indexable collection `A`,
-    ignoring NaNs, optionally along a dimension specified by `dims`.
+    ignoring `NaN`s, optionally along a dimension specified by `dims`.
 
     Also supports the `dim` keyword, which behaves identically to `dims`, but
     also drops any singleton dimensions that have been reduced over (as is the
@@ -221,7 +258,7 @@
     nanrange(A; dims)
     ```
     Calculate the range (maximum - minimum) of an indexable collection `A`,
-    ignoring NaNs, optionally along a dimension specified by `dims`.
+    ignoring `NaN`s, optionally along a dimension specified by `dims`.
 
     Also supports the `dim` keyword, which behaves identically to `dims`, but
     also drops any singleton dimensions that have been reduced over (as is the
@@ -235,7 +272,7 @@
     ```julia
     nanmean(A, W; dims)
     ```
-    Ignoring NaNs, calculate the weighted mean of an indexable
+    Ignoring `NaN`s, calculate the weighted mean of an indexable
     collection `A`, optionally along dimensions specified by `dims`.
 
     Also supports the `dim` keyword, which behaves identically to `dims`, but
@@ -295,7 +332,7 @@
     ```julia
     nanstd(A, W; dims)
     ```
-    Calculate the weighted standard deviation, ignoring NaNs, of an
+    Calculate the weighted standard deviation, ignoring `NaN`s, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
 
     Also supports the `dim` keyword, which behaves identically to `dims`, but
@@ -374,7 +411,7 @@
     ```julia
     nanmad(A; dims)
     ```
-    Median absolute deviation from the median, ignoring NaNs, of an indexable
+    Median absolute deviation from the median, ignoring `NaN`s, of an indexable
     collection `A`, optionally along a dimension specified by `dims`.
     Note that for a Normal distribution, sigma = 1.4826 * MAD.
 
@@ -403,7 +440,7 @@
     ```julia
     nanaad(A; dims)
     ```
-    Mean (average) absolute deviation from the mean, ignoring NaNs, of an
+    Mean (average) absolute deviation from the mean, ignoring `NaN`s, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
     Note that for a Normal distribution, sigma = 1.253 * AAD.
 

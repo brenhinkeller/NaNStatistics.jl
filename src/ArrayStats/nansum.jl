@@ -2,7 +2,7 @@
 ```julia
 nansum(A; dims)
 ```
-Calculate the sum of an indexable collection `A`, ignoring NaNs, optionally
+Calculate the sum of an indexable collection `A`, ignoring `NaN`s, optionally
 along dimensions specified by `dims`.
 
 Also supports the `dim` keyword, which behaves identically to `dims`, but

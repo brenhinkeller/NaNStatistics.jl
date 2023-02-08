@@ -3,7 +3,7 @@
 ```julia
 histcounts(x, xedges::AbstractRange; T=Int64)::Vector{T}
 ```
-A 1D histogram, ignoring NaNs: calculate the number of `x` values that fall into
+A 1D histogram, ignoring `NaN`s: calculate the number of `x` values that fall into
 each of `length(xedges)-1` equally spaced bins along the `x` axis with bin edges
 specified by `xedges`.
 
@@ -40,7 +40,7 @@ histcounts(x, xmin::Number, xmax::Number, nbins::Integer; T=Int64) = histcounts(
 ```julia
 histcountindices(x, xedges::AbstractRange; T=Int64)::Vector{T}
 ```
-A 1D histogram, ignoring NaNs; as `histcounts` but also returning a vector of
+A 1D histogram, ignoring `NaN`s; as `histcounts` but also returning a vector of
 the bin index of each `x` value.
 
 ## Examples
@@ -65,7 +65,7 @@ export histcountindices
 ```julia
 histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange; T=Int64)::Matrix{T}
 ```
-A 2D histogram, ignoring NaNs: calculate the number of `x, y` pairs that fall into
+A 2D histogram, ignoring `NaN`s: calculate the number of `x, y` pairs that fall into
 each square of a 2D grid of equally-spaced square bins with edges specified by
 `xedges` and `yedges`.
 

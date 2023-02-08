@@ -4,7 +4,7 @@
     ```julia
     nanbinmean!(MU, [N], x, y, xedges::AbstractRange)
     ```
-    Ignoring NaNs, fill the array `MU` with the means (and optionally `N` with
+    Ignoring `NaN`s, fill the array `MU` with the means (and optionally `N` with
     the counts) of non-NAN `y` values that fall into each of `length(xedges)-1`
     equally spaced bins along the `x` axis with bin edges specified by `xedges`.
 
@@ -97,7 +97,7 @@
     ```julia
     nanbinmean!(MU, N, x, y, z, xedges::AbstractRange, yedges::AbstractRange)
     ```
-    Ignoring NaNs, fill the matrix `MU` with the means and `N` with
+    Ignoring `NaN`s, fill the matrix `MU` with the means and `N` with
     the counts of non-NAN `z` values that fall into a 2D grid of x and y bins
     defined by `xedges` and `yedges`. The independent variables `x` and `y`,
     as well as the dependent variable `z`, are all expected as 1D vectors (any
@@ -150,7 +150,7 @@
     ```julia
     nanbinmean!(MU, W, x, y, w, xedges::AbstractRange)
     ```
-    Ignoring NaNs, fill the array `MU` with the weighted means (and `W` with
+    Ignoring `NaN`s, fill the array `MU` with the weighted means (and `W` with
     the sum of weights) of non-NAN `y` values that fall into each of
     `length(xedges)-1` equally spaced bins along the `x` axis with bin edges
     specified by `xedges`.
@@ -308,7 +308,7 @@
     ```julia
     nanbinmean(x, y, xedges::AbstractRange)
     ```
-    Ignoring NaNs, calculate the mean of `y` values that fall into each of
+    Ignoring `NaN`s, calculate the mean of `y` values that fall into each of
     `length(xedges)-1` equally spaced bins along the `x` axis with bin edges
     specified by `xedges`.
 
@@ -346,7 +346,7 @@
     ```julia
     nanbinmean(x, y, z, xedges, yedges)
     ```
-    Ignoring NaNs, calculate the mean of `z` values that fall into a 2D grid of
+    Ignoring `NaN`s, calculate the mean of `z` values that fall into a 2D grid of
     x and y bins with bin edges defined by `xedges` and `yedges`. The independent
     variables `x` and `y`, as well as the dependent variable `z`, are all expected
     as 1D vectors (any subtype of AbstractVector).
@@ -381,7 +381,7 @@
     ```julia
     nanbinmean(x, y, xedges::AbstractRange)
     ```
-    Ignoring NaNs, calculate the weighted mean of `y` values that
+    Ignoring `NaN`s, calculate the weighted mean of `y` values that
     fall into each of `length(xedges)-1` equally spaced bins along the `x`
     axis with bin edges specified by `xedges`.
 
@@ -402,7 +402,7 @@
     ```julia
     nanbinmedian(x, y, xedges::AbstractRange)
     ```
-    Calculate the median, ignoring NaNs, of y values that fall into each of
+    Calculate the median, ignoring `NaN`s, of y values that fall into each of
     `length(xedges)-1` equally spaced bins along the `x` axis with bin edges
     specified by `xedges`.
 

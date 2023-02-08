@@ -1,6 +1,7 @@
 ## --- ArrayStats.jl
 
 ## --- Filtering
+
     A = 1:100
     @test A[inpctile(A,80)] == 11:90
     @test nanmask(A) == trues(100)
@@ -8,9 +9,10 @@
     @test nanmask([NaN, NaN, NaN]) == falses(3)
 
 ## --- NaN handling functions, simple cases
+
     A = [1:10; fill(NaN,10)]
     B = [fill(NaN,10); 11:20]
-    @test countnans(A) == countnotnans(A) == 10
+    @test countnans(A) === countnotnans(A) === 10
     @test A[nanmask(A)] == 1:10
     @test nanadd(A,B) == 1:20
     @test nanadd!(A,B) == 1:20
@@ -19,31 +21,35 @@
     # Test arrays that are mostly NaN
     x = [1.:100;]
     x[34:end] .= NaN
-    @test nanminimum(x) == 1
-    @test nanmaximum(x) == 33
+    @test nanminimum(x) === 1.0
+    @test nanmaximum(x) === 33.0
 
 
 ## --- Summary statistics: simple cases, Float64
+
     A = [1:10.0..., NaN]
-    @test nansum(A) == 55.0
+    @test nansum(A) === 55.0
     @test nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0, 55.0]
-    @test nanmean(A) == 5.5
-    @test nanmean(A, ones(11)) == 5.5 # weighted
-    @test nanrange(A) == 9.0
-    @test nanminimum(A) == 1.0
-    @test nanmaximum(A) == 10.0
-    @test nanextrema(A) == (1.0, 10.0)
-    @test nanvar([1,2,3,NaN]) == 1.0
-    @test nanstd([1,2,3,NaN]) == 1.0
-    @test nanstd([1,2,3,NaN], ones(4)) == 1.0 # weighted
-    @test nanmad([1,2,3,NaN]) == 1.0
+    @test nanmean(A) === 5.5
+    @test nanmean(A, ones(11)) === 5.5 # weighted
+    @test nanrange(A) === 9.0
+    @test nanminimum(A) === 1.0
+    @test nanmaximum(A) === 10.0
+    @test nanargmin(A) === 1
+    @test nanargmax(A) === 10
+    @test nanextrema(A) === (1.0, 10.0)
+    @test nanvar([1,2,3,NaN]) === 1.0
+    @test nanstd([1,2,3,NaN]) === 1.0
+    @test nanstd([1,2,3,NaN], ones(4)) === 1.0 # weighted
+    @test nanmad([1,2,3,NaN]) === 1.0
     @test nanaad([1,2,3,NaN]) ≈ 2/3
-    @test nanmedian([1,2,3,NaN]) == 2.0
-    @test nanpctile([0:100...,NaN],99) == 99.0
-    @test nanmin(1.,2.) == 1.
-    @test nanmax(1.,2.) == 2.
+    @test nanmedian([1,2,3,NaN]) === 2.0
+    @test nanpctile([0:100...,NaN],99) === 99.0
+    @test nanmin(1.,2.) === 1.0
+    @test nanmax(1.,2.) === 2.0
 
 ## --- Arrays containing only NaNs should yield NaN (or 0 for sums)
+
     A = fill(NaN,10)
     @test nansum(A) == 0
     @test nancumsum(A) == zeros(10)
@@ -81,66 +87,78 @@
     @test isnan(nanmedian(A))
     @test isnan(nanpctile(A, 90))
     @test isnan(nanquantile(A, 0.9))
+    @test nanargmin(A) === 1
+    @test nanargmax(A) === 1
+
 
 ## --- Summary statistics: simple cases, Int64
+
     A = collect(1:10)
-    @test nansum(A) == 55.0
+    @test nansum(A) === 55
     @test nancumsum(A) == [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
-    @test nanmean(A) == 5.5
-    @test nanmean(A, ones(10)) == 5.5 # weighted
-    @test nanrange(A) == 9.0
-    @test nanminimum(A) == 1.0
-    @test nanmaximum(A) == 10.0
-    @test nanextrema(A) == (1.0, 10.0)
-    @test nanvar([1,2,3]) == 1.0
-    @test nanvar([1,2,3], mean=2) == 1.0
-    @test nanstd([1,2,3]) == 1.0
-    @test nanstd([1,2,3], ones(3)) == 1.0 # weighted
-    @test nanmad([1,2,3]) == 1.0
+    @test nanmean(A) === 5.5
+    @test nanmean(A, ones(10)) === 5.5 # weighted
+    @test nanrange(A) === 9
+    @test nanminimum(A) === 1
+    @test nanmaximum(A) === 10
+    @test nanargmin(A) === 1
+    @test nanargmax(A) === 10
+    @test nanextrema(A) === (1, 10)
+    @test nanvar([1,2,3]) === 1.0
+    @test nanvar([1,2,3], mean=2) === 1.0
+    @test nanstd([1,2,3]) === 1.0
+    @test nanstd([1,2,3], ones(3)) === 1.0 # weighted
+    @test nanmad([1,2,3]) === 1.0
     @test nanaad([1,2,3]) ≈ 2/3
-    @test nanmedian([1,2,3]) == 2.0
-    @test nanpctile([0:100...],99) == 99.0
-    @test nanmin(1,2) == 1
-    @test nanmax(1,2) == 2
+    @test nanmedian([1,2,3]) === 2.0
+    @test nanpctile([0:100...],99) === 99.0
+    @test nanmin(1,2) === 1
+    @test nanmax(1,2) === 2
 
 ## --- Summary statistics: simple cases, ranges
+
     A = 1:10
-    @test nansum(A) == 55.0
+    @test nansum(A) === 55
     @test nancumsum(A) == [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
-    @test nanmean(A) == 5.5
-    @test nanmean(A, ones(10)) == 5.5 # weighted
-    @test nanrange(A) == 9.0
-    @test nanminimum(A) == 1.0
-    @test nanmaximum(A) == 10.0
-    @test nanextrema(A) == (1.0, 10.0)
-    @test nanvar(1:3) == 1.0
-    @test nanvar(1:3, mean=2) == 1.0
-    @test nanstd(1:3) == 1.0
-    @test nanstd(1:3, ones(3)) == 1.0 # weighted
-    @test nanmad(1:3) == 1.0
+    @test nanmean(A) === 5.5
+    @test nanmean(A, ones(10)) === 5.5 # weighted
+    @test nanrange(A) === 9
+    @test nanminimum(A) === 1
+    @test nanmaximum(A) === 10
+    @test nanargmin(A) === 1
+    @test nanargmax(A) === 10
+    @test nanextrema(A) === (1, 10)
+    @test nanvar(1:3) === 1.0
+    @test nanvar(1:3, mean=2) === 1.0
+    @test nanstd(1:3) === 1.0
+    @test nanstd(1:3, ones(3)) === 1.0 # weighted
+    @test nanmad(1:3) === 1.0
     @test nanaad(1:3) ≈ 2/3
-    @test nanmedian(1:3) == 2.0
-    @test nanpctile(0:100,99) == 99.0
+    @test nanmedian(1:3) === 2.0
+    @test nanpctile(0:100,99) === 99.0
 
     A = 1:10.
-    @test nansum(A) == 55.0
+    @test nansum(A) === 55.0
     @test nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0]
-    @test nanmean(A) == 5.5
-    @test nanmean(A, ones(10)) == 5.5 # weighted
-    @test nanrange(A) == 9.0
-    @test nanminimum(A) == 1.0
-    @test nanmaximum(A) == 10.0
-    @test nanextrema(A) == (1.0, 10.0)
-    @test nanvar(1:3.) == 1.0
-    @test nanvar(1:3., mean=2.0) == 1.0
-    @test nanstd(1:3.) == 1.0
-    @test nanstd(1:3., ones(3)) == 1.0 # weighted
-    @test nanmad(1:3.) == 1.0
+    @test nanmean(A) === 5.5
+    @test nanmean(A, ones(10)) === 5.5 # weighted
+    @test nanrange(A) === 9.0
+    @test nanminimum(A) === 1.0
+    @test nanmaximum(A) === 10.0
+    @test nanargmin(A) === 1
+    @test nanargmax(A) === 10
+    @test nanextrema(A) === (1.0, 10.0)
+    @test nanvar(1:3.) === 1.0
+    @test nanvar(1:3., mean=2.0) === 1.0
+    @test nanstd(1:3.) === 1.0
+    @test nanstd(1:3., ones(3)) === 1.0 # weighted
+    @test nanmad(1:3.) === 1.0
     @test nanaad(1:3.) ≈ 2/3
-    @test nanmedian(1:3.) == 2.0
-    @test nanpctile(0:100.,99) == 99.0
+    @test nanmedian(1:3.) === 2.0
+    @test nanpctile(0:100.,99) === 99.0
 
 ## --- Summary statistics: dimensional tests, Int64
+
     A = collect(reshape(1:300,100,3))
     @test nansum(A, dims=1) == sum(A, dims=1)
     @test nansum(A, dims=2) == sum(A, dims=2)
@@ -174,6 +192,7 @@
 
 
 ## --- Summary statistics: dimensional tests, Float64
+
     A = collect(reshape(1:300.,100,3))
     @test nansum(A, dims=1) == sum(A, dims=1)
     @test nansum(A, dims=2) == sum(A, dims=2)
@@ -220,6 +239,7 @@
     @test nanaad(A, dims=2) ≈ fill(200/3, 100, 1)
 
 ## --- Summary statistics: dimensional tests, Float64
+
     A = collect(reshape(1:300.,100,3))
     @test nansum(A, dim=1) == vec(sum(A, dims=1))
     @test nansum(A, dim=2) == vec(sum(A, dims=2))
@@ -264,6 +284,7 @@
     @test nanaad(A, dim=2) ≈ fill(200/3, 100)
 
 ## --- Test fallbacks for complex reductions
+
     A = randn((2 .+ (1:6))...);
     @test nansum(A, dims=(4,5,6)) ≈ sum(A, dims=(4,5,6))
     @test nanmean(A, dims=(4,5,6)) ≈ mean(A, dims=(4,5,6))
@@ -299,6 +320,8 @@
 
     @test nanminimum((1,2,3,4,5)) === 1
     @test nanmaximum((1,2,3,4,5)) === 5
+    @test nanargmin((1,2,3,4,5)) === 1
+    @test nanargmax((1,2,3,4,5)) === 5
     @test nanrange((1,2,3,4,5)) === 4
     @test nansum((1,2,3,4,5)) === 15
     @test nanmean((1,2,3,4,5)) === 3.0

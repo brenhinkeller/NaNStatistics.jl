@@ -29,6 +29,8 @@
                 nanvar(A)
                 nanminimum(A)
                 nanmaximum(A)
+                nanargmin(A)
+                nanargmax(A)
                 # nanmedian(A)
                 # nanpctile(A, 50)
 
