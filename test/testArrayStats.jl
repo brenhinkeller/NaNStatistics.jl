@@ -12,7 +12,7 @@
 
     A = [1:10; fill(NaN,10)]
     B = [fill(NaN,10); 11:20]
-    @test countnans(A) === countnotnans(A) === 10
+    @test countnans(A) === countnotnans(A) == 10
     @test A[nanmask(A)] == 1:10
     @test nanadd(A,B) == 1:20
     @test nanadd!(A,B) == 1:20
