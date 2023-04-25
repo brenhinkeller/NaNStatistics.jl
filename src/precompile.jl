@@ -1,4 +1,4 @@
-@precompile_setup begin
+@setup_workload begin
 
     MAXDIMS = 3
 
@@ -7,7 +7,7 @@
     y = [1:100..., NaN]
     Y = collect(reshape(1:300.,100,3))
 
-    @precompile_all_calls begin
+    @compile_workload begin
 
         histcounts(R, 0:0.1:1)
         histcounts(0.5:9.5,0.5:9.5, 0:10,0:10)

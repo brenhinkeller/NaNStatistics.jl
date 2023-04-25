@@ -21,7 +21,7 @@ module NaNStatistics
     include("Histograms.jl")
     include("Binning.jl")
 
-    using SnoopPrecompile
+    using PrecompileTools
     include("precompile.jl")
 
 end
