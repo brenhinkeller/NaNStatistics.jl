@@ -140,6 +140,10 @@
     @test nanpctile!(copy(A), 50, dims=(2,3)) == median(A, dims=(2,3))
 
 ## ---
+    # test for n₋ >= 384
+    zi = collect(1:500)
+    @test NaNStatistics._nanquantile!(zi, 0.999, 1) == [499.501]
+    @test nanquantile(1:500, 0.999) ≈ 499.501
 
     @test nanquantile(0:10, 0) == 0
     @test nanquantile(0:10, 1/100) ≈ 0.1
