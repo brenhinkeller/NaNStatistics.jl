@@ -13,7 +13,7 @@
     """
     function countnans(A)
         n = 0
-        @turbo for i ∈ eachindex(A)
+        @turbo check_empty=true for i ∈ eachindex(A)
             n += A[i]!=A[i]
         end
         return n
@@ -28,7 +28,7 @@
     """
     function countnotnans(A)
         n = 0
-        @turbo for i ∈ eachindex(A)
+        @turbo check_empty=true for i ∈ eachindex(A)
             n += A[i]==A[i]
         end
         return n

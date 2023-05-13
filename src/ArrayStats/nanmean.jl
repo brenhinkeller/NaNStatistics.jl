@@ -54,7 +54,7 @@ function _nanmean(A::StridedArray, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
     Σ = ∅ = zero(Tₒ)
-    @turbo for i ∈ eachindex(A)
+    @turbo check_empty=true for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ
         n += notnan
@@ -65,7 +65,7 @@ end
 function _nanmean(A::StridedArray{<:Integer}, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     Σ = zero(Tₒ)
-    @turbo for i ∈ eachindex(A)
+    @turbo check_empty=true for i ∈ eachindex(A)
         Σ += A[i]
     end
     return Σ / length(A)

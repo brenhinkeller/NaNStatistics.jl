@@ -49,7 +49,7 @@ function _nanvar(::Nothing, corrected::Bool, A::StridedArray, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
     Σ = ∅ = zero(Tₒ)
-    @turbo for i ∈ eachindex(A)
+    @turbo check_empty=true for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ
         n += notnan
@@ -57,7 +57,7 @@ function _nanvar(::Nothing, corrected::Bool, A::StridedArray, ::Colon)
     end
     μ = Σ / n
     σ² = ∅ = zero(typeof(μ))
-    @turbo for i ∈ eachindex(A)
+    @turbo check_empty=true for i ∈ eachindex(A)
         δ = A[i] - μ
         notnan = δ==δ
         σ² += ifelse(notnan, δ * δ, ∅)
@@ -68,12 +68,12 @@ function _nanvar(::Nothing, corrected::Bool, A::StridedArray{<:Integer}, ::Colon
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = length(A)
     Σ = zero(Tₒ)
-    @turbo for i ∈ eachindex(A)
+    @turbo check_empty=true for i ∈ eachindex(A)
         Σ += A[i]
     end
     μ = Σ / n
     σ² = zero(typeof(μ))
-    @turbo for i ∈ eachindex(A)
+    @turbo check_empty=true for i ∈ eachindex(A)
         δ = A[i] - μ
         σ² += δ * δ
     end
@@ -109,7 +109,7 @@ _nanvar(μ::Number, corrected::Bool, A, dims::Tuple) = _nanvar!([μ], corrected,
 function _nanvar(μ::Number, corrected::Bool, A::AbstractArray, ::Colon)
     n = 0
     σ² = ∅ = zero(typeof(μ))
-    @turbo for i ∈ eachindex(A)
+    @turbo check_empty=true for i ∈ eachindex(A)
         δ = A[i] - μ
         notnan = δ==δ
         n += notnan
@@ -120,7 +120,7 @@ end
 function _nanvar(μ::Number, corrected::Bool, A::AbstractArray{<:Integer}, ::Colon)
     σ² = zero(typeof(μ))
     if μ==μ
-        @turbo for i ∈ eachindex(A)
+        @turbo check_empty=true for i ∈ eachindex(A)
             δ = A[i] - μ
             σ² += δ * δ
         end
@@ -149,12 +149,12 @@ end
 #     N = sum(mask, dims=region)
 #     Σ = sum(A.*mask, dims=region)./N
 #     δ = A .- Σ # Subtract mean, using broadcasting
-#     @turbo for i ∈ eachindex(δ)
+#     @turbo check_empty=true for i ∈ eachindex(δ)
 #         δᵢ = δ[i]
 #         δ[i] = ifelse(mask[i], δᵢ * δᵢ, 0)
 #     end
 #     B .= sum(δ, dims=region)
-#     @turbo for i ∈ eachindex(B)
+#     @turbo check_empty=true for i ∈ eachindex(B)
 #         B[i] = B[i] / max(N[i] - corrected, 0)
 #     end
 #     return B
