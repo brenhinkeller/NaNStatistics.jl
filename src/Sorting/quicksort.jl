@@ -61,7 +61,7 @@ end
             A[𝔦ₗ], A[𝔦ᵤ] = A[𝔦ᵤ], A[𝔦ₗ]
         end
     else
-        @turbo check_empty=true for i ∈ 0:n
+        @turbo for i ∈ 0:n
             𝔦ₗ = iₗ+i
             𝔦ᵤ = iᵤ-i
             l = A[𝔦ₗ]
