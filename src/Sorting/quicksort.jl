@@ -61,7 +61,7 @@ end
             A[𝔦ₗ], A[𝔦ᵤ] = A[𝔦ᵤ], A[𝔦ₗ]
         end
     else
-        @turbo for i ∈ 0:n
+        @turbo check_empty=true for i ∈ 0:n
             𝔦ₗ = iₗ+i
             𝔦ᵤ = iᵤ-i
             l = A[𝔦ₗ]
@@ -82,12 +82,8 @@ function quickselect!(A::AbstractArray, iₗ=firstindex(A), iᵤ=lastindex(A), k
 
     # Count up elements that must be moved to upper partition
     Nᵤ = 0
-    # @turbo 
-    @inbounds for i = (iₗ+1):iᵤ
-        if A[i] >= pivot
-            Nᵤ += 1  
-        end
-        # Nᵤ += Int(A[i] >= pivot)
+    @turbo check_empty=true for i = (iₗ+1):iᵤ
+        Nᵤ += Int(A[i] >= pivot)
     end
     Nₗ = N - Nᵤ
 
@@ -109,9 +105,15 @@ function quickselect!(A::AbstractArray, iₗ=firstindex(A), iᵤ=lastindex(A), k
     iₚ = iₗ + Nₗ - 1
     A[iₗ], A[iₚ] = A[iₚ], A[iₗ]
     # Recurse: select from partition containing k
-    (iₗ <= k < iₚ) && quickselect!(A, iₗ, iₚ, k)
-    (iₚ < k <= iᵤ) && quickselect!(A, iₚ+1, iᵤ, k)
-    return A[k]
+    if iₚ==k
+        return A[k]
+    elseif k < iₚ
+        Nₗ == 2 && return A[iₗ]
+        quickselect!(A, iₗ, iₚ, k)
+    else
+        Nᵤ == 2 && return A[iᵤ]
+        quickselect!(A, iₚ+1, iᵤ, k)
+    end
 end
 
 

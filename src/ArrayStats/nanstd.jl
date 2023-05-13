@@ -37,7 +37,7 @@ export nanstd
 
 sqrt!(x::Number) = sqrt(x)
 function sqrt!(A::StridedArray)
-    @turbo for i ∈ eachindex(A)
+    @turbo check_empty=true for i ∈ eachindex(A)
         A[i] = sqrt(A[i])
     end
     return A

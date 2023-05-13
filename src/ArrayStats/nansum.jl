@@ -53,7 +53,7 @@ end
 function _nansum(A::StridedArray, ::Colon)
     Tₒ = Base.promote_op(+, eltype(A), Int)
     Σ = ∅ = zero(Tₒ)
-    @turbo for i ∈ eachindex(A)
+    @turbo check_empty=true for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ
         Σ += ifelse(notnan, Aᵢ, ∅)
@@ -63,7 +63,7 @@ end
 function _nansum(A::StridedArray{<:Integer}, ::Colon)
     Tₒ = Base.promote_op(+, eltype(A), Int)
     Σ = zero(Tₒ)
-    @turbo for i ∈ eachindex(A)
+    @turbo check_empty=true for i ∈ eachindex(A)
         Σ += A[i]
     end
     return Σ

@@ -2,7 +2,7 @@ function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool, μᵪ::N
     # Calculate covariance
     σᵪᵧ = ∅ = zero(promote_type(typeof(μᵪ), typeof(μᵧ), Int))
     n = 0
-    @turbo for i ∈ eachindex(x,y)
+    @turbo check_empty=true for i ∈ eachindex(x,y)
             δᵪ = x[i] - μᵪ
             δᵧ = y[i] - μᵧ
             δ² = δᵪ * δᵧ
@@ -19,7 +19,7 @@ function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool)
     n = 0
     Σᵪ = ∅ᵪ = zero(eltype(x))
     Σᵧ = ∅ᵧ = zero(eltype(y))
-    @turbo for i ∈ eachindex(x,y)
+    @turbo check_empty=true for i ∈ eachindex(x,y)
         xᵢ, yᵢ = x[i], y[i]
         notnan = (xᵢ==xᵢ) & (yᵢ==yᵢ)
         n += notnan
@@ -110,7 +110,7 @@ function _nancor(x::AbstractVector, y::AbstractVector, corrected::Bool)
     n = 0
     Σᵪ = ∅ᵪ = zero(eltype(x))
     Σᵧ = ∅ᵧ = zero(eltype(y))
-    @turbo for i ∈ eachindex(x,y)
+    @turbo check_empty=true for i ∈ eachindex(x,y)
         xᵢ, yᵢ = x[i], y[i]
         notnan = (xᵢ==xᵢ) & (yᵢ==yᵢ)
         n += notnan
@@ -124,7 +124,7 @@ function _nancor(x::AbstractVector, y::AbstractVector, corrected::Bool)
     # Pairwise nan-variances
     σ²ᵪ = ∅ᵪ = zero(typeof(μᵪ))
     σ²ᵧ = ∅ᵧ = zero(typeof(μᵧ))
-    @turbo for i ∈ eachindex(x,y)
+    @turbo check_empty=true for i ∈ eachindex(x,y)
         δᵪ = x[i] - μᵪ
         δᵧ = y[i] - μᵧ
         notnan = (δᵪ==δᵪ) & (δᵧ==δᵧ)
