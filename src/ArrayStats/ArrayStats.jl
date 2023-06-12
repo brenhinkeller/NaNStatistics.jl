@@ -11,9 +11,16 @@
     ```
     Return the number of elements of `A` that are `NaN`s.
     """
-    function countnans(A)
+    function countnans(A::StridedArray{T}) where T<:PrimitiveNumber
         n = 0
         @turbo check_empty=true for i ∈ eachindex(A)
+            n += A[i]!=A[i]
+        end
+        return n
+    end
+    function countnans(A)
+        n = 0
+        @inbounds for i ∈ eachindex(A)
             n += A[i]!=A[i]
         end
         return n
@@ -56,6 +63,12 @@
         end
         return mask
     end
+    function nanmask!(mask::StridedArray, A::StridedArray{T}) where T<:PrimitiveNumber
+        @inbounds for i ∈ eachindex(A)
+            mask[i] = A[i]==A[i]
+        end
+        return mask
+    end
     # Special methods for arrays that cannot contain NaNs
     nanmask!(mask, A::AbstractArray{<:Integer}) = fill!(mask, true)
     nanmask!(mask, A::AbstractArray{<:Rational}) = fill!(mask, true)
@@ -67,10 +80,21 @@
     ```
     Replace all `NaN`s in A with zeros of the same type
     """
-    function zeronan!(A::Array)
+    function zeronan!(A::StridedArray{T}) where T<:PrimitiveNumber
+        ∅ = zero(T)
         @turbo for i ∈ eachindex(A)
             Aᵢ = A[i]
-            A[i] = ifelse(Aᵢ==Aᵢ, Aᵢ, 0)
+            A[i] = ifelse(Aᵢ==Aᵢ, Aᵢ, ∅)
+        end
+        return A
+    end
+    function zeronan!(A::AbstractArray{T}) where T
+        ∅ = zero(T)
+        @inbounds for i ∈ eachindex(A)
+            Aᵢ = A[i]
+            if isnan(Aᵢ)
+                A[i] = ∅
+            end
         end
         return A
     end

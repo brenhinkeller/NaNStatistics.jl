@@ -344,4 +344,19 @@
     @test movmean(repeat(1:10,1,10)',5) == repeat([2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.5, 9.0],1,10)'
     @test movmean([3 5 10 3; 4 2 5 8; 5 6 8 8; 2 6 10 6], 3) ≈ [7//2 29//6 11//2 13//2; 25//6 16//3 55//9 7//1; 25//6 16//3 59//9 15//2; 19//4 37//6 22//3 8//1]
 
-## ---
+## --- Bugfixes
+
+    a = rand(10,5)
+    a[3,1] = NaN
+    av = selectdim(a,2,[true,true,true,false,false])
+    as = a[:,[true,true,true,false,false]]
+    @test !any(isnan, nanmean(av,dims=2))
+    @test nanmean(av,dims=2) ≈ nanmean(as, dims=2)
+
+
+    using ForwardDiff
+    A = fill(ForwardDiff.Dual(-Inf, 0.0), 2, 3)
+    @test !any(isnan, nanmean(A; dims = 1))
+
+
+## --- End of File

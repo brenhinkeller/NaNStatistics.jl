@@ -15,9 +15,3 @@ LoopVectorization = "0.12.113"
 PrecompileTools = "1"
 Static = "0.8"
 julia = "1.8"
-
-[extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test"]
