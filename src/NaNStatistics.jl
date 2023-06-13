@@ -6,7 +6,9 @@ module NaNStatistics
 
     using Static
     const IntOrStaticInt = Union{Integer, StaticInt}
-    const PrimitiveNumber = Union{Int8, Int16, Int32, Int64, Int128, UInt8, UInt16, UInt32, UInt64, UInt128, Float16, Float32, Float64}
+    const PrimitiveFloat = Union{Float16, Float32, Float64}
+    const PrimitiveInteger = Union{Int8, Int16, Int32, Int64, Int128, UInt8, UInt16, UInt32, UInt64, UInt128}
+    const PrimitiveNumber = Union{PrimitiveFloat, PrimitiveInteger}
     _dim(::Type{StaticInt{N}}) where {N} = N::Int
 
     include("ArrayStats/ArrayStats.jl")

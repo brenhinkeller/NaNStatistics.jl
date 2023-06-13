@@ -238,7 +238,7 @@
     @test nanaad(A, dims=1) == [25.0 25.0 25.0]
     @test nanaad(A, dims=2) ≈ fill(200/3, 100, 1)
 
-## --- Summary statistics: dimensional tests, Float64
+## --- Summary statistics: dimensional tests, Float64, dim
 
     A = collect(reshape(1:300.,100,3))
     @test nansum(A, dim=1) == vec(sum(A, dims=1))
@@ -282,6 +282,53 @@
     @test nanmad(A, dim=2) == fill(100.0, 100)
     @test nanaad(A, dim=1) == [25.0, 25.0, 25.0]
     @test nanaad(A, dim=2) ≈ fill(200/3, 100)
+
+## --- Summary statistics: dimensional tests, Float64, nonstandard array type
+
+    A = reshape(1:300.,100,3)
+    @test nansum(A, dims=1) == sum(A, dims=1)
+    @test nansum(A, dims=2) == sum(A, dims=2)
+    @test nancumsum(A, dims=1) == cumsum(A, dims=1)
+    @test nancumsum(A, dims=2) == cumsum(A, dims=2)
+    @test nanminimum(A, dims=1) == minimum(A, dims=1)
+    @test nanminimum(A, dims=2) == minimum(A, dims=2)
+    @test nanmaximum(A, dims=1) == maximum(A, dims=1)
+    @test nanmaximum(A, dims=2) == maximum(A, dims=2)
+    @test nanextrema(A, dims=1) == [(1.0, 100.0) (101.0, 200.0) (201.0, 300.0)]
+    @test nanmean(A, dims=1) == mean(A, dims=1)
+    @test nanmean(A, dims=2) == mean(A, dims=2)
+    @test nanmean(A, ones(size(A)), dims=1) == mean(A, dims=1) # weighted
+    @test nanmean(A, ones(size(A)), dims=2) == mean(A, dims=2) # weighted
+    @test nanvar(A, dims=1) ≈ var(A, dims=1)
+    @test nanvar(A, dims=2) ≈ var(A, dims=2)
+    @test nanstd(A, dims=1) ≈ std(A, dims=1)
+    @test nanstd(A, dims=2) ≈ std(A, dims=2)
+    @test nanstd(A, dims=1, mean=nanmean(A,dims=1)) ≈ std(A, dims=1)
+    @test nanstd(A, dims=2, mean=nanmean(A,dims=2)) ≈ std(A, dims=2)
+    @test nanstd(A, ones(size(A)), dims=1) ≈ std(A, dims=1) # weighted
+    @test nanstd(A, ones(size(A)), dims=2) ≈ std(A, dims=2) # weighted
+    @test nanmedian(A, dims=1) == median(A, dims=1)
+    @test nanmedian(A, dims=2) == median(A, dims=2)
+    @test nanminimum(A, dims=1) == [1 101 201]
+    @test dropdims(nanminimum(A, dims=2), dims=2) == 1:100
+    @test nanmaximum(A, dims=1) == [100 200 300]
+    @test dropdims(nanmaximum(A, dims=2), dims=2) == 201:300
+    @test nanmean(A, dims=1) == [50.5 150.5 250.5]
+    @test dropdims(nanmean(A, dims=2), dims=2) == 101:200
+    @test nanmean(A, ones(size(A)), dims=1) == [50.5 150.5 250.5] # weighted
+    @test dropdims(nanmean(A, ones(size(A)), dims=2), dims=2) == 101:200 # weighted
+    @test nanstd(A, dims=1) ≈ fill(29.011491975882016, 1, 3)
+    @test nanstd(A, dims=2) ≈ fill(100, 100, 1)
+    @test nanstd(A, ones(size(A)), dims=1) ≈ fill(29.011491975882016, 1, 3) # weighted
+    @test nanstd(A, ones(size(A)), dims=2) ≈ fill(100, 100, 1) # weighted
+    @test nanmedian(A, dims=1) == [50.5 150.5 250.5]
+    @test dropdims(nanmedian(A, dims=2), dims=2) == 101:200
+    @test nanpctile(A, 10, dims=1) ≈ [10.9 110.9 210.9]
+    @test nanpctile(A, 10, dims=2) ≈ 21:120
+    @test nanmad(A, dims=1) == [25.0 25.0 25.0]
+    @test nanmad(A, dims=2) == fill(100.0, 100, 1)
+    @test nanaad(A, dims=1) == [25.0 25.0 25.0]
+    @test nanaad(A, dims=2) ≈ fill(200/3, 100, 1)
 
 ## --- Test fallbacks for complex reductions
 

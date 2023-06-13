@@ -50,8 +50,8 @@ function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
 end
 
 # Reduce all the dims!
-function _nansum(A::StridedArray, ::Colon)
-    Tₒ = Base.promote_op(+, eltype(A), Int)
+function _nansum(A::StridedArray{T}, ::Colon) where T<:PrimitiveFloat
+    Tₒ = Base.promote_op(+, T, Int)
     Σ = ∅ = zero(Tₒ)
     @turbo check_empty=true for i ∈ eachindex(A)
         Aᵢ = A[i]
@@ -60,8 +60,8 @@ function _nansum(A::StridedArray, ::Colon)
     end
     return Σ
 end
-function _nansum(A::StridedArray{<:Integer}, ::Colon)
-    Tₒ = Base.promote_op(+, eltype(A), Int)
+function _nansum(A::StridedArray{T}, ::Colon) where T<:PrimitiveInteger
+    Tₒ = Base.promote_op(+, T, Int)
     Σ = zero(Tₒ)
     @turbo check_empty=true for i ∈ eachindex(A)
         Σ += A[i]

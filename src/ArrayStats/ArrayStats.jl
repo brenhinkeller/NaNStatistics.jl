@@ -57,18 +57,19 @@
     ```
     Fill a Boolean mask of dimensions `size(A)` that is false wherever `A` is `NaN`
     """
-    function nanmask!(mask, A)
+    function nanmask!(mask::StridedArray, A::StridedArray{T}) where T<:PrimitiveNumber
         @turbo for i ∈ eachindex(A)
             mask[i] = A[i]==A[i]
         end
         return mask
     end
-    function nanmask!(mask::StridedArray, A::StridedArray{T}) where T<:PrimitiveNumber
+    function nanmask!(mask, A)
         @inbounds for i ∈ eachindex(A)
             mask[i] = A[i]==A[i]
         end
         return mask
     end
+
     # Special methods for arrays that cannot contain NaNs
     nanmask!(mask, A::AbstractArray{<:Integer}) = fill!(mask, true)
     nanmask!(mask, A::AbstractArray{<:Rational}) = fill!(mask, true)
@@ -404,10 +405,9 @@
         end
         return sqrt(s / w * n / (n-1))
     end
-    function _nanstd(A::StridedArray, W::StridedArray, ::Colon)
+    function _nanstd(A::StridedArray{Ta}, W::StridedArray{Tw}, ::Colon) where {Ta<:PrimitiveNumber, Tw<:PrimitiveNumber}
         n = 0
-        Tw = eltype(W)
-        Tm = promote_type(eltype(W), eltype(A))
+        Tm = promote_type(Tw, Ta)
         w = zero(Tw)
         m = zero(Tm)
         @turbo for i ∈ eachindex(A)

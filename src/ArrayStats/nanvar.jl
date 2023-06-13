@@ -45,8 +45,8 @@ _nanvar(μ, corrected::Bool, A, dims::Int) = _nanvar(μ, corrected, A, (dims,))
 # If the mean isn't known, compute it
 _nanvar(::Nothing, corrected::Bool, A, dims::Tuple) = _nanvar!(_nanmean(A, dims), corrected, A, dims)
 # Reduce all the dims!
-function _nanvar(::Nothing, corrected::Bool, A::StridedArray, ::Colon)
-    Tₒ = Base.promote_op(/, eltype(A), Int)
+function _nanvar(::Nothing, corrected::Bool, A::StridedArray{T}, ::Colon) where T<:PrimitiveFloat
+    Tₒ = Base.promote_op(/, T, Int)
     n = 0
     Σ = ∅ = zero(Tₒ)
     @turbo check_empty=true for i ∈ eachindex(A)
@@ -64,8 +64,8 @@ function _nanvar(::Nothing, corrected::Bool, A::StridedArray, ::Colon)
     end
     return σ² / max(n-corrected,0)
 end
-function _nanvar(::Nothing, corrected::Bool, A::StridedArray{<:Integer}, ::Colon)
-    Tₒ = Base.promote_op(/, eltype(A), Int)
+function _nanvar(::Nothing, corrected::Bool, A::StridedArray{T}, ::Colon) where T<:PrimitiveInteger
+    Tₒ = Base.promote_op(/, T, Int)
     n = length(A)
     Σ = zero(Tₒ)
     @turbo check_empty=true for i ∈ eachindex(A)
@@ -106,7 +106,7 @@ _nanvar(μ, corrected::Bool, A, dims::Tuple) = _nanvar!(collect(μ), corrected, 
 _nanvar(μ::Array, corrected::Bool, A, dims::Tuple) = _nanvar!(copy(μ), corrected, A, dims)
 _nanvar(μ::Number, corrected::Bool, A, dims::Tuple) = _nanvar!([μ], corrected, A, dims)
 # Reduce all the dims!
-function _nanvar(μ::Number, corrected::Bool, A::AbstractArray, ::Colon)
+function _nanvar(μ::Number, corrected::Bool, A::StridedArray{T}, ::Colon) where T<:PrimitiveFloat
     n = 0
     σ² = ∅ = zero(typeof(μ))
     @turbo check_empty=true for i ∈ eachindex(A)
@@ -117,7 +117,7 @@ function _nanvar(μ::Number, corrected::Bool, A::AbstractArray, ::Colon)
     end
     return σ² / max(n-corrected, 0)
 end
-function _nanvar(μ::Number, corrected::Bool, A::AbstractArray{<:Integer}, ::Colon)
+function _nanvar(μ::Number, corrected::Bool, A::StridedArray{T}, ::Colon) where T<:PrimitiveInteger
     σ² = zero(typeof(μ))
     if μ==μ
         @turbo check_empty=true for i ∈ eachindex(A)
@@ -130,7 +130,7 @@ function _nanvar(μ::Number, corrected::Bool, A::AbstractArray{<:Integer}, ::Col
     end
     return σ² / max(n-corrected, 0)
 end
-# Fallback method for non-arrays
+# Fallback method for non-strided-arrays
 function _nanvar(μ::Number, corrected::Bool, A, ::Colon)
     n = 0
     σ² = ∅ = zero(typeof(μ))

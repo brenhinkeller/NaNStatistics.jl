@@ -36,7 +36,7 @@ nanstd(A; dims=:, dim=:, mean=nothing, corrected=true) = sqrt!(__nanvar(mean, co
 export nanstd
 
 sqrt!(x::Number) = sqrt(x)
-function sqrt!(A::StridedArray{T}) where T<:PrimitiveNumber
+function sqrt!(A::StridedArray{<:PrimitiveNumber})
     @turbo check_empty=true for i ∈ eachindex(A)
         A[i] = sqrt(A[i])
     end
