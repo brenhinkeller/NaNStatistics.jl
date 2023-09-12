@@ -1,6 +1,6 @@
 @setup_workload begin
 
-    MAXDIMS = 3
+    maxdims = 2
 
     R = rand(10000)
     x = [1:100..., 1]
@@ -21,7 +21,7 @@
         # nanpctile(Y, 50, dims=2)
 
         for T in (Float64,)
-            for nd in 1:MAXDIMS
+            for nd in 1:maxdims
                 A = ones(T, ntuple(i->10, nd))
                 nansum(A)
                 nanmean(A)
@@ -44,16 +44,16 @@
                         nanmaximum(A, dims=d)
                     end
 
-                    for i = 2:nd
-                        for j = 1:i-1
-                            # nansum(A, dims=(j,i))
-                            nanmean(A, dims=(j,i))
-                            # nanstd(A, dims=(j,i))
-                            # nanvar(A, dims=(j,i))
-                            # nanminimum(A, dims=(j,i))
-                            # nanmaximum(A, dims=(j,i))
-                        end
-                    end
+                    # for i = 2:nd
+                    #     for j = 1:i-1
+                    #         nansum(A, dims=(j,i))
+                    #         nanmean(A, dims=(j,i))
+                    #         nanstd(A, dims=(j,i))
+                    #         nanvar(A, dims=(j,i))
+                    #         nanminimum(A, dims=(j,i))
+                    #         nanmaximum(A, dims=(j,i))
+                    #     end
+                    # end
                 end
 
             end
