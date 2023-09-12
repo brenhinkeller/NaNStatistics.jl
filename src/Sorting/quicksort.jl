@@ -75,6 +75,11 @@ end
 
 # Partially sort `A` around the `k`th sorted element and return that element
 function quickselect!(A::AbstractArray, iₗ=firstindex(A), iᵤ=lastindex(A), k=(iₗ+iᵤ)÷2)
+    # Fall back to Base implementation for very large arrays
+    if iᵤ-iₗ > 20000
+        return Base.Sort.partialsort!(view(A, iₗ:iᵤ), k-(iₗ-1))
+    end
+
     # Pick a pivot for partitioning
     N = iᵤ - iₗ + 1
     A[iₗ], A[k] = A[k], A[iₗ]
@@ -179,78 +184,5 @@ function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
         # Recurse: sort both upper and lower partitions
         quicksort!(A, iₗ, iₚ)
         quicksort!(A, iₚ+1, iᵤ)
-    end
-end
-
-# Sort `A`, assuming no NaNs, multithreaded
-function quicksortt!(A, iₗ=firstindex(A), iᵤ=lastindex(A), level=1)
-    if issortedrange(A, iₗ, iᵤ)
-        # If already sorted, we're done here
-        return A
-    end
-    # Otherwise, we have to sort
-    N = iᵤ - iₗ + 1
-    if isantisortedrange(A, iₗ, iᵤ)
-        vreverse!(A, iₗ, iᵤ)
-        return A
-    elseif N == 3
-        # We know we are neither sorted nor antisorted, so only four possibilities remain
-        iₘ = iₗ + 1
-        a,b,c = A[iₗ], A[iₘ], A[iᵤ]
-        if a <= b
-            if a <= c
-                A[iₘ], A[iᵤ] = c, b             # a ≤ c ≤ b
-            else
-                A[iₗ], A[iₘ], A[iᵤ] = c, a, b   # c ≤ a ≤ b
-            end
-        else
-            if a <= c
-                A[iₗ], A[iₘ] = b, a             # b ≤ a ≤ c
-            else
-                A[iₗ], A[iₘ], A[iᵤ] = b, c, a   # b ≤ c ≤ a
-            end
-        end
-        return A
-    else
-        # Pick a pivot for partitioning
-        iₚ = iₗ + (N >> 2)
-        A[iₗ], A[iₚ] = A[iₚ], A[iₗ]
-        pivot = A[iₗ]
-
-        # Count up elements that must be moved to upper partition
-        Nᵤ = 0
-        @turbo for i = (iₗ+1):iᵤ
-            Nᵤ += A[i] >= pivot
-        end
-        Nₗ = N - Nᵤ
-
-        # Swap elements between upper and lower partitions
-        i = iₗ
-        j = iᵤ
-        @inbounds for n = 1:Nₗ-1
-            i = iₗ + n
-            if A[i] >= pivot
-                while A[j] >= pivot
-                    j -= 1
-                end
-                j <= i && break
-                A[i], A[j] = A[j], A[i]
-                j -= 1
-            end
-        end
-        # Move pivot to the top of the lower partition
-        iₚ = iₗ + Nₗ - 1
-        A[iₗ], A[iₚ] = A[iₚ], A[iₗ]
-        # Recurse: sort both upper and lower partitions
-        if level < 7
-            @sync begin
-                Threads.@spawn quicksortt!(A, iₗ, iₚ, level+1)
-                Threads.@spawn quicksortt!(A, iₚ+1, iᵤ, level+1)
-            end
-        else
-            quicksort!(A, iₗ, iₚ)
-            quicksort!(A, iₚ+1, iᵤ)
-        end
-        return A
     end
 end
