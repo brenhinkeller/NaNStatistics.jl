@@ -8,10 +8,12 @@ IfElse = "615f187c-cbe4-4ef1-ba3b-2fcf58d6d173"
 LoopVectorization = "bdcacae8-1622-11e9-2a5c-532679323890"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 Static = "aedffcd0-7271-4cad-89d0-dc628f76c6d3"
+VectorizationBase = "3d5dd08c-fd9d-11e8-17fa-ed2836048c2f"
 
 [compat]
 IfElse = "0.1"
 LoopVectorization = "0.12.113"
+VectorizationBase = "0.21.0 - 0.21.64"
 PrecompileTools = "1"
 Static = "0.8"
 julia = "1.8"
