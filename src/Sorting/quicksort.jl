@@ -75,52 +75,8 @@ end
 
 # Partially sort `A` around the `k`th sorted element and return that element
 function quickselect!(A::AbstractArray, iₗ=firstindex(A), iᵤ=lastindex(A), k=(iₗ+iᵤ)÷2)
-    # Fall back to Base implementation for very large arrays
-    if iᵤ-iₗ > 20000
-        return Base.Sort.partialsort!(view(A, iₗ:iᵤ), k-(iₗ-1))
-    end
-
-    # Pick a pivot for partitioning
-    N = iᵤ - iₗ + 1
-    A[iₗ], A[k] = A[k], A[iₗ]
-    pivot = A[iₗ]
-
-    # Count up elements that must be moved to upper partition
-    Nᵤ = 0
-    @turbo check_empty=true for i = (iₗ+1):iᵤ
-        Nᵤ += Int(A[i] >= pivot)
-    end
-    Nₗ = N - Nᵤ
-
-    # Swap elements between upper and lower partitions
-    i = iₗ
-    j = iᵤ
-    @inbounds for n = 1:Nₗ-1
-        i = iₗ + n
-        if A[i] >= pivot
-            while A[j] >= pivot
-                j -= 1
-            end
-            j <= i && break
-            A[i], A[j] = A[j], A[i]
-            j -= 1
-        end
-    end
-    # Move pivot to the top of the lower partition
-    iₚ = iₗ + Nₗ - 1
-    A[iₗ], A[iₚ] = A[iₚ], A[iₗ]
-    # Recurse: select from partition containing k
-    if iₚ==k
-        return A[k]
-    elseif k < iₚ
-        Nₗ == 2 && return A[iₗ]
-        quickselect!(A, iₗ, iₚ, k)
-    else
-        Nᵤ == 2 && return A[iᵤ]
-        quickselect!(A, iₚ+1, iᵤ, k)
-    end
+    Base.Sort.partialsort!(view(A, iₗ:iᵤ), k-(iₗ-1))
 end
-
 
 # Sort `A`, assuming no NaNs
 function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))

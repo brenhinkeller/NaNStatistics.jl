@@ -400,10 +400,17 @@
     @test !any(isnan, nanmean(av,dims=2))
     @test nanmean(av,dims=2) ≈ nanmean(as, dims=2)
 
-
+    # ForwardDiff / custom type integration
     using ForwardDiff
     A = fill(ForwardDiff.Dual(-Inf, 0.0), 2, 3)
     @test !any(isnan, nanmean(A; dims = 1))
+
+    # Ensure non-contiguous-dims don't segfault
+    x = ones(100, 100, 100)
+    @test nanmedian(x, dim=(1, 2)) == ones(100)
+    @test nanmedian(x, dim=(2, 3)) == ones(100)
+    @test nanmedian(x, dim=(1, 3)) == ones(100)
+    @test nanmedian(x, dim=(1, 2, 3)) == fill(1.0)
 
 
 ## --- End of File
