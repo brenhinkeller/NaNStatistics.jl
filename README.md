@@ -1,6 +1,7 @@
 # NaNStatistics
 [![Docs][docs-dev-img]][docs-dev-url]
 [![CI][ci-img]][ci-url]
+[![CI (julia nightly)][ci-nightly-img]][ci-nightly-url]
 [![Coverage][codecov-img]][codecov-url]
 
 *Because* `NaN` *is just* `missing` *with hardware support!*
@@ -144,5 +145,7 @@ julia> movmean(A, 3)
 [docs-dev-url]: https://brenhinkeller.github.io/NaNStatistics.jl/dev/
 [ci-img]: https://github.com/brenhinkeller/NaNStatistics.jl/workflows/CI/badge.svg
 [ci-url]: https://github.com/brenhinkeller/NaNStatistics.jl/actions?query=workflow%3ACI
+[ci-nightly-img]:https://github.com/brenhinkeller/NaNStatistics.jl/workflows/CI%20(Julia%20nightly)/badge.svg
+[ci-nightly-url]:https://github.com/brenhinkeller/NaNStatistics.jl/actions/workflows/CI-julia-nightly.yml
 [codecov-img]: https://codecov.io/gh/brenhinkeller/NaNStatistics.jl/branch/main/graph/badge.svg
 [codecov-url]: http://codecov.io/github/brenhinkeller/NaNStatistics.jl?branch=main
