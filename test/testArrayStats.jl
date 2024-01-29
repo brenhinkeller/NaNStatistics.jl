@@ -40,6 +40,7 @@
     @test nanextrema(A) === (1.0, 10.0)
     @test nanvar([1,2,3,NaN]) === 1.0
     @test nanstd([1,2,3,NaN]) === 1.0
+    @test nansem([1,2,3,NaN]) ≈ 1/sqrt(3)
     @test nanstd([1,2,3,NaN], ones(4)) === 1.0 # weighted
     @test nanmad([1,2,3,NaN]) === 1.0
     @test nanaad([1,2,3,NaN]) ≈ 2/3
@@ -62,6 +63,7 @@
     @test isnan(nanvar(A))
     @test isnan(nanvar(A, mean=NaN))
     @test isnan(nanstd(A))
+    @test isnan(nansem(A))
     @test isnan(nanstd(A, ones(10))) # weighted
     @test isnan(nanaad(A))
     @test isnan(nanmad(A))
@@ -81,6 +83,7 @@
     @test isnan(nanvar(A))
     @test isnan(nanvar(A, mean=0))
     @test isnan(nanstd(A))
+    @test isnan(nansem(A))
     @test isnan(nanstd(A, copy(A))) # weighted
     @test isnan(nanaad(A))
     @test isnan(nanmad(A))
@@ -107,6 +110,7 @@
     @test nanvar([1,2,3]) === 1.0
     @test nanvar([1,2,3], mean=2) === 1.0
     @test nanstd([1,2,3]) === 1.0
+    @test nansem([1,2,3]) ≈ 1/sqrt(3)
     @test nanstd([1,2,3], ones(3)) === 1.0 # weighted
     @test nanmad([1,2,3]) === 1.0
     @test nanaad([1,2,3]) ≈ 2/3
@@ -131,6 +135,7 @@
     @test nanvar(1:3) === 1.0
     @test nanvar(1:3, mean=2) === 1.0
     @test nanstd(1:3) === 1.0
+    @test nansem(1:3) ≈ 1/sqrt(3)
     @test nanstd(1:3, ones(3)) === 1.0 # weighted
     @test nanmad(1:3) === 1.0
     @test nanaad(1:3) ≈ 2/3
@@ -151,6 +156,7 @@
     @test nanvar(1:3.) === 1.0
     @test nanvar(1:3., mean=2.0) === 1.0
     @test nanstd(1:3.) === 1.0
+    @test nansem(1:3.) ≈ 1/sqrt(3)
     @test nanstd(1:3., ones(3)) === 1.0 # weighted
     @test nanmad(1:3.) === 1.0
     @test nanaad(1:3.) ≈ 2/3
@@ -179,6 +185,10 @@
     @test nanstd(A, dims=2) ≈ std(A, dims=2)
     @test nanstd(A, dims=1, mean=nanmean(A,dims=1)) ≈ std(A, dims=1)
     @test nanstd(A, dims=2, mean=nanmean(A,dims=2)) ≈ std(A, dims=2)
+    @test nansem(A, dims=1) ≈ std(A, dims=1)./sqrt(size(A,1))
+    @test nansem(A, dims=2) ≈ std(A, dims=2)./sqrt(size(A,2))
+    @test nansem(A, dims=1, mean=nanmean(A,dims=1)) ≈ std(A, dims=1)./sqrt(size(A,1))
+    @test nansem(A, dims=2, mean=nanmean(A,dims=2)) ≈ std(A, dims=2)./sqrt(size(A,2))
     @test nanstd(A, ones(size(A)), dims=1) ≈ std(A, dims=1) # weighted
     @test nanstd(A, ones(size(A)), dims=2) ≈ std(A, dims=2) # weighted
     @test nanmad(A, dims=1) == [25.0 25.0 25.0]
@@ -213,6 +223,10 @@
     @test nanstd(A, dims=2) ≈ std(A, dims=2)
     @test nanstd(A, dims=1, mean=nanmean(A,dims=1)) ≈ std(A, dims=1)
     @test nanstd(A, dims=2, mean=nanmean(A,dims=2)) ≈ std(A, dims=2)
+    @test nansem(A, dims=1) ≈ std(A, dims=1)./sqrt(size(A,1))
+    @test nansem(A, dims=2) ≈ std(A, dims=2)./sqrt(size(A,2))
+    @test nansem(A, dims=1, mean=nanmean(A,dims=1)) ≈ std(A, dims=1)./sqrt(size(A,1))
+    @test nansem(A, dims=2, mean=nanmean(A,dims=2)) ≈ std(A, dims=2)./sqrt(size(A,2))
     @test nanstd(A, ones(size(A)), dims=1) ≈ std(A, dims=1) # weighted
     @test nanstd(A, ones(size(A)), dims=2) ≈ std(A, dims=2) # weighted
     @test nanmedian(A, dims=1) == median(A, dims=1)
@@ -258,6 +272,8 @@
     @test nanvar(A, dim=2, mean=nanmean(A,dims=2)) ≈ vec(var(A, dims=2))
     @test nanstd(A, dim=1) ≈ vec(std(A, dims=1))
     @test nanstd(A, dim=2) ≈ vec(std(A, dims=2))
+    @test nansem(A, dim=1) ≈ vec(std(A, dims=1)./sqrt(size(A, 1)))
+    @test nansem(A, dim=2) ≈ vec(std(A, dims=2)./sqrt(size(A, 2)))
     @test nanstd(A, ones(size(A)), dim=1) ≈ vec(std(A, dims=1)) # weighted
     @test nanstd(A, ones(size(A)), dim=2) ≈ vec(std(A, dims=2)) # weighted
     @test nanmedian(A, dim=1) == vec(median(A, dims=1))
@@ -305,6 +321,10 @@
     @test nanstd(A, dims=2) ≈ std(A, dims=2)
     @test nanstd(A, dims=1, mean=nanmean(A,dims=1)) ≈ std(A, dims=1)
     @test nanstd(A, dims=2, mean=nanmean(A,dims=2)) ≈ std(A, dims=2)
+    @test nansem(A, dims=1) ≈ std(A, dims=1)./sqrt(size(A,1))
+    @test nansem(A, dims=2) ≈ std(A, dims=2)./sqrt(size(A,2))
+    @test nansem(A, dims=1, mean=nanmean(A,dims=1)) ≈ std(A, dims=1)./sqrt(size(A,1))
+    @test nansem(A, dims=2, mean=nanmean(A,dims=2)) ≈ std(A, dims=2)./sqrt(size(A,2))
     @test nanstd(A, ones(size(A)), dims=1) ≈ std(A, dims=1) # weighted
     @test nanstd(A, ones(size(A)), dims=2) ≈ std(A, dims=2) # weighted
     @test nanmedian(A, dims=1) == median(A, dims=1)
@@ -337,6 +357,8 @@
     @test nanmean(A, dims=(4,5,6)) ≈ mean(A, dims=(4,5,6))
     @test nanstd(A, dims=(4,5,6)) ≈ std(A, dims=(4,5,6))
     @test nanstd(A, dims=(4,5,6)) ≈ nanstd(A, dims=(4,5,6), mean=nanmean(A, dims=(4,5,6)))
+    @test nansem(A, dims=(4,5,6)) ≈ std(A, dims=(4,5,6))./sqrt(size(A,4)*size(A,5)*size(A,6))
+    @test nansem(A, dims=(4,5,6)) ≈ nansem(A, dims=(4,5,6), mean=nanmean(A, dims=(4,5,6)))
 
 ## --- Test in-place vs. out-of-place versions
 
@@ -374,7 +396,8 @@
     @test nanmean((1,2,3,4,5)) === 3.0
     @test nanstd((1,2,3)) === 1.0
     @test nanstd((1,2,3), mean=2.0) === 1.0
-
+    @test nansem((1,2,3)) ≈ 1/sqrt(3)
+    @test nansem((1,2,3), mean=2.0) ≈ 1/sqrt(3)
 
 ## --- Standardization
 
