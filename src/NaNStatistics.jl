@@ -17,6 +17,7 @@ module NaNStatistics
     include("ArrayStats/nancumsum.jl")
     include("ArrayStats/nanvar.jl")
     include("ArrayStats/nanstd.jl")
+    include("ArrayStats/nansem.jl")
     include("ArrayStats/nancov.jl")
     include("Sorting/quicksort.jl")
     include("Sorting/nanmedian.jl")
