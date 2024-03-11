@@ -404,7 +404,14 @@
     @test nanstandardize!(collect(1:10.)) ≈ ((1:10) .- mean(1:10)) / std(1:10)
     @test nanstandardize(1:10.) ≈ ((1:10) .- mean(1:10)) / std(1:10)
 
-## --- Moving averages
+## --- Moving sums and averages
+
+    # Moving sum: 1D
+    @test movsum(collect(1:10.),5) == movsum(1:10,5)
+    @test movsum(1:10,5) == [6, 10, 15, 20, 25, 30, 35, 40, 34, 27]
+    # Moving sum: 2D
+    @test movsum(repeat(1:5,1,5),3) == [6 9 9 9 6; 12 18 18 18 12; 18 27 27 27 18; 24 36 36 36 24; 18 27 27 27 18]
+    @test movsum(repeat(1:5,1,5)',3) == [6 12 18 24 18; 9 18 27 36 27; 9 18 27 36 27; 9 18 27 36 27; 6 12 18 24 18]
 
     # Moving average: 1D
     @test movmean(collect(1:10.),5) == movmean(1:10,5)

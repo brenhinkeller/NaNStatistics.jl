@@ -508,6 +508,47 @@
     export nanstandardize
 
 
+## --- Moving sum, ignoring NaNs
+
+    """
+    ```julia
+    movsum(x::AbstractVecOrMat, n::Number)
+    ```
+    Simple moving sum of `x` in 1 or 2 dimensions, spanning `n` bins
+    (or n*n in 2D), returning an array of the same size as `x`.
+
+    For the resulting moving sum to be symmetric, `n` must be an odd integer;
+    if `n` is not an odd integer, the first odd integer greater than `n` will be
+    used instead.
+    """
+    function movsum(x::AbstractVector, n::Number)
+        m = similar(x)
+        δ = ceil(Int, (n-1)/2)
+        @inbounds for i ∈ eachindex(x)
+            iₗ = max(i-δ, firstindex(x))
+            iᵤ = min(i+δ, lastindex(x))
+            m[i] = nansum(view(x, iₗ:iᵤ))
+        end
+        return m
+    end
+    function movsum(x::AbstractMatrix, n::Number)
+        m = similar(x)
+        δ = ceil(Int, (n-1)/2)
+        𝐼 = repeat((firstindex(x,1):lastindex(x,1)), 1, size(x,2))
+        𝐽 = repeat((firstindex(x,2):lastindex(x,2))', size(x,1), 1)
+        @inbounds for k ∈ eachindex(𝐼,𝐽)
+            i = 𝐼[k]
+            iₗ = max(i-δ, firstindex(x,1))
+            iᵤ = min(i+δ, lastindex(x,1))
+            j = 𝐽[k]
+            jₗ = max(j-δ, firstindex(x,2))
+            jᵤ = min(j+δ, lastindex(x,2))
+            m[i,j] = nansum(view(x, iₗ:iᵤ, jₗ:jᵤ))
+        end
+        return m
+    end
+    export movsum
+
 ## -- Moving average, ignoring NaNs
 
     """
@@ -521,8 +562,8 @@
     if `n` is not an odd integer, the first odd integer greater than `n` will be
     used instead.
     """
-    function movmean(x::AbstractVector, n::Number)
-        mean_type = Base.promote_op(/, eltype(x), Int64)
+    function movmean(x::AbstractVector{T}, n::Number) where T
+        mean_type = Base.promote_op(/, T, Int64)
         m = Array{mean_type}(undef, size(x))
         δ = ceil(Int, (n-1)/2)
         @inbounds for i ∈ eachindex(x)
@@ -532,8 +573,8 @@
         end
         return m
     end
-    function movmean(x::AbstractMatrix, n::Number)
-        mean_type = Base.promote_op(/, eltype(x), Int64)
+    function movmean(x::AbstractMatrix{T}, n::Number) where T
+        mean_type = Base.promote_op(/, T, Int64)
         m = Array{mean_type}(undef, size(x))
         δ = ceil(Int, (n-1)/2)
         𝐼 = repeat((firstindex(x,1):lastindex(x,1)), 1, size(x,2))
