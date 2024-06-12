@@ -130,7 +130,7 @@
     function nanadd(A::AbstractArray, B::AbstractArray)
         result_type = promote_type(eltype(A), eltype(B))
         result = similar(A, result_type)
-        @inbounds @simd ivdep for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A,B)
             Aᵢ, Bᵢ = A[i], B[i]
             result[i] = (Aᵢ * (Aᵢ==Aᵢ)) + (Bᵢ * (Bᵢ==Bᵢ))
         end
@@ -145,7 +145,7 @@
     Add the non-NaN elements of `B` to `A`, treating `NaN`s as zeros
     """
     function nanadd!(A::Array, B::AbstractArray)
-        @inbounds @simd for i ∈ eachindex(A)
+        @inbounds @simd for i ∈ eachindex(A,B)
             Aᵢ, Bᵢ = A[i], B[i]
             A[i] = (Aᵢ * (Aᵢ==Aᵢ)) + (Bᵢ * (Bᵢ==Bᵢ))
         end
@@ -289,7 +289,7 @@
     function _nanmean(A::AbstractArray{<:Integer}, W, ::Colon)
         n = zero(eltype(W))
         m = zero(promote_type(eltype(W), eltype(A)))
-        @inbounds @simd ivdep for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A,W)
             Wᵢ = W[i]
             n += Wᵢ
             m += Wᵢ * A[i]
@@ -299,7 +299,7 @@
     function _nanmean(A, W, ::Colon)
         n = ∅ₙ = zero(eltype(W))
         m = ∅ₘ = zero(promote_type(eltype(W), eltype(A)))
-        @inbounds @simd ivdep for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A,W)
             Aᵢ, Wᵢ = A[i], W[i]
             t = Aᵢ==Aᵢ
             n += ifelse(t, Wᵢ, ∅ₙ)
@@ -326,18 +326,17 @@
     __nanstd(A, W, region, ::Colon) = _nanstd(A, W, region)
     __nanstd(A, W, ::Colon, region) = reducedims(_nanstd(A, W, region), region)
     function _nanstd(A, W, region)
-        @assert eachindex(A) == eachindex(W)
         mask = nanmask(A)
         n = sum(mask, dims=region)
         w = sum(W.*mask, dims=region)
         s = sum(A.*W.*mask, dims=region) ./ w
         d = A .- s # Subtract mean, using broadcasting
-        @inbounds @simd ivdep for i ∈ eachindex(d)
+        @inbounds @simd ivdep for i ∈ eachindex(d, W)
             dᵢ = d[i]
             d[i] = (dᵢ * dᵢ * W[i]) * mask[i]
         end
         s .= sum(d, dims=region)
-        @inbounds @simd ivdep for i ∈ eachindex(s)
+        @inbounds @simd ivdep for i ∈ eachindex(s,n,w)
             s[i] = sqrt((s[i] * n[i]) / (w[i] * (n[i] - 1)))
         end
         return s
@@ -347,7 +346,7 @@
         n = 0
         w = zero(eltype(W))
         m = zero(promote_type(eltype(W), eltype(A)))
-        @inbounds @simd ivdep for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A,W)
             Aᵢ, Wᵢ = A[i], W[i]
             t = Aᵢ == Aᵢ
             n += t
@@ -356,7 +355,7 @@
         end
         mu = m / w
         s = zero(typeof(mu))
-        @inbounds @simd ivdep for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A,W)
             Aᵢ = A[i]
             d = Aᵢ - mu
             s += (d * d * W[i]) * (Aᵢ == Aᵢ) # Zero if Aᵢ is NaN
