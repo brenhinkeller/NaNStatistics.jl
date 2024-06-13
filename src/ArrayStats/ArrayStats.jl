@@ -11,16 +11,9 @@
     ```
     Return the number of elements of `A` that are `NaN`s.
     """
-    function countnans(A::StridedArray{T}) where T<:PrimitiveNumber
-        n = 0
-        @turbo check_empty=true for i ∈ eachindex(A)
-            n += A[i]!=A[i]
-        end
-        return n
-    end
     function countnans(A)
         n = 0
-        @inbounds for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A)
             n += A[i]!=A[i]
         end
         return n
@@ -35,7 +28,7 @@
     """
     function countnotnans(A)
         n = 0
-        @turbo check_empty=true for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A)
             n += A[i]==A[i]
         end
         return n
@@ -57,14 +50,8 @@
     ```
     Fill a Boolean mask of dimensions `size(A)` that is false wherever `A` is `NaN`
     """
-    function nanmask!(mask::StridedArray, A::StridedArray{T}) where T<:PrimitiveNumber
-        @turbo for i ∈ eachindex(A)
-            mask[i] = A[i]==A[i]
-        end
-        return mask
-    end
     function nanmask!(mask, A)
-        @inbounds for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A)
             mask[i] = A[i]==A[i]
         end
         return mask
@@ -81,21 +68,11 @@
     ```
     Replace all `NaN`s in A with zeros of the same type
     """
-    function zeronan!(A::StridedArray{T}) where T<:PrimitiveNumber
-        ∅ = zero(T)
-        @turbo for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            A[i] = ifelse(Aᵢ==Aᵢ, Aᵢ, ∅)
-        end
-        return A
-    end
     function zeronan!(A::AbstractArray{T}) where T
         ∅ = zero(T)
-        @inbounds for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A)
             Aᵢ = A[i]
-            if isnan(Aᵢ)
-                A[i] = ∅
-            end
+            A[i] = ifelse(Aᵢ==Aᵢ, Aᵢ, ∅)
         end
         return A
     end
@@ -153,9 +130,8 @@
     function nanadd(A::AbstractArray, B::AbstractArray)
         result_type = promote_type(eltype(A), eltype(B))
         result = similar(A, result_type)
-        @inbounds @simd for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            Bᵢ = B[i]
+        @inbounds @simd ivdep for i ∈ eachindex(A,B)
+            Aᵢ, Bᵢ = A[i], B[i]
             result[i] = (Aᵢ * (Aᵢ==Aᵢ)) + (Bᵢ * (Bᵢ==Bᵢ))
         end
         return result
@@ -169,9 +145,8 @@
     Add the non-NaN elements of `B` to `A`, treating `NaN`s as zeros
     """
     function nanadd!(A::Array, B::AbstractArray)
-        @inbounds @simd for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            Bᵢ = B[i]
+        @inbounds @simd for i ∈ eachindex(A,B)
+            Aᵢ, Bᵢ = A[i], B[i]
             A[i] = (Aᵢ * (Aᵢ==Aᵢ)) + (Bᵢ * (Bᵢ==Bᵢ))
         end
         return A
@@ -198,7 +173,6 @@
     __nanminimum(A, ::Colon, region) = reducedims(_nanminimum(A, region), region)
     _nanminimum(A, region) = reduce(nanmin, A, dims=region, init=float(eltype(A))(NaN))
     _nanminimum(A, ::Colon) = reduce(nanmin, A, init=float(eltype(A))(NaN))
-    _nanminimum(A::Array{<:Number}, ::Colon) = vreduce(nanmin, A)
     export nanminimum
 
 
@@ -219,7 +193,6 @@
     __nanmaximum(A, ::Colon, region) = reducedims(_nanmaximum(A, region), region)
     _nanmaximum(A, region) = reduce(nanmax, A, dims=region, init=float(eltype(A))(NaN))
     _nanmaximum(A, ::Colon) = reduce(nanmax, A, init=float(eltype(A))(NaN))
-    _nanmaximum(A::Array{<:Number}, ::Colon) = vreduce(nanmax, A)
     export nanmaximum
 
     """
@@ -312,41 +285,25 @@
         mask = nanmask(A)
         return sum(A.*W.*mask, dims=region) ./ sum(W.*mask, dims=region)
     end
-    # Fallback method for non-StridedArrays
-    function _nanmean(A, W, ::Colon)
-        n = zero(eltype(W))
-        m = zero(promote_type(eltype(W), eltype(A)))
-        @inbounds @simd for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            Wᵢ = W[i]
-            t = Aᵢ == Aᵢ
-            n += Wᵢ * t
-            m += Wᵢ * Aᵢ * t
-        end
-        return m / n
-    end
     # Can't have NaNs if array is all Integers
-    function _nanmean(A::StridedArray{<:Integer}, W, ::Colon)
+    function _nanmean(A::AbstractArray{<:Integer}, W, ::Colon)
         n = zero(eltype(W))
         m = zero(promote_type(eltype(W), eltype(A)))
-        @turbo for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A,W)
             Wᵢ = W[i]
             n += Wᵢ
             m += Wᵢ * A[i]
         end
         return m / n
     end
-    function _nanmean(A::StridedArray, W, ::Colon)
-        T1 = eltype(W)
-        T2 = promote_type(eltype(W), eltype(A))
-        n = zero(T1)
-        m = zero(T2)
-        @turbo for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            Wᵢ = W[i]
+    function _nanmean(A, W, ::Colon)
+        n = ∅ₙ = zero(eltype(W))
+        m = ∅ₘ = zero(promote_type(eltype(W), eltype(A)))
+        @inbounds @simd ivdep for i ∈ eachindex(A,W)
+            Aᵢ, Wᵢ = A[i], W[i]
             t = Aᵢ==Aᵢ
-            n += ifelse(t, Wᵢ, zero(T1))
-            m += ifelse(t, Wᵢ * Aᵢ, zero(T2))
+            n += ifelse(t, Wᵢ, ∅ₙ)
+            m += ifelse(t, Wᵢ * Aᵢ, ∅ₘ)
         end
         return m / n
     end
@@ -374,23 +331,23 @@
         w = sum(W.*mask, dims=region)
         s = sum(A.*W.*mask, dims=region) ./ w
         d = A .- s # Subtract mean, using broadcasting
-        @turbo for i ∈ eachindex(d)
+        @inbounds @simd ivdep for i ∈ eachindex(d, W)
             dᵢ = d[i]
             d[i] = (dᵢ * dᵢ * W[i]) * mask[i]
         end
         s .= sum(d, dims=region)
-        @turbo for i ∈ eachindex(s)
+        @inbounds @simd ivdep for i ∈ eachindex(s,n,w)
             s[i] = sqrt((s[i] * n[i]) / (w[i] * (n[i] - 1)))
         end
         return s
     end
     function _nanstd(A, W, ::Colon)
+        @assert eachindex(A) == eachindex(W)
         n = 0
         w = zero(eltype(W))
         m = zero(promote_type(eltype(W), eltype(A)))
-        @inbounds @simd for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            Wᵢ = W[i]
+        @inbounds @simd ivdep for i ∈ eachindex(A,W)
+            Aᵢ, Wᵢ = A[i], W[i]
             t = Aᵢ == Aᵢ
             n += t
             w += Wᵢ * t
@@ -398,33 +355,10 @@
         end
         mu = m / w
         s = zero(typeof(mu))
-        @inbounds @simd for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A,W)
             Aᵢ = A[i]
             d = Aᵢ - mu
             s += (d * d * W[i]) * (Aᵢ == Aᵢ) # Zero if Aᵢ is NaN
-        end
-        return sqrt(s / w * n / (n-1))
-    end
-    function _nanstd(A::StridedArray{Ta}, W::StridedArray{Tw}, ::Colon) where {Ta<:PrimitiveNumber, Tw<:PrimitiveNumber}
-        n = 0
-        Tm = promote_type(Tw, Ta)
-        w = zero(Tw)
-        m = zero(Tm)
-        @turbo for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            Wᵢ = W[i]
-            t = Aᵢ==Aᵢ
-            n += t
-            w += ifelse(t, Wᵢ,  zero(Tw))
-            m += ifelse(t, Wᵢ * Aᵢ, zero(Tm))
-        end
-        mu = m / w
-        Tmu = typeof(mu)
-        s = zero(Tmu)
-        @turbo for i ∈ eachindex(A)
-            Aᵢ = A[i]
-            d = Aᵢ - mu
-            s += ifelse(Aᵢ==Aᵢ, d * d * W[i], zero(Tmu))
         end
         return sqrt(s / w * n / (n-1))
     end

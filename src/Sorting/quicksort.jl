@@ -5,7 +5,7 @@ function sortnans!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
 
     # Count up NaNs
     Nₙₐₙ = 0
-    @turbo for i = iₗ:iᵤ
+    @inbounds @simd ivdep for i = iₗ:iᵤ
         Nₙₐₙ += A[i] != A[i]
     end
     # If none, return early
@@ -61,7 +61,7 @@ end
             A[𝔦ₗ], A[𝔦ᵤ] = A[𝔦ᵤ], A[𝔦ₗ]
         end
     else
-        @turbo for i ∈ 0:n
+        @inbounds @simd ivdep for i ∈ 0:n
             𝔦ₗ = iₗ+i
             𝔦ᵤ = iᵤ-i
             l = A[𝔦ₗ]
@@ -115,7 +115,7 @@ function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
 
         # Count up elements that must be moved to upper partition
         Nᵤ = 0
-        @turbo for i = (iₗ+1):iᵤ
+        @inbounds @simd ivdep for i = (iₗ+1):iᵤ
             Nᵤ += A[i] >= pivot
         end
         Nₗ = N - Nᵤ
