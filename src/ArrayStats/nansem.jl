@@ -45,57 +45,37 @@ _nansem(μ, corrected::Bool, A, dims::Int) = _nansem(μ, corrected, A, (dims,))
 # If the mean isn't known, compute it
 _nansem(::Nothing, corrected::Bool, A, dims::Tuple) = _nansem!(_nanmean(A, dims), corrected, A, dims)
 # Reduce all the dims!
-function _nansem(::Nothing, corrected::Bool, A::StridedArray{T}, ::Colon) where T<:PrimitiveFloat
-    Tₒ = Base.promote_op(/, T, Int)
-    n = 0
-    Σ = ∅ = zero(Tₒ)
-    @turbo check_empty=true for i ∈ eachindex(A)
-        Aᵢ = A[i]
-        notnan = Aᵢ==Aᵢ
-        n += notnan
-        Σ += ifelse(notnan, Aᵢ, ∅)
-    end
-    μ = Σ / n
-    σ² = ∅ = zero(typeof(μ))
-    @turbo check_empty=true for i ∈ eachindex(A)
-        δ = A[i] - μ
-        notnan = δ==δ
-        σ² += ifelse(notnan, δ * δ, ∅)
-    end
-    return sqrt(σ² / max(n-corrected,0) / n)
+function _nansem(::Nothing, corrected::Bool, A, ::Colon)
+  Tₒ = Base.promote_op(/, eltype(A), Int)
+  n = 0
+  Σ = ∅ = zero(Tₒ)
+  @inbounds @simd ivdep for i ∈ eachindex(A)
+      Aᵢ = A[i]
+      notnan = Aᵢ==Aᵢ
+      n += notnan
+      Σ += ifelse(notnan, Aᵢ, ∅)
+  end
+  μ = Σ / n
+  σ² = ∅ = zero(typeof(μ))
+  @inbounds @simd ivdep for i ∈ eachindex(A)
+      δ = A[i] - μ
+      notnan = δ==δ
+      σ² += ifelse(notnan, δ * δ, ∅)
+  end
+  return sqrt(σ² / max(n-corrected,0) / n)
 end
-function _nansem(::Nothing, corrected::Bool, A::StridedArray{T}, ::Colon) where T<:PrimitiveInteger
+function _nansem(::Nothing, corrected::Bool, A::AbstractArray{T}, ::Colon) where T<:Integer
     Tₒ = Base.promote_op(/, T, Int)
     n = length(A)
     Σ = zero(Tₒ)
-    @turbo check_empty=true for i ∈ eachindex(A)
+    @inbounds @simd ivdep for i ∈ eachindex(A)
         Σ += A[i]
     end
     μ = Σ / n
     σ² = zero(typeof(μ))
-    @turbo check_empty=true for i ∈ eachindex(A)
+    @inbounds @simd ivdep for i ∈ eachindex(A)
         δ = A[i] - μ
         σ² += δ * δ
-    end
-    return sqrt(σ² / max(n-corrected,0) / n)
-end
-# Fallback method for non-StridedArrays
-function _nansem(::Nothing, corrected::Bool, A, ::Colon)
-    Tₒ = Base.promote_op(/, eltype(A), Int)
-    n = 0
-    Σ = ∅ = zero(Tₒ)
-    @inbounds for i ∈ eachindex(A)
-        Aᵢ = A[i]
-        notnan = Aᵢ==Aᵢ
-        n += notnan
-        Σ += ifelse(notnan, Aᵢ, ∅)
-    end
-    μ = Σ / n
-    σ² = ∅ = zero(typeof(μ))
-    @inbounds for i ∈ eachindex(A)
-        δ = A[i] - μ
-        notnan = δ==δ
-        σ² += ifelse(notnan, δ * δ, ∅)
     end
     return sqrt(σ² / max(n-corrected,0) / n)
 end
@@ -106,21 +86,21 @@ _nansem(μ, corrected::Bool, A, dims::Tuple) = _nansem!(collect(μ), corrected, 
 _nansem(μ::Array, corrected::Bool, A, dims::Tuple) = _nansem!(copy(μ), corrected, A, dims)
 _nansem(μ::Number, corrected::Bool, A, dims::Tuple) = _nansem!([μ], corrected, A, dims)
 # Reduce all the dims!
-function _nansem(μ::Number, corrected::Bool, A::StridedArray{T}, ::Colon) where T<:PrimitiveFloat
-    n = 0
-    σ² = ∅ = zero(typeof(μ))
-    @turbo check_empty=true for i ∈ eachindex(A)
-        δ = A[i] - μ
-        notnan = δ==δ
-        n += notnan
-        σ² += ifelse(notnan, δ * δ, ∅)
-    end
-    return sqrt(σ² / max(n-corrected, 0) / n)
+function _nansem(μ::Number, corrected::Bool, A, ::Colon)
+  n = 0
+  σ² = ∅ = zero(typeof(μ))
+  @inbounds @simd ivdep for i ∈ eachindex(A)
+      δ = A[i] - μ
+      notnan = δ==δ
+      n += notnan
+      σ² += ifelse(notnan, δ * δ, ∅)
+  end
+  return sqrt(σ² / max(n-corrected, 0) / n)
 end
-function _nansem(μ::Number, corrected::Bool, A::StridedArray{T}, ::Colon) where T<:PrimitiveInteger
+function _nansem(μ::Number, corrected::Bool, A::AbstractArray{T}, ::Colon) where T<:Integer
     σ² = zero(typeof(μ))
     if μ==μ
-        @turbo check_empty=true for i ∈ eachindex(A)
+        @inbounds @simd ivdep for i ∈ eachindex(A)
             δ = A[i] - μ
             σ² += δ * δ
         end
@@ -130,36 +110,6 @@ function _nansem(μ::Number, corrected::Bool, A::StridedArray{T}, ::Colon) where
     end
     return sqrt(σ² / max(n-corrected, 0) / n)
 end
-# Fallback method for non-strided-arrays
-function _nansem(μ::Number, corrected::Bool, A, ::Colon)
-    n = 0
-    σ² = ∅ = zero(typeof(μ))
-    @inbounds for i ∈ eachindex(A)
-        δ = A[i] - μ
-        notnan = δ==δ
-        n += notnan
-        σ² += ifelse(notnan, δ * δ, ∅)
-    end
-    return sqrt(σ² / max(n-corrected, 0) / n)
-end
-
-# # Fallback method for overly-complex reductions
-# function _nansem_fallback!(B::AbstractArray, corrected::Bool, A::AbstractArray,region)
-#     mask = nanmask(A)
-#     N = sum(mask, dims=region)
-#     Σ = sum(A.*mask, dims=region)./N
-#     δ = A .- Σ # Subtract mean, using broadcasting
-#     @turbo check_empty=true for i ∈ eachindex(δ)
-#         δᵢ = δ[i]
-#         δ[i] = ifelse(mask[i], δᵢ * δᵢ, 0)
-#     end
-#     B .= sum(δ, dims=region)
-#     @turbo check_empty=true for i ∈ eachindex(B)
-#         B[i] = B[i] / max(N[i] - corrected, 0)
-#     end
-#     return B
-# end
-
 
 
 function staticdim_nansem_quote(static_dims::Vector{Int}, N::Int)
