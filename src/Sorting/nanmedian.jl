@@ -108,20 +108,20 @@ function _nanmedian!(A::AbstractArray{T}, ::Colon) where {T}
     n < 2 && return float(T)(A[iₗ])
     i½ = (iₗ + iᵤ) ÷ 2
     if iseven(n)
-        if n < 384
+        Aᵢ₋, Aᵢ₊ =  if n < 384
             quicksort!(A, iₗ, iᵤ)
+            A[i½], A[i½+1]
         else
-            quickselect!(A, iₗ, iᵤ, i½)
-            quickselect!(A, i½+1, iᵤ, i½+1)
+            quickselect!(A, iₗ, iᵤ, i½), quickselect!(A, iₗ, iᵤ, i½+1)
         end
-        return (A[i½] + A[i½+1]) / 2
+        return float(T)(0.5*Aᵢ₋ + 0.5*Aᵢ₊)
     else
         if n < 192
             quicksort!(A, iₗ, iᵤ)
         else
             quickselect!(A, iₗ, iᵤ, i½)
         end
-        return A[i½] / 1
+        return float(T)(A[i½])
     end
 end
 
