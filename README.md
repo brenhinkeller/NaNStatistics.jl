@@ -6,7 +6,7 @@
 
 *Because* `NaN` *is just* `missing` *with hardware support!*
 
-Fast (often [LoopVectorization.jl](https://github.com/JuliaSIMD/LoopVectorization.jl)-based) summary statistics, histograms, and binning — all ignoring `NaN`s, as if `NaN` represented missing data.
+Fast summary statistics, histograms, and binning — all ignoring `NaN`s, as if `NaN` represented missing data.
 
 See also [JuliaSIMD/VectorizedStatistics.jl](https://github.com/JuliaSIMD/VectorizedStatistics.jl) for similar vectorized implementations that don't ignore `NaN`s.
 
@@ -42,20 +42,17 @@ As an alternative to `dims`, the `dim` keyword is also supported, which behaves 
 ```
 julia> a = rand(100000);
 
-julia> @btime minimum($a)
-  51.950 μs (0 allocations: 0 bytes)
-7.630517166790085e-6
+julia> minimum(a)
+9.70221275542471e-7
 
 julia> using NaNStatistics
 
-julia> @btime nanminimum($a)
-  19.690 μs (0 allocations: 0 bytes)
-7.630517166790085e-6
+julia> nanminimum(a)
+9.70221275542471e-7
 
 julia> a[rand(1:100000, 10000)] .= NaN;
 
-julia> @btime nanminimum($a)
-  19.663 μs (0 allocations: 0 bytes)
+julia> nanminimum(a)
 7.630517166790085e-6
 ```
 ### Histograms
@@ -66,30 +63,31 @@ julia> b = 10 * rand(100000);
 julia> using StatsBase
 
 julia> @btime fit(Histogram, $b, 0:1:10, closed=:right)
-  2.633 ms (2 allocations: 224 bytes)
+  526.750 μs (2 allocations: 208 bytes)
 Histogram{Int64, 1, Tuple{StepRange{Int64, Int64}}}
 edges:
   0:1:10
-weights: [10128, 10130, 10084, 9860, 9973, 10062, 10003, 10045, 9893, 9822]
+weights: [10042, 10105, 9976, 9980, 10073, 10038, 9983, 9802, 10056, 9945]
 closed: right
 isdensity: false
 
 julia> using NaNStatistics
 
 julia> @btime histcounts($b, 0:1:10)
-  1.037 ms (1 allocation: 160 bytes)
+  155.083 μs (2 allocations: 176 bytes)
 10-element Vector{Int64}:
- 10128
- 10130
- 10084
-  9860
-  9973
- 10062
- 10003
- 10045
-  9893
-  9822
+ 10042
+ 10105
+  9976
+  9980
+ 10073
+ 10038
+  9983
+  9802
+ 10056
+  9945
 ```
+(Timings as of Julia v1.10.4, NaNStatistics v0.6.36, Apple M1 Max)
 
 ### Binning
 NaNStatistics also provides functions that will efficiently calculate the summary statistics of a given dependent variable `y` binned by an independent variable `x`. These currently include:
@@ -103,18 +101,18 @@ julia> y = x.^2 .+ randn.();
 julia> xmin, xmax, nbins = 0, 10, 10;
 
 julia> @btime nanbinmean($x,$y,xmin,xmax,nbins)
-  364.082 μs (2 allocations: 320 bytes)
+  222.542 μs (2 allocations: 288 bytes)
 10-element Vector{Float64}:
-  0.3421697507351903
-  2.3065542448799015
-  6.322448227456871
- 12.340306767007629
- 20.353233411797074
- 30.347815506059405
- 42.31866909140384
- 56.32256214256441
- 72.35387230251672
- 90.35682945641588
+  0.3482167982440996
+  2.32463720126215
+  6.348942343257478
+ 12.352990978599395
+ 20.34955219534221
+ 30.31123519946431
+ 42.3578375163112
+ 56.33841854482159
+ 72.23884588251572
+ 90.30275863080671
 ```
 ### Other functions
 * `movmean`
