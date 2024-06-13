@@ -64,7 +64,7 @@ function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
     end
     return σ² / max(n-corrected,0)
 end
-function _nanvar(::Nothing, corrected::Bool, A::AbstractArray{T}, ::Colon) where T<:PrimitiveInteger
+function _nanvar(::Nothing, corrected::Bool, A::AbstractArray{T}, ::Colon) where T<:Integer
     Tₒ = Base.promote_op(/, T, Int)
     n = length(A)
     Σ = zero(Tₒ)
@@ -97,7 +97,7 @@ function _nanvar(μ::Number, corrected::Bool, A, ::Colon)
   end
   return σ² / max(n-corrected, 0)
 end
-function _nanvar(μ::Number, corrected::Bool, A::AbstractArray{T}, ::Colon) where T<:PrimitiveInteger
+function _nanvar(μ::Number, corrected::Bool, A::AbstractArray{T}, ::Colon) where T<:Integer
     σ² = zero(typeof(μ))
     if μ==μ
         @inbounds @simd ivdep for i ∈ eachindex(A)
