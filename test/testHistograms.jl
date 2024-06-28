@@ -34,5 +34,17 @@
     w = "size(N,2) < nxbins; any x bins beyond size(N,2) will not be filled"
     @test (@test_logs (:warn, w) histcounts!(zeros(10,5), x, y, xedges, yedges)) == I(10)[:,1:5]
 
+## --- Statistics on histograms
+
+    a = randn(10000)
+    binedges = -10:0.1:10
+    bincenters = (binedges[1:end-1] + binedges[2:end])/2
+    h = histcounts(a, binedges)
+    @test histmean(h, bincenters) ≈ nanmean(a) atol = 0.1
+    @test histstd(h, bincenters) ≈ nanstd(a) atol = 0.1
+
+    n = pdf.(Normal(0,1), bincenters)
+    @test histmean(n, bincenters) ≈ 0 atol = 1e-6
+    @test histstd(n, bincenters, corrected=false) ≈ 1 atol = 1e-6
 
 ## --- End of File
