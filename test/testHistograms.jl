@@ -36,15 +36,23 @@
 
 ## --- Statistics on histograms
 
-    a = randn(10000)
+    a = randn(10000) * 1.2
     binedges = -10:0.1:10
     bincenters = (binedges[1:end-1] + binedges[2:end])/2
     h = histcounts(a, binedges)
-    @test histmean(h, bincenters) ≈ nanmean(a) atol = 0.1
-    @test histstd(h, bincenters) ≈ nanstd(a) atol = 0.1
+    @test histmean(h, bincenters) ≈ nanmean(a) atol = 0.02
+    @test histvar(h, bincenters) ≈ nanvar(a) atol = 0.02
+    @test histstd(h, bincenters) ≈ nanstd(a) atol = 0.02
 
     n = pdf.(Normal(0,1), bincenters)
     @test histmean(n, bincenters) ≈ 0 atol = 1e-6
     @test histstd(n, bincenters, corrected=false) ≈ 1 atol = 1e-6
+
+    binedges = -20:0.1:20
+    bincenters = (binedges[1:end-1] + binedges[2:end])/2
+    n = pdf.(Normal(1,2), bincenters)
+    @test histmean(n, bincenters) ≈ 1 atol = 1e-6
+    @test histvar(n, bincenters, corrected=false) ≈ 4 atol = 1e-3
+    @test histstd(n, bincenters, corrected=false) ≈ 2 atol = 2e-6
 
 ## --- End of File

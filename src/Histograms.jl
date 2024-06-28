@@ -35,6 +35,7 @@ function histcounts(x, xedges::AbstractRange; T=Int64)
 end
 histcounts(x, xmin::Number, xmax::Number, nbins::Integer; T=Int64) = histcounts(x, range(xmin, xmax, length=nbins+1); T=T)
 
+
 """
 ```julia
 histmean(counts, bincenters)
@@ -67,6 +68,52 @@ function histmean(counts, bincenters)
 end
 export histmean
 
+
+"""
+```julia
+histvar(counts, bincenters; corrected::Bool=true)
+```
+Estimate the standard deviation of the data represented by a histogram, 
+specified as `counts` in equally spaced bins centered at `bincenters`.
+
+If `counts` have been normalized, or represent an analytical estimate of a PDF 
+rather than a histogram representing counts of a dataset, Bessel's correction 
+to the standard deviation should likely not be performed - i.e., set the 
+`corrected` keyword argument to `false`. 
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> counts = histcounts(randn(10000), binedges);
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+t
+julia> histvar(counts, bincenters)
+0.9991854064196424
+```
+"""
+function histvar(counts, bincenters; corrected::Bool=true)
+    N = ∅ₙ = zero(eltype(counts))
+    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        pᵢ = counts[i] * bincenters[i]
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
+    end
+    μ = Σ/N
+    Σ = ∅
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        dᵢ = bincenters[i] - μ
+        pᵢ = counts[i] * dᵢ * dᵢ
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+    end
+    return Σ / max(N-corrected, ∅ₙ)
+end
+export histvar
+
+
 """
 ```julia
 histstd(counts, bincenters; corrected::Bool=true)
@@ -89,26 +136,10 @@ julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
 -9.995:0.01:9.995
 t
 julia> histstd(counts, bincenters)
-0.9991854064196424
+0.999592620230683
 ```
 """
-function histstd(counts, bincenters; corrected::Bool=true)
-    N = ∅ₙ = zero(eltype(counts))
-    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
-    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
-        pᵢ = counts[i] * bincenters[i]
-        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
-        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
-    end
-    μ = Σ/N
-    Σ = ∅
-    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
-        dᵢ = bincenters[i] - μ
-        pᵢ = counts[i] * dᵢ * dᵢ
-        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
-    end
-    return Σ / max(N-corrected, ∅ₙ)
-end
+histstd(counts, bincenters; corrected::Bool=true) = sqrt(histvar(counts, bincenters; corrected))
 export histstd
 
 
