@@ -73,12 +73,12 @@ export histmean
 ```julia
 histvar(counts, bincenters; corrected::Bool=true)
 ```
-Estimate the standard deviation of the data represented by a histogram, 
+Estimate the variance of the data represented by a histogram, 
 specified as `counts` in equally spaced bins centered at `bincenters`.
 
 If `counts` have been normalized, or represent an analytical estimate of a PDF 
 rather than a histogram representing counts of a dataset, Bessel's correction 
-to the standard deviation should likely not be performed - i.e., set the 
+to the variance should likely not be performed - i.e., set the 
 `corrected` keyword argument to `false`. 
 
 ## Examples
