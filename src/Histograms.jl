@@ -116,6 +116,113 @@ export histvar
 
 """
 ```julia
+histskewness(counts, bincenters; corrected::Bool=true)
+```
+Estimate the skewness of the data represented by a histogram, 
+specified as `counts` in equally spaced bins centered at `bincenters`.
+
+If `counts` have been normalized, or represent an analytical estimate of a PDF 
+rather than a histogram representing counts of a dataset, Bessel's correction 
+to the variance should likely not be performed - i.e., set the 
+`corrected` keyword argument to `false`. 
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> counts = histcounts(randn(10000), binedges);
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+t
+julia> histskewness(counts, bincenters)
+0.02609968854343211
+```
+"""
+function histskewness(counts, bincenters; corrected::Bool=true)
+    N = ∅ₙ = zero(eltype(counts))
+    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        pᵢ = counts[i] * bincenters[i]
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
+    end
+    μ = Σ/N
+    Σ = ∅
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        dᵢ = bincenters[i] - μ
+        pᵢ = counts[i] * dᵢ * dᵢ
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+    end
+    σ = sqrt(Σ / max(N-corrected, ∅ₙ))
+    Σ = ∅
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        dᵢ = bincenters[i] - μ
+        pᵢ = counts[i] * dᵢ^3
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+    end
+    return (Σ / N)/σ^3
+end
+export histskewness
+
+"""
+```julia
+histkurtosis(counts, bincenters; corrected::Bool=true)
+```
+Estimate the excess kurtosis [1] of the data represented by a histogram, 
+specified as `counts` in equally spaced bins centered at `bincenters`.
+
+If `counts` have been normalized, or represent an analytical estimate of a PDF 
+rather than a histogram representing counts of a dataset, Bessel's correction 
+to the variance should likely not be performed - i.e., set the 
+`corrected` keyword argument to `false`. 
+
+[1] We follow Distributions.jl in returning excess kurtosis rather than raw kurtosis.
+Excess kurtosis is defined as as kurtosis - 3, such that a Normal distribution
+has zero excess kurtosis. 
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> counts = histcounts(randn(10000), binedges);
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+t
+julia> histkurtosis(counts, bincenters)
+0.028863400305099596
+```
+"""
+function histkurtosis(counts, bincenters; corrected::Bool=true)
+    N = ∅ₙ = zero(eltype(counts))
+    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        pᵢ = counts[i] * bincenters[i]
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
+    end
+    μ = Σ/N
+    Σ = ∅
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        dᵢ = bincenters[i] - μ
+        pᵢ = counts[i] * dᵢ * dᵢ
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+    end
+    σ = sqrt(Σ / max(N-corrected, ∅ₙ))
+    Σ = ∅
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        dᵢ = bincenters[i] - μ
+        pᵢ = counts[i] * dᵢ^4
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+    end
+    return (Σ / N)/σ^4 - 3
+end
+export histkurtosis
+
+
+"""
+```julia
 histstd(counts, bincenters; corrected::Bool=true)
 ```
 Estimate the standard deviation of the data represented by a histogram, 

@@ -43,6 +43,8 @@
     @test histmean(h, bincenters) ≈ nanmean(a) atol = 0.02
     @test histvar(h, bincenters) ≈ nanvar(a) atol = 0.02
     @test histstd(h, bincenters) ≈ nanstd(a) atol = 0.02
+    @test histskewness(h, bincenters) ≈ 0 atol = 0.2
+    @test histkurtosis(h, bincenters) ≈ 0 atol = 0.2
 
     n = pdf.(Normal(0,1), bincenters)
     @test histmean(n, bincenters) ≈ 0 atol = 1e-6
@@ -54,5 +56,7 @@
     @test histmean(n, bincenters) ≈ 1 atol = 1e-6
     @test histvar(n, bincenters, corrected=false) ≈ 4 atol = 1e-3
     @test histstd(n, bincenters, corrected=false) ≈ 2 atol = 2e-6
+    @test histskewness(n, bincenters, corrected=false) ≈ 0 atol = 2e-6
+    @test histkurtosis(n, bincenters, corrected=false) ≈ 0 atol = 2e-6
 
 ## --- End of File
