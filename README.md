@@ -35,6 +35,10 @@ Summary statistics exported by NaNStatistics are generally named the same as the
 * `nanpctile` &emsp; percentile
 * `nanpctile!` &emsp; as `nanpctile` but quicksorts in-place for efficiency
 
+##### Other summary statistics
+* `nanskewness` &emsp; skewness
+* `nankurtosis` &emsp; excess kurtosis
+
 Note that, regardless of implementation, functions involving medians or percentiles are generally significantly slower than other summary statistics, since calculating a median or percentile requires a quicksort or quickselect of the input array; if not done in-place as in `nanmedian!` and `nanpctile!` then a copy of the entire array must also be made.
 
 These functions will generally support the same `dims` keyword argument as their normal Julia counterparts (though are most efficient when operating on an entire collection).

@@ -37,14 +37,20 @@
 ## --- Statistics on histograms
 
     a = randn(10000) * 1.2
+    @test nanmean(a) ≈ mean(a)
+    @test nanvar(a) ≈ var(a)
+    @test nanstd(a) ≈ std(a)
+    @test nanskewness(a) ≈ skewness(a)
+    @test nankurtosis(a) ≈ kurtosis(a)
+
     binedges = -10:0.1:10
-    bincenters = (binedges[1:end-1] + binedges[2:end])/2
+    bincenters = (binedges[1:end-1] + binedges[2:end])/2        
     h = histcounts(a, binedges)
-    @test histmean(h, bincenters) ≈ nanmean(a) atol = 0.02
-    @test histvar(h, bincenters) ≈ nanvar(a) atol = 0.02
-    @test histstd(h, bincenters) ≈ nanstd(a) atol = 0.02
-    @test histskewness(h, bincenters) ≈ 0 atol = 0.2
-    @test histkurtosis(h, bincenters) ≈ 0 atol = 0.2
+    @test histmean(h, bincenters) ≈ mean(a)  atol = 0.02
+    @test histvar(h, bincenters) ≈ var(a) atol = 0.02
+    @test histstd(h, bincenters) ≈ std(a) atol = 0.02
+    @test histskewness(h, bincenters) ≈ skewness(a) atol = 0.02
+    @test histkurtosis(h, bincenters) ≈ kurtosis(a) atol = 0.02
 
     n = pdf.(Normal(0,1), bincenters)
     @test histmean(n, bincenters) ≈ 0 atol = 1e-6

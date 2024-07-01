@@ -51,6 +51,8 @@
     @test nanpctile([0:100...,NaN],99) === 99.0
     @test nanmin(1.,2.) === 1.0
     @test nanmax(1.,2.) === 2.0
+    @test nanskewness([1,2,3,NaN]) ≈ 0.0
+    @test nankurtosis([1,2,3,NaN]) ≈ -1.5
 
 ## --- Non-monotonic arrays
 
@@ -73,6 +75,8 @@
     @test nanaad(A) ≈ 2.5
     @test nanmedian(A) ≈ 5.5
     @test nanpctile(A,50) ≈ 5.5
+    @test nanskewness(A) ≈ 0.0
+    @test nankurtosis(A) ≈ -1.2242424242424244
 
 ## --- Arrays containing only NaNs should yield NaN (or 0 for sums)
 
@@ -98,6 +102,8 @@
     @test isnan(nanmedian(A))
     @test isnan(nanpctile(A, 90))
     @test isnan(nanquantile(A, 0.9))
+    @test isnan(nanskewness(A))
+    @test isnan(nankurtosis(A))
     @test isnan(nanmin(NaN,NaN))
     @test isnan(nanmax(NaN,NaN))
 
@@ -121,6 +127,8 @@
     @test isnan(nanmedian(A))
     @test isnan(nanpctile(A, 90))
     @test isnan(nanquantile(A, 0.9))
+    @test isnan(nanskewness(A))
+    @test isnan(nankurtosis(A))
     @test nanargmin(A) === 1
     @test nanargmax(A) === 1
 
@@ -150,6 +158,8 @@
     @test nanaad([1,2,3]) ≈ 2/3
     @test nanmedian([1,2,3]) === 2.0
     @test nanpctile([0:100...],99) === 99.0
+    @test nanskewness([1,2,3]) ≈ 0.0
+    @test nankurtosis([1,2,3]) ≈ -1.5
     @test nanmin(1,2) === 1
     @test nanmax(1,2) === 2
 
@@ -178,6 +188,8 @@
     @test nanaad(1:3) ≈ 2/3
     @test nanmedian(1:3) === 2.0
     @test nanpctile(0:100,99) === 99.0
+    @test nanskewness(1:3) ≈ 0.0
+    @test nankurtosis(1:3) ≈ -1.5
 
     A = 1:10.
     @test nansum(A) === 55.0
@@ -202,6 +214,8 @@
     @test nanaad(1:3.) ≈ 2/3
     @test nanmedian(1:3.) === 2.0
     @test nanpctile(0:100.,99) === 99.0
+    @test nanskewness(1:3.) ≈ 0.0
+    @test nankurtosis(1:3.) ≈ -1.5
 
 ## --- Summary statistics: dimensional tests, Int64
 
@@ -239,7 +253,10 @@
     @test nanmedian(A, dims=2) == median(A, dims=2)
     @test nanpctile(A, 10, dims=1) ≈ [10.9  110.9  210.9]
     @test nanpctile(A, 10, dims=2) ≈ 21:120
-
+    @test vec(nanskewness(A, dims=1)) ≈ skewness.(eachcol(A))
+    @test vec(nanskewness(A, dims=2)) ≈ skewness.(eachrow(A))
+    @test vec(nankurtosis(A, dims=1)) ≈ kurtosis.(eachcol(A))
+    @test vec(nankurtosis(A, dims=2)) ≈ kurtosis.(eachrow(A))
 
 ## --- Summary statistics: dimensional tests, Float64
 
@@ -291,6 +308,10 @@
     @test nanmad(A, dims=2) == fill(100.0, 100, 1)
     @test nanaad(A, dims=1) == [25.0 25.0 25.0]
     @test nanaad(A, dims=2) ≈ fill(200/3, 100, 1)
+    @test vec(nanskewness(A, dims=1)) ≈ skewness.(eachcol(A))
+    @test vec(nanskewness(A, dims=2)) ≈ skewness.(eachrow(A))
+    @test vec(nankurtosis(A, dims=1)) ≈ kurtosis.(eachcol(A))
+    @test vec(nankurtosis(A, dims=2)) ≈ kurtosis.(eachrow(A))
 
 ## --- Summary statistics: dimensional tests, Float64, dim
 
@@ -338,6 +359,10 @@
     @test nanmad(A, dim=2) == fill(100.0, 100)
     @test nanaad(A, dim=1) == [25.0, 25.0, 25.0]
     @test nanaad(A, dim=2) ≈ fill(200/3, 100)
+    @test nanskewness(A, dim=1) ≈ skewness.(eachcol(A))
+    @test nanskewness(A, dim=2) ≈ skewness.(eachrow(A))
+    @test nankurtosis(A, dim=1) ≈ kurtosis.(eachcol(A))
+    @test nankurtosis(A, dims=2) ≈ kurtosis.(eachrow(A))
 
 ## --- Summary statistics: dimensional tests, Float64, nonstandard array type
 
@@ -389,6 +414,10 @@
     @test nanmad(A, dims=2) == fill(100.0, 100, 1)
     @test nanaad(A, dims=1) == [25.0 25.0 25.0]
     @test nanaad(A, dims=2) ≈ fill(200/3, 100, 1)
+    @test vec(nanskewness(A, dims=1)) ≈ skewness.(eachcol(A))
+    @test vec(nanskewness(A, dims=2)) ≈ skewness.(eachrow(A))
+    @test vec(nankurtosis(A, dims=1)) ≈ kurtosis.(eachcol(A))
+    @test vec(nankurtosis(A, dims=2)) ≈ kurtosis.(eachrow(A))
 
 ## --- Test fallbacks for complex reductions
 
