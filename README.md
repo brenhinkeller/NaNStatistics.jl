@@ -89,6 +89,13 @@ julia> @btime histcounts($b, 0:1:10)
 ```
 (Timings as of Julia v1.10.4, NaNStatistics v0.6.36, Apple M1 Max)
 
+In addition, several functions are provided to estimate the summary statistics of a dataset from its histogram, specifically
+* `histmean` &emsp; arithmetic mean
+* `histvar` &emsp; variance
+* `histstd` &emsp; standard deviation
+* `histskewness` &emsp; skewness
+* `histkurtosis` &emsp; excess kurtosis
+
 ### Binning
 NaNStatistics also provides functions that will efficiently calculate the summary statistics of a given dependent variable `y` binned by an independent variable `x`. These currently include:
 * `nanbinmean` / `nanbinmean!`
