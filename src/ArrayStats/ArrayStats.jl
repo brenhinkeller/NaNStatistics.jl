@@ -156,6 +156,17 @@
 
 ## --- Summary statistics of arrays with NaNs
 
+    uinit(T::Type) = uinit(float(T))
+    uinit(T::Type{<:Integer}) = typemax(T)
+    uinit(::Type{Float64}) = NaN
+    uinit(::Type{Float32}) = NaN32
+    uinit(::Type{Float16}) = NaN16
+    linit(T::Type) = linit(float(T))
+    linit(T::Type{<:Integer}) = typemin(T)
+    linit(::Type{Float64}) = NaN
+    linit(::Type{Float32}) = NaN32
+    linit(::Type{Float16}) = NaN16
+
     """
     ```julia
     nanminimum(A; dims)
@@ -171,8 +182,8 @@
     __nanminimum(A, ::Colon, ::Colon) = _nanminimum(A, :)
     __nanminimum(A, region, ::Colon) = _nanminimum(A, region)
     __nanminimum(A, ::Colon, region) = reducedims(_nanminimum(A, region), region)
-    _nanminimum(A, region) = reduce(nanmin, A, dims=region, init=float(eltype(A))(NaN))
-    _nanminimum(A, ::Colon) = reduce(nanmin, A, init=float(eltype(A))(NaN))
+    _nanminimum(A, region) = reduce(nanmin, A, dims=region, init=uinit(eltype(A)))
+    _nanminimum(A, ::Colon) = reduce(nanmin, A, init=uinit(eltype(A)))
     export nanminimum
 
 
@@ -191,8 +202,8 @@
     __nanmaximum(A, ::Colon, ::Colon) = _nanmaximum(A, :)
     __nanmaximum(A, region, ::Colon) = _nanmaximum(A, region)
     __nanmaximum(A, ::Colon, region) = reducedims(_nanmaximum(A, region), region)
-    _nanmaximum(A, region) = reduce(nanmax, A, dims=region, init=float(eltype(A))(NaN))
-    _nanmaximum(A, ::Colon) = reduce(nanmax, A, init=float(eltype(A))(NaN))
+    _nanmaximum(A, region) = reduce(nanmax, A, dims=region, init=linit(eltype(A)))
+    _nanmaximum(A, ::Colon) = reduce(nanmax, A, init=linit(eltype(A)))
     export nanmaximum
 
     """

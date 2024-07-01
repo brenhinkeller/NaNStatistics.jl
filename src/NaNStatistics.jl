@@ -10,6 +10,7 @@ module NaNStatistics
     include("ArrayStats/nanmean.jl")
     include("ArrayStats/nansum.jl")
     include("ArrayStats/nancumsum.jl")
+    include("ArrayStats/nanlogsumexp.jl")
     include("ArrayStats/nanvar.jl")
     include("ArrayStats/nanstd.jl")
     include("ArrayStats/nansem.jl")

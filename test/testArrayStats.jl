@@ -30,6 +30,9 @@
     A = [1:10.0..., NaN]
     @test nansum(A) === 55.0
     @test nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0, 55.0]
+    @test nanlogsumexp(A) ≈ 10.45862974442671
+    @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671, 10.45862974442671]
+    @test isequal(nanlogcumsumexp(A, reverse=true), [10.45862974442671, 10.458551727967379, 10.458339626479004, 10.457762847404243, 10.456193316018123, 10.451914395937594, 10.440189698561195, 10.40760596444438, 10.313261687518223, 10.0, NaN])
     @test nanmean(A) === 5.5
     @test nanmean(A, ones(11)) === 5.5 # weighted
     @test nanrange(A) === 9.0
@@ -49,17 +52,42 @@
     @test nanmin(1.,2.) === 1.0
     @test nanmax(1.,2.) === 2.0
 
+## --- Non-monotonic arrays
+
+    A = [1:5.0..., NaN, 5:-1:1...]
+    @test nancumsum(A) ≈ [1.0, 3.0, 6.0, 10.0, 15.0, 15.0, 20.0, 24.0, 27.0, 29.0, 30.0]
+    @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 5.451914395937593, 5.944418386887494, 6.078136371527456, 6.123152745316754, 6.139216411276987, 6.145061576497539]
+    @test nanlogcumsumexp(A, reverse=true) ≈ [6.145061576497539, 6.139216411276987, 6.123152745316754, 6.078136371527456, 5.944418386887494, 5.451914395937593, 5.451914395937593, 4.440189698561196, 3.4076059644443806, 2.313261687518223, 1.0]
+
+    A = [1:10.0..., NaN, 10:-1:1...]
+    @test nansum(A) === 110.0
+    @test nanlogsumexp(A) ≈ 11.151776924986656
+    @test nanrange(A) === 9.0
+    @test nanminimum(A) === 1.0
+    @test nanmaximum(A) === 10.0
+    @test nanextrema(A) === (1.0, 10.0)
+    @test nanvar(A) ≈ 8.68421052631579
+    @test nanstd(A) ≈ 2.946898458772509
+    @test nansem(A) ≈ 2.946898458772509/sqrt(20)
+    @test nanmad(A) ≈ 2.5
+    @test nanaad(A) ≈ 2.5
+    @test nanmedian(A) ≈ 5.5
+    @test nanpctile(A,50) ≈ 5.5
+
 ## --- Arrays containing only NaNs should yield NaN (or 0 for sums)
 
     A = fill(NaN,10)
     @test nansum(A) == 0
     @test nancumsum(A) == zeros(10)
+    @test isnan(nanlogsumexp(A))
+    @test all(isnan, nanlogcumsumexp(A))
+    @test all(isnan, nanlogcumsumexp(A, reverse=true))
     @test isnan(nanmean(A))
     @test isnan(nanmean(A, ones(10))) # weighted
     @test isnan(nanrange(A))
     @test isnan(nanminimum(A))
     @test isnan(nanmaximum(A))
-    @test all(isnan.(nanextrema(A)))
+    @test all(isnan, nanextrema(A))
     @test isnan(nanvar(A))
     @test isnan(nanvar(A, mean=NaN))
     @test isnan(nanstd(A))
@@ -78,6 +106,9 @@
     A = Float64[]
     @test nansum(A) == 0
     @test nancumsum(A) == Float64[]
+    @test isnan(nanlogsumexp(A))
+    @test nanlogcumsumexp(A) == Float64[]
+    @test nanlogcumsumexp(A, reverse=true) == Float64[]
     @test isnan(nanmean(A))
     @test isnan(nanmean(A, copy(A))) # weighted
     @test isnan(nanvar(A))
@@ -99,6 +130,9 @@
     A = collect(1:10)
     @test nansum(A) === 55
     @test nancumsum(A) == [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
+    @test nanlogsumexp(A) ≈ 10.45862974442671
+    @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671]
+    @test nanlogcumsumexp(A, reverse=true) ≈ [10.45862974442671, 10.458551727967379, 10.458339626479004, 10.457762847404243, 10.456193316018123, 10.451914395937594, 10.440189698561195, 10.40760596444438, 10.313261687518223, 10.0]
     @test nanmean(A) === 5.5
     @test nanmean(A, ones(10)) === 5.5 # weighted
     @test nanrange(A) === 9
@@ -124,6 +158,9 @@
     A = 1:10
     @test nansum(A) === 55
     @test nancumsum(A) == [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
+    @test nanlogsumexp(A) ≈ 10.45862974442671
+    @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671]
+    @test nanlogcumsumexp(A, reverse=true) ≈ [10.45862974442671, 10.458551727967379, 10.458339626479004, 10.457762847404243, 10.456193316018123, 10.451914395937594, 10.440189698561195, 10.40760596444438, 10.313261687518223, 10.0]
     @test nanmean(A) === 5.5
     @test nanmean(A, ones(10)) === 5.5 # weighted
     @test nanrange(A) === 9
@@ -145,6 +182,9 @@
     A = 1:10.
     @test nansum(A) === 55.0
     @test nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0]
+    @test nanlogsumexp(A) ≈ 10.45862974442671
+    @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671]
+    @test nanlogcumsumexp(A, reverse=true) ≈ [10.45862974442671, 10.458551727967379, 10.458339626479004, 10.457762847404243, 10.456193316018123, 10.451914395937594, 10.440189698561195, 10.40760596444438, 10.313261687518223, 10.0]
     @test nanmean(A) === 5.5
     @test nanmean(A, ones(10)) === 5.5 # weighted
     @test nanrange(A) === 9.0
