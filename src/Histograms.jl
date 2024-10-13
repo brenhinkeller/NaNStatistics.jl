@@ -1,7 +1,7 @@
 
 """
 ```julia
-histcounts(x, xedges::AbstractRange; T=Int64)::Vector{T}
+histcounts(x, xedges::AbstractRange; T=Int64, normalize=false)
 ```
 A 1D histogram, ignoring `NaN`s: calculate the number of `x` values that fall into
 each of `length(xedges)-1` equally spaced bins along the `x` axis with bin edges
@@ -28,209 +28,16 @@ julia> histcounts(b, 0:1:10)
  10033
 ```
 """
-function histcounts(x, xedges::AbstractRange; T=Int64)
-    N = fill(zero(T), length(xedges)-1)
+function histcounts(x, xedges::AbstractRange; T=Int64, normalize=false)
+    Tᵣ = normalize ? float(T) : T
+    N = fill(zero(Tᵣ), length(xedges)-1)
     histcounts!(N, x, xedges)
+    if normalize
+       N ./= nansum(N) * step(xedges)
+    end
     return N
 end
-histcounts(x, xmin::Number, xmax::Number, nbins::Integer; T=Int64) = histcounts(x, range(xmin, xmax, length=nbins+1); T=T)
-
-
-"""
-```julia
-histmean(counts, bincenters)
-```
-Estimate the mean of the data represented by a histogram, 
-specified as `counts` in equally spaced bins centered at `bincenters`.
-
-## Examples
-```julia
-julia> binedges = -10:0.01:10;
-
-julia> counts = histcounts(randn(10000), binedges);
-
-julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
--9.995:0.01:9.995
-
-julia> histmean(counts, bincenters)
-0.0039890000000003135
-```
-"""
-function histmean(counts, bincenters)
-    N = ∅ₙ = zero(eltype(counts))
-    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
-    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
-        pᵢ = counts[i] * bincenters[i]
-        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
-        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
-    end
-    return Σ / N
-end
-export histmean
-
-
-"""
-```julia
-histvar(counts, bincenters; corrected::Bool=true)
-```
-Estimate the variance of the data represented by a histogram, 
-specified as `counts` in equally spaced bins centered at `bincenters`.
-
-If `counts` have been normalized, or represent an analytical estimate of a PDF 
-rather than a histogram representing counts of a dataset, Bessel's correction 
-to the variance should likely not be performed - i.e., set the 
-`corrected` keyword argument to `false`. 
-
-## Examples
-```julia
-julia> binedges = -10:0.01:10;
-
-julia> counts = histcounts(randn(10000), binedges);
-
-julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
--9.995:0.01:9.995
-t
-julia> histvar(counts, bincenters)
-0.9991854064196424
-```
-"""
-function histvar(counts, bincenters; corrected::Bool=true)
-    N = ∅ₙ = zero(eltype(counts))
-    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
-    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
-        pᵢ = counts[i] * bincenters[i]
-        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
-        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
-    end
-    μ = Σ/N
-    Σ = ∅
-    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
-        dᵢ = bincenters[i] - μ
-        pᵢ = counts[i] * dᵢ * dᵢ
-        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
-    end
-    return Σ / max(N-corrected, ∅ₙ)
-end
-export histvar
-
-
-"""
-```julia
-histskewness(counts, bincenters)
-```
-Estimate the skewness of the data represented by a histogram, 
-specified as `counts` in equally spaced bins centered at `bincenters`.
-
-## Examples
-```julia
-julia> binedges = -10:0.01:10;
-
-julia> counts = histcounts(randn(10000), binedges);
-
-julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
--9.995:0.01:9.995
-
-julia> histskewness(counts, bincenters)
-0.011075369240851738
-```
-"""
-function histskewness(counts, bincenters; corrected::Bool=false)
-    N = ∅ₙ = zero(eltype(counts))
-    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
-    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
-        pᵢ = counts[i] * bincenters[i]
-        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
-        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
-    end
-    μ = Σ/N
-    μ₂ = μ₃ = ∅
-    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
-        dᵢ = bincenters[i] - μ
-        δ² = dᵢ * dᵢ
-        pᵢ = counts[i] * δ²
-        μ₂ += ifelse(isnan(pᵢ), ∅, pᵢ)
-        μ₃ += ifelse(isnan(pᵢ), ∅, pᵢ*dᵢ)
-    end
-    σ = sqrt(μ₂ / max(N-corrected, ∅ₙ))
-    return (μ₃ / N)/σ^3
-end
-export histskewness
-
-"""
-```julia
-histkurtosis(counts, bincenters)
-```
-Estimate the excess kurtosis [1] of the data represented by a histogram, 
-specified as `counts` in equally spaced bins centered at `bincenters`.
-
-[1] We follow Distributions.jl in returning excess kurtosis rather than raw kurtosis.
-Excess kurtosis is defined as as kurtosis - 3, such that a Normal distribution
-has zero excess kurtosis. 
-
-## Examples
-```julia
-julia> binedges = -10:0.01:10;
-
-julia> counts = histcounts(randn(10000), binedges);
-
-julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
--9.995:0.01:9.995
-t
-julia> histkurtosis(counts, bincenters)
-0.028863400305099596
-```
-"""
-function histkurtosis(counts, bincenters; corrected::Bool=false)
-    N = ∅ₙ = zero(eltype(counts))
-    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
-    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
-        pᵢ = counts[i] * bincenters[i]
-        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
-        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
-    end
-    μ = Σ/N
-    μ₂ = μ₄ = ∅
-    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
-        dᵢ = bincenters[i] - μ
-        δ² = dᵢ * dᵢ
-        pᵢ = counts[i] * δ²
-        μ₂ += ifelse(isnan(pᵢ), ∅, pᵢ)
-        μ₄ += ifelse(isnan(pᵢ), ∅, pᵢ*δ²)
-    end
-    σ = sqrt(μ₂ / max(N-corrected, ∅ₙ))
-    return (μ₄ / N)/σ^4 - 3
-end
-export histkurtosis
-
-
-"""
-```julia
-histstd(counts, bincenters; corrected::Bool=true)
-```
-Estimate the standard deviation of the data represented by a histogram, 
-specified as `counts` in equally spaced bins centered at `bincenters`.
-
-If `counts` have been normalized, or represent an analytical estimate of a PDF 
-rather than a histogram representing counts of a dataset, Bessel's correction 
-to the standard deviation should likely not be performed - i.e., set the 
-`corrected` keyword argument to `false`. 
-
-## Examples
-```julia
-julia> binedges = -10:0.01:10;
-
-julia> counts = histcounts(randn(10000), binedges);
-
-julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
--9.995:0.01:9.995
-t
-julia> histstd(counts, bincenters)
-0.999592620230683
-```
-"""
-histstd(counts, bincenters; corrected::Bool=true) = sqrt(histvar(counts, bincenters; corrected))
-export histstd
-
+histcounts(x, xmin::Number, xmax::Number, nbins::Integer;  T=Int64, normalize=false) = histcounts(x, range(xmin, xmax, length=nbins+1); T=T, normalize=normalize)
 
 
 """
@@ -294,9 +101,13 @@ julia> N = histcounts(x,y,xedges,yedges)
  0  0  0  0  0  0  0  0  0  1
 ```
 """
-function histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange; T=Int64)
-    N = fill(zero(T), length(yedges)-1, length(xedges)-1)
+function histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange;  T=Int64, normalize=false)
+    Tᵣ = normalize ? float(T) : T
+    N = fill(zero(Tᵣ), length(yedges)-1, length(xedges)-1)
     histcounts!(N, x, y, xedges, yedges)
+    if normalize
+        N ./= nansum(N) * step(xedges)
+     end
     return N
 end
 export histcounts
@@ -425,3 +236,198 @@ function histcounts!(N::AbstractMatrix, x::AbstractVector, y::AbstractVector, xe
     return N
 end
 export histcounts!
+
+
+"""
+```julia
+histmean(counts, bincenters)
+```
+Estimate the mean of the data represented by a histogram, 
+specified as `counts` in equally spaced bins centered at `bincenters`.
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> counts = histcounts(randn(10000), binedges);
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+
+julia> histmean(counts, bincenters)
+0.0039890000000003135
+```
+"""
+function histmean(counts, bincenters)
+    N = ∅ₙ = zero(eltype(counts))
+    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        pᵢ = counts[i] * bincenters[i]
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
+    end
+    return Σ / N
+end
+export histmean
+
+
+"""
+```julia
+histvar(counts, bincenters; corrected::Bool=true)
+```
+Estimate the variance of the data represented by a histogram, 
+specified as `counts` in equally spaced bins centered at `bincenters`.
+
+If `counts` have been normalized, or represent an analytical estimate of a PDF 
+rather than a histogram representing counts of a dataset, Bessel's correction 
+to the variance should likely not be performed - i.e., set the 
+`corrected` keyword argument to `false`. 
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> counts = histcounts(randn(10000), binedges);
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+t
+julia> histvar(counts, bincenters)
+0.9991854064196424
+```
+"""
+function histvar(counts, bincenters; corrected::Bool=true)
+    N = ∅ₙ = zero(eltype(counts))
+    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        pᵢ = counts[i] * bincenters[i]
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
+    end
+    μ = Σ/N
+    Σ = ∅
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        dᵢ = bincenters[i] - μ
+        pᵢ = counts[i] * dᵢ * dᵢ
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+    end
+    return Σ / max(N-corrected, ∅ₙ)
+end
+export histvar
+
+
+"""
+```julia
+histstd(counts, bincenters; corrected::Bool=true)
+```
+Estimate the standard deviation of the data represented by a histogram, 
+specified as `counts` in equally spaced bins centered at `bincenters`.
+
+If `counts` have been normalized, or represent an analytical estimate of a PDF 
+rather than a histogram representing counts of a dataset, Bessel's correction 
+to the standard deviation should likely not be performed - i.e., set the 
+`corrected` keyword argument to `false`. 
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> counts = histcounts(randn(10000), binedges);
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+t
+julia> histstd(counts, bincenters)
+0.999592620230683
+```
+"""
+histstd(counts, bincenters; corrected::Bool=true) = sqrt(histvar(counts, bincenters; corrected))
+export histstd
+
+"""
+```julia
+histskewness(counts, bincenters)
+```
+Estimate the skewness of the data represented by a histogram, 
+specified as `counts` in equally spaced bins centered at `bincenters`.
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> counts = histcounts(randn(10000), binedges);
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+
+julia> histskewness(counts, bincenters)
+0.011075369240851738
+```
+"""
+function histskewness(counts, bincenters; corrected::Bool=false)
+    N = ∅ₙ = zero(eltype(counts))
+    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        pᵢ = counts[i] * bincenters[i]
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
+    end
+    μ = Σ/N
+    μ₂ = μ₃ = ∅
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        dᵢ = bincenters[i] - μ
+        δ² = dᵢ * dᵢ
+        pᵢ = counts[i] * δ²
+        μ₂ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        μ₃ += ifelse(isnan(pᵢ), ∅, pᵢ*dᵢ)
+    end
+    σ = sqrt(μ₂ / max(N-corrected, ∅ₙ))
+    return (μ₃ / N)/σ^3
+end
+export histskewness
+
+"""
+```julia
+histkurtosis(counts, bincenters)
+```
+Estimate the excess kurtosis [1] of the data represented by a histogram, 
+specified as `counts` in equally spaced bins centered at `bincenters`.
+
+[1] We follow Distributions.jl in returning excess kurtosis rather than raw kurtosis.
+Excess kurtosis is defined as as kurtosis - 3, such that a Normal distribution
+has zero excess kurtosis. 
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> counts = histcounts(randn(10000), binedges);
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+t
+julia> histkurtosis(counts, bincenters)
+0.028863400305099596
+```
+"""
+function histkurtosis(counts, bincenters; corrected::Bool=false)
+    N = ∅ₙ = zero(eltype(counts))
+    Σ = ∅ = zero(Base.promote_op(*, eltype(counts), eltype(bincenters)))
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        pᵢ = counts[i] * bincenters[i]
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        N += ifelse(isnan(pᵢ), ∅ₙ, counts[i])
+    end
+    μ = Σ/N
+    μ₂ = μ₄ = ∅
+    @inbounds @simd ivdep for i in eachindex(counts, bincenters)
+        dᵢ = bincenters[i] - μ
+        δ² = dᵢ * dᵢ
+        pᵢ = counts[i] * δ²
+        μ₂ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        μ₄ += ifelse(isnan(pᵢ), ∅, pᵢ*δ²)
+    end
+    σ = sqrt(μ₂ / max(N-corrected, ∅ₙ))
+    return (μ₄ / N)/σ^4 - 3
+end
+export histkurtosis

@@ -8,8 +8,10 @@
     @test sum(h) == n
 
     @test histcounts(1:100,0:10:100) == fill(10,10)
+    @test histcounts(1:100,0:10:100, normalize=true) == fill(0.01,10)
     @test histcounts(1:100,0,100,10) == fill(10,10)
     @test histcounts(1:100.,0.,100.,10) == fill(10,10)
+    @test histcounts(1:100.,0.,100.,10, normalize=true) == fill(0.01,10)
 
     N, bin = histcountindices(1:100,0:10:100)
     @test N == fill(10,10)
@@ -27,6 +29,8 @@
     xedges = yedges = 0:10
     N = histcounts(x,y,xedges,yedges)
     @test N == I(10)
+    N = histcounts(x,y,xedges,yedges, normalize=true)
+    @test N == I(10)./10
 
     # Test results and warnings when N is too small to hold results
     w = "size(N,1) < nybins; any y bins beyond size(N,1) will not be filled"
