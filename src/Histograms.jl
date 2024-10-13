@@ -28,7 +28,7 @@ julia> histcounts(b, 0:1:10)
  10033
 ```
 """
-function histcounts(x, xedges::AbstractRange; T=Int64, normalize=false)
+function histcounts(x, xedges::AbstractRange; T::Type=Int64, normalize::Bool=false)
     Tᵣ = normalize ? float(T) : T
     N = fill(zero(Tᵣ), length(xedges)-1)
     histcounts!(N, x, xedges)
@@ -37,12 +37,12 @@ function histcounts(x, xedges::AbstractRange; T=Int64, normalize=false)
     end
     return N
 end
-histcounts(x, xmin::Number, xmax::Number, nbins::Integer;  T=Int64, normalize=false) = histcounts(x, range(xmin, xmax, length=nbins+1); T=T, normalize=normalize)
+histcounts(x, xmin::Number, xmax::Number, nbins::Integer;  T::Type=Int64, normalize::Bool=false) = histcounts(x, range(xmin, xmax, length=nbins+1); T=T, normalize=normalize)
 
 
 """
 ```julia
-histcountindices(x, xedges::AbstractRange; T=Int64)::Vector{T}
+histcountindices(x, xedges::AbstractRange; T=Int64)
 ```
 A 1D histogram, ignoring `NaN`s; as `histcounts` but also returning a vector of
 the bin index of each `x` value.
@@ -55,19 +55,19 @@ julia> N, bin = histcountindices(b, 0:2:10)
 ([20082, 19971, 20049, 19908, 19990], [2, 3, 2, 2, 4, 2, 3, 3, 2, 4  …  1, 3, 3, 3, 3, 5, 2, 3, 3, 1])
 ```
 """
-function histcountindices(x, xedges::AbstractRange; T=Int64)
+function histcountindices(x, xedges::AbstractRange; T::Type=Int64)
     N = fill(zero(T), length(xedges)-1)
     bin = fill(0, size(x))
     histcountindices!(N, bin, x, xedges)
     return N, bin
 end
-histcountindices(x, xmin::Number, xmax::Number, nbins::Integer; T=Int64) = histcountindices(x, range(xmin, xmax, length=nbins+1); T=T)
+histcountindices(x, xmin::Number, xmax::Number, nbins::Integer; T::Type=Int64) = histcountindices(x, range(xmin, xmax, length=nbins+1); T=T)
 export histcountindices
 
 
 """
 ```julia
-histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange; T=Int64)::Matrix{T}
+histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange; T=Int64, normalize=false)
 ```
 A 2D histogram, ignoring `NaN`s: calculate the number of `x, y` pairs that fall into
 each square of a 2D grid of equally-spaced square bins with edges specified by
@@ -101,7 +101,7 @@ julia> N = histcounts(x,y,xedges,yedges)
  0  0  0  0  0  0  0  0  0  1
 ```
 """
-function histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange;  T=Int64, normalize=false)
+function histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange;  T::Type=Int64, normalize::Bool=false)
     Tᵣ = normalize ? float(T) : T
     N = fill(zero(Tᵣ), length(yedges)-1, length(xedges)-1)
     histcounts!(N, x, y, xedges, yedges)
