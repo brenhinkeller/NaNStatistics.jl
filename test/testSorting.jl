@@ -1,15 +1,37 @@
 ## --- Test internal sorting functions directly
 
     A = rand(100)
+    Ix = collect(1:100)
 
     # SortNaNs
     B, iₗ, iᵤ = NaNStatistics.sortnans!(copy(A))
     @test B == A
     @test (iₗ, iᵤ) == (1, 100)
 
+    Ix, B, iₗ, iᵤ = NaNStatistics.argsortnans!(Ix, copy(A))
+    @test B == A
+    @test Ix == 1:100
+    @test (iₗ, iᵤ) == (1, 100)
+
+    A[1:10:100] .= NaN
+    B, iₗ, iᵤ = NaNStatistics.sortnans!(copy(A))
+    @test (iₗ, iᵤ) == (1, 90)
+    @test sort!(B[1:90]) == sort!([A[2:10]; A[12:20]; A[22:30]; A[32:40]; A[42:50]; A[52:60]; A[62:70]; A[72:80]; A[82:90]; A[92:100];])
+    @test isequal(B[91:100], fill(NaN,10))
+
+    A = rand(100)
+    A[1:10:100] .= NaN
+    Ix = collect(1:100)
+
+    Ix, B, iₗ, iᵤ = NaNStatistics.argsortnans!(Ix, copy(A))
+    @test (iₗ, iᵤ) == (1, 90)
+    @test sort!(B[1:90]) == sort!([A[2:10]; A[12:20]; A[22:30]; A[32:40]; A[42:50]; A[52:60]; A[62:70]; A[72:80]; A[82:90]; A[92:100];])
+    @test isequal(B[91:100], fill(NaN,10))
+
     # Quicksort
+    A = rand(100)
     NaNStatistics.quicksort!(A)
-    sort!(B)
+    B = sort(A)
     @test A == B
 
     A = rand(1_000)

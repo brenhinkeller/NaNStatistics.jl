@@ -41,14 +41,14 @@ end
 end
 
 # Move all NaNs to the end of the array A
-function sortnans!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
+function sortnans!(A::AbstractArray, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A))
     # Return early if range is empty
     iₗ >= iᵤ && return A, iₗ, iᵤ
 
     # Count up NaNs
     Nₙₐₙ = 0
     @inbounds @simd ivdep for i = iₗ:iᵤ
-        Nₙₐₙ += A[i] != A[i]
+        Nₙₐₙ += isnan(A[i])
     end
     # If none, return early
     Nₙₐₙ == 0 && return A, iₗ, iᵤ
@@ -70,14 +70,14 @@ function sortnans!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
     end
     return A, iₗ, iᵤ - Nₙₐₙ
 end
-function sortnans!(I::AbstractArray, A::AbstractArray, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A))
+function argsortnans!(I::AbstractArray, A::AbstractArray, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A))
     # Return early if range is empty
     iₗ >= iᵤ && return A, iₗ, iᵤ
     
     # Count up NaNs
     Nₙₐₙ = 0
     @inbounds @simd ivdep for i = iₗ:iᵤ
-        Nₙₐₙ += A[i] != A[i]
+        Nₙₐₙ += isnan(A[i])
     end
     # If none, return early
     Nₙₐₙ == 0 && return I, A, iₗ, iᵤ
@@ -101,8 +101,8 @@ function sortnans!(I::AbstractArray, A::AbstractArray, iₗ::Int=firstindex(A), 
     return I, A, iₗ, iᵤ - Nₙₐₙ
 end
 # For integers, don't need to check for NaNs
-sortnans!(A::AbstractArray{<:Integer}, iₗ=firstindex(A), iᵤ=lastindex(A)) = A, iₗ, iᵤ
-sortnans!(I::AbstractArray, A::AbstractArray{<:Integer}, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A)) = I, A, iₗ, iᵤ
+sortnans!(A::AbstractArray{<:Integer}, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A)) = A, iₗ, iᵤ
+argsortnans!(I::AbstractArray, A::AbstractArray{<:Integer}, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A)) = I, A, iₗ, iᵤ
 
 # Partially sort `A` around the `k`th sorted element and return that element
 @inline function quickselect!(A::AbstractArray, iₗ=firstindex(A), iᵤ=lastindex(A), k=(iₗ+iᵤ)÷2)
@@ -256,7 +256,7 @@ end
 export nansort!
 function nanargsort!(I, A)
     iₗ, iᵤ =firstindex(A), lastindex(A)
-    I, A, iₗ, iᵤ = sortnans!(I, A, iₗ, iᵤ)
+    I, A, iₗ, iᵤ = argsortnans!(I, A, iₗ, iᵤ)
     argsort!(I, A, iₗ, iᵤ)
     return I, A
 end
