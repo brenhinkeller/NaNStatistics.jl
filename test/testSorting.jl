@@ -1,4 +1,4 @@
-## --- Test sorting functions directly
+## --- Test internal sorting functions directly
 
     A = rand(100)
 
@@ -22,6 +22,10 @@
     NaNStatistics.quicksort!(A)
     @test A == B
 
+    # Quicksort of already-sorted arrays
+    @test NaNStatistics.quicksort!(collect(1:100)) == 1:100
+    @test NaNStatistics.quicksort!(collect(100:-1:1)) == 1:100
+
     # Partialsort
     A = rand(101)
     m = median(A)
@@ -33,26 +37,49 @@
     NaNStatistics.quickselect!(A, 1, 1_000_001, 500_001)
     @test A[500_001] == m
 
-    # Quicksort of already-sorted arrays
-    @test NaNStatistics.quicksort!(collect(1:100)) == 1:100
-    @test NaNStatistics.quicksort!(collect(100:-1:1)) == 1:100
+## --- Test `nansort!` and `nanargsort!`
 
-    # # Vsort, Float64
-    # A = rand(100)
-    # B = NaNStatistics.vsort(A, multithreaded=false)
-    # @test issorted(B)
-    # A = rand(100)
-    # B = NaNStatistics.vsort(A, multithreaded=true)
-    # @test issorted(B)
-    #
-    # # Vsort, Int64
-    # A = rand(Int, 100)
-    # B = NaNStatistics.vsort(A, multithreaded=false)
-    # @test issorted(B)
-    # A = rand(Int, 100)
-    # B = NaNStatistics.vsort(A, multithreaded=true)
-    # @test issorted(B)
+   # Float64 cases
+   A = rand(100)
+   Ix_known = sortperm(A)
+   Ix = collect(1:length(A))
+   nanargsort!(Ix, A)
+   @test issorted(A)
+   @test Ix_known == Ix
+   A[rand(1:100, 10)] .= NaN
+   nanargsort!(Ix, A)
+   @test issorted(A)
+   A .= rand.()
+   nansort!(A)
+   @test issorted(A)
+   A .= rand.()
+   A[rand(1:100, 10)] .= NaN
+   nansort!(A)
+   @test issorted(A)
 
+   A = rand(10_000)
+   Ix_known = sortperm(A)
+   Ix = collect(1:length(A))
+   nanargsort!(Ix, A)
+   @test issorted(A)
+   @test Ix_known == Ix
+   A .= rand.()
+   nansort!(A)
+   @test issorted(A)
+   A .= rand.()
+   A[rand(1:10_000, 1_000)] .= NaN
+   nansort!(A)
+   @test issorted(A)
+
+   # Int64 cases
+   A = rand(Int, 100)
+   B = nansort!(copy(A))
+   @test issorted(B)
+   Ix_known = sortperm(A)
+   Ix = collect(1:length(A))
+   nanargsort!(Ix, A)
+   @test issorted(A)
+   @test Ix_known == Ix
 
 ## --- Test nanmedian!
 
