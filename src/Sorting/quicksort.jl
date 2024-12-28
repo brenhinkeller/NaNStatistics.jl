@@ -110,16 +110,14 @@ argsortnans!(I::AbstractArray, A::AbstractArray{<:Integer}, iₗ::Int=firstindex
 end
 
 # Sort `A`, assuming no NaNs
-function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
-    if issortedrange(A, iₗ, iᵤ)
-        # If already sorted, we're done here
-        return A
-    end
+function quicksort!(A::TA, iₗ=firstindex(A), iᵤ=lastindex(A)) where {TA<:AbstractArray}
+    # If already sorted, we're done here
+    issortedrange(A, iₗ, iᵤ) && return A::TA
+
     # Otherwise, we have to sort
     N = iᵤ - iₗ + 1
     if isantisortedrange(A, iₗ, iᵤ)
         vreverse!(A, iₗ, iᵤ)
-        return A
     elseif N == 3
         # We know we are neither sorted nor antisorted, so only four possibilities remain
         iₘ = iₗ + 1
@@ -137,7 +135,6 @@ function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
                 A[iₗ], A[iₘ], A[iᵤ] = b, c, a   # b ≤ c ≤ a
             end
         end
-        return A
     else
         # Pick a pivot for partitioning
         iₚ = iₗ + (N >> 2)
@@ -169,23 +166,22 @@ function quicksort!(A, iₗ=firstindex(A), iᵤ=lastindex(A))
         iₚ = iₗ + Nₗ - 1
         A[iₗ], A[iₚ] = A[iₚ], A[iₗ]
         # Recurse: sort both upper and lower partitions
-        quicksort!(A, iₗ, iₚ)
-        quicksort!(A, iₚ+1, iᵤ)
+        quicksort!(A, iₗ, iₚ)::TA
+        quicksort!(A, iₚ+1, iᵤ)::TA
     end
+    return A::TA
 end
 
 # Argsort: sort A and permute I to match `A`, assuming no NaNs
-function argsort!(I::AbstractArray, A::AbstractArray, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A))
-    if issortedrange(A, iₗ, iᵤ)
-        # If already sorted, we're done here
-        return I, A
-    end
+function argsort!(I::TI, A::TA, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A)) where {TI<:AbstractArray, TA<:AbstractArray}
+    # If already sorted, we're done here
+    issortedrange(A, iₗ, iᵤ) && return (I, A)::Tuple{TI, TA}
+        
     # Otherwise, we have to sort
     N = iᵤ - iₗ + 1
     if isantisortedrange(A, iₗ, iᵤ)
         vreverse!(A, iₗ, iᵤ)
         vreverse!(I, iₗ, iᵤ)
-        return I, A
     elseif N == 3
         # We know we are neither sorted nor antisorted, so only four possibilities remain
         iₘ = iₗ + 1
@@ -207,7 +203,6 @@ function argsort!(I::AbstractArray, A::AbstractArray, iₗ::Int=firstindex(A), i
                 I[iₗ], I[iₘ], I[iᵤ] = I[iₘ], I[iᵤ], I[iₗ]
             end
         end
-        return I, A
     else
         # Pick a pivot for partitioning
         iₚ = iₗ + (N >> 2)
@@ -242,21 +237,20 @@ function argsort!(I::AbstractArray, A::AbstractArray, iₗ::Int=firstindex(A), i
         A[iₗ], A[iₚ] = A[iₚ], A[iₗ]
         I[iₗ], I[iₚ] = I[iₚ], I[iₗ]
         # Recurse: sort both upper and lower partitions
-        argsort!(I, A, iₗ, iₚ)
-        argsort!(I, A, iₚ+1, iᵤ)
+        argsort!(I, A, iₗ, iₚ)::Tuple{TI, TA}
+        argsort!(I, A, iₚ+1, iᵤ)::Tuple{TI, TA}
     end
+    return (I, A)::Tuple{TI, TA}
 end
 
-function nansort!(A)
-    iₗ, iᵤ =firstindex(A), lastindex(A)
-    A, iₗ, iᵤ = sortnans!(A, iₗ, iᵤ)
+@inline function nansort!(A)
+    A, iₗ, iᵤ = sortnans!(A)
     quicksort!(A, iₗ, iᵤ)
     return A
 end
 export nansort!
-function nanargsort!(I, A)
-    iₗ, iᵤ =firstindex(A), lastindex(A)
-    I, A, iₗ, iᵤ = argsortnans!(I, A, iₗ, iᵤ)
+@inline function nanargsort!(I, A)
+    I, A, iₗ, iᵤ = argsortnans!(I, A)
     argsort!(I, A, iₗ, iᵤ)
     return I, A
 end
