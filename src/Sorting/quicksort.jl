@@ -72,7 +72,7 @@ function sortnans!(A::AbstractArray, iₗ::Int=firstindex(A), iᵤ::Int=lastinde
 end
 function argsortnans!(I::AbstractArray, A::AbstractArray, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A))
     # Return early if range is empty
-    iₗ >= iᵤ && return A, iₗ, iᵤ
+    iₗ >= iᵤ && return I, A, iₗ, iᵤ
     
     # Count up NaNs
     Nₙₐₙ = 0
