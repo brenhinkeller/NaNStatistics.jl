@@ -485,6 +485,12 @@
     # Moving average: 1D
     @test movmean(collect(1:10.),5) == movmean(1:10,5)
     @test movmean(1:10,5) == [2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.5, 9.0]
+
+    # Moving average: 1D, 2side windows
+    @test movmean(1:10, (1, 1)) == [1.5, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 9.5]
+    @test movmean(1:10, (1, 1); skip_centre=true) == [2.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 9.0]
+    @test movmean(1:10, (1, 2)) == [2.0, 2.5, 3.5, 4.5, 5.5, 6.5, 7.5, 8.5, 9.0, 9.5]
+
     # Moving average: 2D
     @test movmean(repeat(1:10,1,10),5) == repeat([2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.5, 9.0],1,10)
     @test movmean(repeat(1:10,1,10)',5) == repeat([2.0, 2.5, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 8.5, 9.0],1,10)'
