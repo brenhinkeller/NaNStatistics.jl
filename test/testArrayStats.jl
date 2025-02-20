@@ -29,7 +29,7 @@
 
     A = [1:10.0..., NaN]
     @test nansum(A) === 55.0
-    @test nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0, 55.0]
+    @test nancumsum!(copy(A)) == nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0, 55.0]
     @test nanlogsumexp(A) ≈ 10.45862974442671
     @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671, 10.45862974442671]
     @test isequal(nanlogcumsumexp(A, reverse=true), [10.45862974442671, 10.458551727967379, 10.458339626479004, 10.457762847404243, 10.456193316018123, 10.451914395937594, 10.440189698561195, 10.40760596444438, 10.313261687518223, 10.0, NaN])
@@ -57,7 +57,7 @@
 ## --- Non-monotonic arrays
 
     A = [1:5.0..., NaN, 5:-1:1...]
-    @test nancumsum(A) ≈ [1.0, 3.0, 6.0, 10.0, 15.0, 15.0, 20.0, 24.0, 27.0, 29.0, 30.0]
+    @test nancumsum!(copy(A)) == nancumsum(A) ≈ [1.0, 3.0, 6.0, 10.0, 15.0, 15.0, 20.0, 24.0, 27.0, 29.0, 30.0]
     @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 5.451914395937593, 5.944418386887494, 6.078136371527456, 6.123152745316754, 6.139216411276987, 6.145061576497539]
     @test nanlogcumsumexp(A, reverse=true) ≈ [6.145061576497539, 6.139216411276987, 6.123152745316754, 6.078136371527456, 5.944418386887494, 5.451914395937593, 5.451914395937593, 4.440189698561196, 3.4076059644443806, 2.313261687518223, 1.0]
 
@@ -82,7 +82,7 @@
 
     A = fill(NaN,10)
     @test nansum(A) == 0
-    @test nancumsum(A) == zeros(10)
+    @test nancumsum!(copy(A)) == nancumsum(A) == zeros(10)
     @test isnan(nanlogsumexp(A))
     @test all(isnan, nanlogcumsumexp(A))
     @test all(isnan, nanlogcumsumexp(A, reverse=true))
@@ -111,7 +111,7 @@
 
     A = Float64[]
     @test nansum(A) == 0
-    @test nancumsum(A) == Float64[]
+    @test nancumsum!(copy(A)) == nancumsum(A) == Float64[]
     @test isnan(nanlogsumexp(A))
     @test nanlogcumsumexp(A) == Float64[]
     @test nanlogcumsumexp(A, reverse=true) == Float64[]
@@ -137,7 +137,7 @@
 
     A = collect(1:10)
     @test nansum(A) === 55
-    @test nancumsum(A) == [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
+    @test nancumsum!(copy(A)) == nancumsum(A) == [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
     @test nanlogsumexp(A) ≈ 10.45862974442671
     @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671]
     @test nanlogcumsumexp(A, reverse=true) ≈ [10.45862974442671, 10.458551727967379, 10.458339626479004, 10.457762847404243, 10.456193316018123, 10.451914395937594, 10.440189698561195, 10.40760596444438, 10.313261687518223, 10.0]
@@ -167,7 +167,7 @@
 
     A = 1:10
     @test nansum(A) === 55
-    @test nancumsum(A) == [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
+    @test nancumsum!(collect(A)) == nancumsum(A) == [1, 3, 6, 10, 15, 21, 28, 36, 45, 55]
     @test nanlogsumexp(A) ≈ 10.45862974442671
     @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671]
     @test nanlogcumsumexp(A, reverse=true) ≈ [10.45862974442671, 10.458551727967379, 10.458339626479004, 10.457762847404243, 10.456193316018123, 10.451914395937594, 10.440189698561195, 10.40760596444438, 10.313261687518223, 10.0]
@@ -193,7 +193,7 @@
 
     A = 1:10.
     @test nansum(A) === 55.0
-    @test nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0]
+    @test nancumsum!(collect(A)) == nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0]
     @test nanlogsumexp(A) ≈ 10.45862974442671
     @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671]
     @test nanlogcumsumexp(A, reverse=true) ≈ [10.45862974442671, 10.458551727967379, 10.458339626479004, 10.457762847404243, 10.456193316018123, 10.451914395937594, 10.440189698561195, 10.40760596444438, 10.313261687518223, 10.0]
@@ -222,8 +222,8 @@
     A = collect(reshape(1:300,100,3))
     @test nansum(A, dims=1) == sum(A, dims=1)
     @test nansum(A, dims=2) == sum(A, dims=2)
-    @test nancumsum(A, dims=1) == cumsum(A, dims=1)
-    @test nancumsum(A, dims=2) == cumsum(A, dims=2)
+    @test nancumsum!(copy(A), dims=1) == nancumsum(A, dims=1) == cumsum(A, dims=1)
+    @test nancumsum!(copy(A), dims=2) == nancumsum(A, dims=2) == cumsum(A, dims=2)
     @test nanminimum(A, dims=1) == minimum(A, dims=1)
     @test nanminimum(A, dims=2) == minimum(A, dims=2)
     @test nanmaximum(A, dims=1) == maximum(A, dims=1)
@@ -263,8 +263,8 @@
     A = collect(reshape(1:300.,100,3))
     @test nansum(A, dims=1) == sum(A, dims=1)
     @test nansum(A, dims=2) == sum(A, dims=2)
-    @test nancumsum(A, dims=1) == cumsum(A, dims=1)
-    @test nancumsum(A, dims=2) == cumsum(A, dims=2)
+    @test nancumsum!(copy(A), dims=1) == nancumsum(A, dims=1) == cumsum(A, dims=1)
+    @test nancumsum!(copy(A), dims=2) == nancumsum(A, dims=2) == cumsum(A, dims=2)
     @test nanminimum(A, dims=1) == minimum(A, dims=1)
     @test nanminimum(A, dims=2) == minimum(A, dims=2)
     @test nanmaximum(A, dims=1) == maximum(A, dims=1)
