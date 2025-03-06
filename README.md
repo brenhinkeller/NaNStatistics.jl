@@ -147,6 +147,14 @@ julia> movmean(A, 3)
  * `nanstandardize` / `nanstandardize!`
  De-mean and set to unit variance
 
+### DimensionalData support
+Almost all functions support
+[DimArrays](https://rafaqz.github.io/DimensionalData.jl/stable/dimarrays) and
+will preserve array metadata like dimensions and lookups etc. The ones that
+currently don't are:
+- `nancor` and `nancov` (does work but won't preserve array metadata)
+- `nanstandardize` and `nanstandardize!` (completely unsupported)
+
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://brenhinkeller.github.io/NaNStatistics.jl/stable/

@@ -29,6 +29,7 @@ julia> nancumsum(vec(A))
   6.0
  10.0
  10.0
+```
 """
 nancumsum(A; dims=:) = _nancumsum(A, dims)
 export nancumsum
