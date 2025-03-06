@@ -8,7 +8,14 @@ PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
 Static = "aedffcd0-7271-4cad-89d0-dc628f76c6d3"
 StaticArrayInterface = "0d7ed370-da01-4f52-bd93-41d350b8b718"
 
+[weakdeps]
+DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
+
+[extensions]
+NaNStatisticsDimensionalDataExt = "DimensionalData"
+
 [compat]
+DimensionalData = "0.29"
 PrecompileTools = "1"
 Static = "0.8, 1"
 StaticArrayInterface = "1"
