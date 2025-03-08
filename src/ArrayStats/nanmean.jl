@@ -100,6 +100,11 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
         end
     end
 
+    # Reverse the axis lists so that we build up the loops from slow-axis to
+    # fast-axis for column major arrays.
+    reverse!(nonreduct_inds)
+    reverse!(reduct_inds)
+
     # Secondly, build up our set of loops
     firstn = first(nonreduct_inds)
     block = Expr(:block)
