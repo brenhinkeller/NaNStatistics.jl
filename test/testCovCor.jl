@@ -3,6 +3,8 @@ x, y = rand(1000), rand(1000)
 
 @test nancov(x,y) ≈ cov(x,y)
 @test nancov(x,y, corrected=false) ≈ cov(x,y, corrected=false)
+@test nancovem(x,y) ≈ cov(x,y)./length(x)
+@test nancovem(x,y, corrected=false) ≈ cov(x,y, corrected=false)./length(x)
 @test nancor(x,y) ≈ cor(x,y)
 
 
@@ -13,6 +15,11 @@ X = rand(100,10)
 @test nancov(X, dims=1) ≈ cov(X, dims=1)
 @test nancov(X, dims=2) ≈ cov(X, dims=2)
 @test nancov(X, corrected=false) ≈ cov(X, corrected=false)
+
+@test nancovem(X) ≈ cov(X)./size(X,1)
+@test nancovem(X, dims=1) ≈ cov(X, dims=1)./size(X,1)
+@test nancovem(X, dims=2) ≈ cov(X, dims=2)./size(X,2)
+@test nancovem(X, corrected=false) ≈ cov(X, corrected=false)./size(X,1)
 
 @test nancor(X) ≈ cor(X)
 @test nancor(X, dims=1) ≈ cor(X, dims=1)
