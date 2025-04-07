@@ -43,6 +43,10 @@ _nancumsum!(A, dims::Int) = _nancumsum!(A, A, (dims,))
 
 # Reduce some dims
 function _nancumsum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
+    B = similar(A)
+    _nancumsum!(B, A, dims)
+end
+function _nancumsum(A::AbstractArray{T,N}, dims::Tuple) where {T<:Integer,N}
     Tₒ = Base.promote_op(+, T, Int)
     B = similar(A, Tₒ)
     _nancumsum!(B, A, dims)
@@ -50,7 +54,11 @@ end
 
 # Reduce all the dims!
 function _nancumsum(A::AbstractArray, ::Colon)
-    Tₒ = Base.promote_op(+, eltype(A), Int)
+    B = similar(A)
+    _nancumsum!(B, A, :)
+end
+function _nancumsum(A::AbstractArray{T}, ::Colon) where {T<:Integer}
+    Tₒ = Base.promote_op(+, T, Int)
     B = similar(A, Tₒ)
     _nancumsum!(B, A, :)
 end

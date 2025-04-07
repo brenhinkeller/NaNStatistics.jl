@@ -31,7 +31,7 @@ julia> nansum(A, dims=2)
 nansum(A; dims=:, dim=:) = __nansum(A, dims, dim)
 __nansum(A, ::Colon, ::Colon) = _nansum(A, :)
 __nansum(A, region, ::Colon) = _nansum(A, region)
-__nansum(A, ::Colon, region) = reducedims(_nansum(A, region), region)
+__nansum(A, ::Colon, region) = reducedims(__nansum(A, region, :), region)
 export nansum
 
 
@@ -44,6 +44,14 @@ function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
     sₒ = ntuple(Val{N}()) do d
         ifelse(d ∈ dims, 1, sᵢ[d])
     end
+    B = similar(A, T, sₒ)
+    _nansum!(B, A, dims)
+end
+function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T<:Integer,N}
+    sᵢ = size(A)
+    sₒ = ntuple(Val{N}()) do d
+        ifelse(d ∈ dims, 1, sᵢ[d])
+    end
     Tₒ = Base.promote_op(+, T, Int)
     B = similar(A, Tₒ, sₒ)
     _nansum!(B, A, dims)
@@ -51,7 +59,7 @@ end
 
 # Reduce all the dims!
 function _nansum(A, ::Colon)
-    Tₒ = Base.promote_op(+, eltype(A), Int)
+    Tₒ = eltype(A)
     Σ = ∅ = zero(Tₒ)
     @inbounds @simd ivdep for i ∈ eachindex(A)
         Aᵢ = A[i]

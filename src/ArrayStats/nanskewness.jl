@@ -38,7 +38,7 @@ julia> nanskewness(A, dims=2)
 nanskewness(A; dims=:, dim=:, mean=nothing, corrected=false) = __nanskewness(mean, corrected, A, dims, dim)
 __nanskewness(mean, corrected, A, ::Colon, ::Colon) = _nanskewness(mean, corrected, A, :)
 __nanskewness(mean, corrected, A, region, ::Colon) = _nanskewness(mean, corrected, A, region)
-__nanskewness(mean, corrected, A, ::Colon, region) = reducedims(_nanskewness(mean, corrected, A, region), region)
+__nanskewness(mean, corrected, A, ::Colon, region) = reducedims(__nanskewness(mean, corrected, A, region, :), region)
 export nanskewness
 
 # If dims is an integer, wrap it in a tuple
@@ -49,7 +49,6 @@ _nanskewness(::Nothing, corrected::Bool, A, dims::Tuple) = _nanskewness!(_nanmea
 # Reduce all the dims!
 function _nanskewness(::Nothing, corrected::Bool, A, ::Colon)
     T = eltype(A)
-    Tₒ = Base.promote_op(/, T, Int)
     n = 0
     Σ = ∅ = zero(T)
     @inbounds @simd ivdep for i ∈ eachindex(A)
@@ -59,26 +58,27 @@ function _nanskewness(::Nothing, corrected::Bool, A, ::Colon)
         Σ += ifelse(notnan, Aᵢ, ∅)
     end
     μ = Σ / n
-    μ₃ = μ₂ = ∅ₒ = zero(typeof(μ))
+    μ₂ = ∅² = zero(Base.promote_op(*, typeof(μ), typeof(μ)))
+    μ₃ = ∅³ = zero(Base.promote_op(*, typeof(μ₂), typeof(μ)))
     @inbounds @simd ivdep for i ∈ eachindex(A)
         δ = A[i] - μ
         notnan = δ==δ
         δ² = δ * δ
-        μ₂ += ifelse(notnan, δ², ∅ₒ)
-        μ₃ += ifelse(notnan, δ² * δ, ∅ₒ)
+        μ₂ += ifelse(notnan, δ², ∅²)
+        μ₃ += ifelse(notnan, δ² * δ, ∅³)
     end
     σ = sqrt(μ₂ / max(n-corrected,0))
     return (μ₃/n)/σ^3
 end
 function _nanskewness(::Nothing, corrected::Bool, A::AbstractArray{T}, ::Colon) where T<:Integer
-    Tₒ = Base.promote_op(/, T, Int)
     n = length(A)
-    Σ = zero(Tₒ)
+    Σ = zero(T)
     @inbounds @simd ivdep for i ∈ eachindex(A)
         Σ += A[i]
     end
     μ = Σ / n
-    μ₃ = μ₂ = zero(typeof(μ))
+    μ₂ = zero(Base.promote_op(*, typeof(μ), typeof(μ)))
+    μ₃ = zero(Base.promote_op(*, typeof(μ₂), typeof(μ)))
     @inbounds @simd ivdep for i ∈ eachindex(A)
         δ = A[i] - μ
         δ² = δ * δ
@@ -92,7 +92,7 @@ end
 
 # If the mean is known, pass it on in the appropriate form
 _nanskewness(μ, corrected::Bool, A, dims::Tuple) = _nanskewness!(collect(μ), corrected, A, dims)
-_nanskewness(μ::Array, corrected::Bool, A, dims::Tuple) = _nanskewness!(copy(μ), corrected, A, dims)
+_nanskewness(μ::AbstractArray, corrected::Bool, A, dims::Tuple) = _nanskewness!(copy(μ), corrected, A, dims)
 _nanskewness(μ::Number, corrected::Bool, A, dims::Tuple) = _nanskewness!([μ], corrected, A, dims)
 # Reduce all the dims!
 function _nanskewness(μ::Number, corrected::Bool, A, ::Colon)
