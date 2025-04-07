@@ -1,6 +1,6 @@
 function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool, μᵪ::Number, μᵧ::Number)
     # Calculate covariance
-    σᵪᵧ = ∅ = zero(promote_type(typeof(μᵪ), typeof(μᵧ), Int))
+    σᵪᵧ = ∅ = zero(Base.promote_op(*, typeof(μᵪ), typeof(μᵧ)))
     n = 0
     @inbounds @simd ivdep for i ∈ eachindex(x,y)
             δᵪ = x[i] - μᵪ
@@ -26,10 +26,8 @@ function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool)
         Σᵪ += ifelse(notnan, xᵢ, ∅ᵪ)
         Σᵧ += ifelse(notnan, yᵢ, ∅ᵧ)
     end
-    μᵪ = Σᵪ/n
-    μᵧ = Σᵧ/n
 
-    return _nancov(x, y, corrected, μᵪ, μᵧ)
+    return _nancov(x, y, corrected, Σᵪ/n, Σᵧ/n)
 end
 
 
@@ -60,7 +58,8 @@ If `corrected` is `true` as is the default, _Bessel's correction_ will be applie
 such that the sum is scaled by `n-1` rather than `n`, where `n = length(x)`.
 """
 function nancov(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
-    Tₒ = Base.promote_op(/, eltype(X), Int)
+    Tₘ = Base.promote_op(/, eltype(X), Int)
+    Tₒ = Base.promote_op(*, Tₘ, Tₘ)
     n = size(X, dims)
     m = size(X, mod(dims,2)+1)
     Σ = similar(X, Tₒ, (m, m))
@@ -141,7 +140,8 @@ If `corrected` is `true` as is the default, _Bessel's correction_ will be applie
 such that the sum is scaled by `n-1` rather than `n`, where `n = length(x)`.
 """
 function nancovem(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
-    Tₒ = Base.promote_op(/, eltype(X), Int)
+    Tₘ = Base.promote_op(/, eltype(X), Int)
+    Tₒ = Base.promote_op(*, Tₘ, Tₘ)
     n = size(X, dims)
     m = size(X, mod(dims,2)+1)
     Σ = similar(X, Tₒ, (m, m))
@@ -203,14 +203,14 @@ function _nancor(x::AbstractVector{Tx}, y::AbstractVector{Ty}, corrected::Bool) 
     n == 0 && return (∅ᵪ+∅ᵧ)/0 # Return appropriate NaN if no data
 
     # Pairwise nan-variances
-    σ²ᵪ = ∅ᵪ = zero(typeof(μᵪ))
-    σ²ᵧ = ∅ᵧ = zero(typeof(μᵧ))
+    σ²ᵪ = ∅²ᵪ = zero(Base.promote_op(*, typeof(μᵪ), typeof(μᵪ)))
+    σ²ᵧ = ∅²ᵧ = zero(Base.promote_op(*, typeof(μᵧ), typeof(μᵧ)))
     @inbounds @simd ivdep for i ∈ eachindex(x,y)
         δᵪ = x[i] - μᵪ
         δᵧ = y[i] - μᵧ
         notnan = (δᵪ==δᵪ) & (δᵧ==δᵧ)
-        σ²ᵪ += ifelse(notnan, δᵪ * δᵪ, ∅ᵪ)
-        σ²ᵧ += ifelse(notnan, δᵧ * δᵧ, ∅ᵧ)
+        σ²ᵪ += ifelse(notnan, δᵪ * δᵪ, ∅²ᵪ)
+        σ²ᵧ += ifelse(notnan, δᵧ * δᵧ, ∅²ᵧ)
     end
     σᵪ = sqrt(σ²ᵪ / max(n-corrected, 0))
     σᵧ = sqrt(σ²ᵧ / max(n-corrected, 0))
@@ -231,7 +231,7 @@ Compute the (Pearson's product-moment) correlation matrix of the matrix `X`,
 along dimension `dims`. As `Statistics.cor`, but ignoring `NaN`s.
 """
 function nancor(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
-    Tₒ = Base.promote_op(/, eltype(X), Int)
+    Tₒ = Base.promote_op(/, eltype(X), eltype(X))
     n = size(X, dims)
     m = size(X, mod(dims,2)+1)
     Ρ = similar(X, Tₒ, (m, m))

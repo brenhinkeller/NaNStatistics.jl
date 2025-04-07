@@ -36,7 +36,7 @@ julia> nansem(A, dims=2)
 nansem(A; dims=:, dim=:, mean=nothing, corrected=true) = __nansem(mean, corrected, A, dims, dim)
 __nansem(mean, corrected, A, ::Colon, ::Colon) = _nansem(mean, corrected, A, :)
 __nansem(mean, corrected, A, region, ::Colon) = _nansem(mean, corrected, A, region)
-__nansem(mean, corrected, A, ::Colon, region) = reducedims(_nansem(mean, corrected, A, region), region)
+__nansem(mean, corrected, A, ::Colon, region) = reducedims(__nansem(mean, corrected, A, region, :), region)
 export nansem
 
 # If dims is an integer, wrap it in a tuple
@@ -56,11 +56,11 @@ function _nansem(::Nothing, corrected::Bool, A, ::Colon)
       Σ += ifelse(notnan, Aᵢ, ∅)
   end
   μ = Σ / n
-  σ² = ∅ = zero(typeof(μ))
+  σ² = ∅² = zero(Base.promote_op(*,Tₒ,Tₒ))
   @inbounds @simd ivdep for i ∈ eachindex(A)
       δ = A[i] - μ
       notnan = δ==δ
-      σ² += ifelse(notnan, δ * δ, ∅)
+      σ² += ifelse(notnan, δ * δ, ∅²)
   end
   return sqrt(σ² / max(n-corrected,0) / n)
 end
@@ -72,7 +72,7 @@ function _nansem(::Nothing, corrected::Bool, A::AbstractArray{T}, ::Colon) where
         Σ += A[i]
     end
     μ = Σ / n
-    σ² = zero(typeof(μ))
+    σ² = zero(Base.promote_op(*,Tₒ,Tₒ))
     @inbounds @simd ivdep for i ∈ eachindex(A)
         δ = A[i] - μ
         σ² += δ * δ
@@ -83,7 +83,7 @@ end
 
 # If the mean is known, pass it on in the appropriate form
 _nansem(μ, corrected::Bool, A, dims::Tuple) = _nansem!(collect(μ), corrected, A, dims)
-_nansem(μ::Array, corrected::Bool, A, dims::Tuple) = _nansem!(copy(μ), corrected, A, dims)
+_nansem(μ::AbstractArray, corrected::Bool, A, dims::Tuple) = _nansem!(copy(μ), corrected, A, dims)
 _nansem(μ::Number, corrected::Bool, A, dims::Tuple) = _nansem!([μ], corrected, A, dims)
 # Reduce all the dims!
 function _nansem(μ::Number, corrected::Bool, A, ::Colon)

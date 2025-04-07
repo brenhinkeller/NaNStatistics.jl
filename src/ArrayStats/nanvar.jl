@@ -36,7 +36,7 @@ julia> nanvar(A, dims=2)
 nanvar(A; dims=:, dim=:, mean=nothing, corrected=true) = __nanvar(mean, corrected, A, dims, dim)
 __nanvar(mean, corrected, A, ::Colon, ::Colon) = _nanvar(mean, corrected, A, :)
 __nanvar(mean, corrected, A, region, ::Colon) = _nanvar(mean, corrected, A, region)
-__nanvar(mean, corrected, A, ::Colon, region) = reducedims(_nanvar(mean, corrected, A, region), region)
+__nanvar(mean, corrected, A, ::Colon, region) = reducedims(__nanvar(mean, corrected, A, region, :), region)
 export nanvar
 
 # If dims is an integer, wrap it in a tuple
@@ -46,9 +46,10 @@ _nanvar(μ, corrected::Bool, A, dims::Int) = _nanvar(μ, corrected, A, (dims,))
 _nanvar(::Nothing, corrected::Bool, A, dims::Tuple) = _nanvar!(_nanmean(A, dims), corrected, A, dims)
 # Reduce all the dims!
 function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
-    Tₒ = Base.promote_op(/, eltype(A), Int)
+    Tₘ = Base.promote_op(/, eltype(A), Int)
+    Tₒ = Base.promote_op(*, Tₘ, Tₘ)
     n = 0
-    Σ = ∅ = zero(Tₒ)
+    Σ = ∅ = zero(Tₘ)
     @inbounds @simd ivdep for i ∈ eachindex(A)
         Aᵢ = A[i]
         notnan = Aᵢ==Aᵢ
@@ -56,23 +57,24 @@ function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
         Σ += ifelse(notnan, Aᵢ, ∅)
     end
     μ = Σ / n
-    σ² = ∅ = zero(typeof(μ))
+    σ² = ∅² = zero(Tₒ)
     @inbounds @simd ivdep for i ∈ eachindex(A)
         δ = A[i] - μ
         notnan = δ==δ
-        σ² += ifelse(notnan, δ * δ, ∅)
+        σ² += ifelse(notnan, δ * δ, ∅²)
     end
-    return σ² / max(n-corrected,0)
+    return σ² / max(n-corrected, 0)
 end
 function _nanvar(::Nothing, corrected::Bool, A::AbstractArray{T}, ::Colon) where T<:Integer
-    Tₒ = Base.promote_op(/, T, Int)
+    Tₘ = Base.promote_op(/, T, Int)
+    Tₒ = Base.promote_op(*, Tₘ, Tₘ)
     n = length(A)
-    Σ = zero(Tₒ)
+    Σ = zero(Tₘ)
     @inbounds @simd ivdep for i ∈ eachindex(A)
         Σ += A[i]
     end
     μ = Σ / n
-    σ² = zero(typeof(μ))
+    σ² = zero(Tₒ)
     @inbounds @simd ivdep for i ∈ eachindex(A)
         δ = A[i] - μ
         σ² += δ * δ
@@ -83,22 +85,24 @@ end
 
 # If the mean is known, pass it on in the appropriate form
 _nanvar(μ, corrected::Bool, A, dims::Tuple) = _nanvar!(collect(μ), corrected, A, dims)
-_nanvar(μ::Array, corrected::Bool, A, dims::Tuple) = _nanvar!(copy(μ), corrected, A, dims)
+_nanvar(μ::AbstractArray, corrected::Bool, A, dims::Tuple) = _nanvar!(copy(μ), corrected, A, dims)
 _nanvar(μ::Number, corrected::Bool, A, dims::Tuple) = _nanvar!([μ], corrected, A, dims)
 # Reduce all the dims!
 function _nanvar(μ::Number, corrected::Bool, A, ::Colon)
+  Tₒ = Base.promote_op(*, typeof(μ), typeof(μ))
   n = 0
-  σ² = ∅ = zero(typeof(μ))
+  σ² = ∅² = zero(Tₒ)
   @inbounds @simd ivdep for i ∈ eachindex(A)
       δ = A[i] - μ
       notnan = δ==δ
       n += notnan
-      σ² += ifelse(notnan, δ * δ, ∅)
+      σ² += ifelse(notnan, δ * δ, ∅²)
   end
   return σ² / max(n-corrected, 0)
 end
 function _nanvar(μ::Number, corrected::Bool, A::AbstractArray{T}, ::Colon) where T<:Integer
-    σ² = zero(typeof(μ))
+    Tₒ = Base.promote_op(*, typeof(μ), typeof(μ))
+    σ² = zero(Tₒ)
     if μ==μ
         @inbounds @simd ivdep for i ∈ eachindex(A)
             δ = A[i] - μ
