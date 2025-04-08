@@ -26,6 +26,7 @@ Summary statistics exported by NaNStatistics are generally named the same as the
 ##### Measures of dispersion
 * `nanvar` &emsp; variance
 * `nanstd` &emsp; standard deviation
+* `nansem` &emsp; standard error of the mean
 * `nancov` &emsp; covariance
 * `nancor` &emsp; Pearson's product-moment correlation
 * `nanaad` &emsp; mean (average) absolute deviation from the mean
