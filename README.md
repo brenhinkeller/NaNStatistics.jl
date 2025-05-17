@@ -156,6 +156,12 @@ currently don't are:
 - `nancor` and `nancov` (does work but won't preserve array metadata)
 - `nanstandardize` and `nanstandardize!` (completely unsupported)
 
+### Benchmarks
+We maintain a few benchmarks in `benchmark/benchmarks.jl` for use with
+[AirspeedVelocity.jl](https://astroautomata.com/AirspeedVelocity.jl). If you're
+developing the package and want to benchmark the current state of the code vs
+`main`, install AirspeedVelocity.jl and run `benchpkg`. See the
+AirspeedVelocity.jl docs for more information.
 
 [docs-stable-img]: https://img.shields.io/badge/docs-stable-blue.svg
 [docs-stable-url]: https://brenhinkeller.github.io/NaNStatistics.jl/stable/
