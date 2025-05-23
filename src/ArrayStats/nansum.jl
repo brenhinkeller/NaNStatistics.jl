@@ -40,12 +40,19 @@ _nansum(A, dims::Int) = _nansum(A, (dims,))
 
 # Reduce some dims
 function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
-    sᵢ = size(A)
-    sₒ = ntuple(Val{N}()) do d
-        ifelse(d ∈ dims, 1, sᵢ[d])
+    if 1 in dims
+        # Use the generated-function approach for reducing over the first
+        # dimension since it's faster.
+        sᵢ = size(A)
+        sₒ = ntuple(Val{N}()) do d
+            ifelse(d ∈ dims, 1, sᵢ[d])
+        end
+        B = similar(A, T, sₒ)
+        _nansum!(B, A, dims)
+    else
+        # Base.sum() is faster at everything else
+        sum(x -> ifelse(isnan(x), zero(x), x), A; dims)
     end
-    B = similar(A, T, sₒ)
-    _nansum!(B, A, dims)
 end
 function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T<:Integer,N}
     sᵢ = size(A)

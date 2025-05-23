@@ -1,6 +1,11 @@
+# Default to 1MB
+NANMEAN_SIZE_THRESHOLD::Union{Int, Symbol} = 2^20
+
+get_size_threshold(x::Integer) = x
+
 """
 ```julia
-nanmean(A; dims)
+nanmean(A; dims, size_threshold)
 ```
 Compute the mean of all non-`NaN` elements in `A`, optionally over dimensions
 specified by `dims`. As `Statistics.mean`, but ignoring `NaN`s.
@@ -8,6 +13,14 @@ specified by `dims`. As `Statistics.mean`, but ignoring `NaN`s.
 As an alternative to `dims`, `nanmean` also supports the `dim` keyword, which
 behaves identically to `dims`, but also drops any singleton dimensions that have
 been reduced over (as is the convention in some other languages).
+
+`nanmean` has optimized implementations for big and small arrays for reducing
+over slow dimensions. Which implementation is used can be tuned by setting the
+`size_threshold` keyword argument to either an integer number of bytes, or the
+symbols `:L1`/`:L2`/`:L3` to use a specific cache size. The Hwloc.jl package
+must be loaded to support setting the threshold by cache symbol. The default
+threshold is 1MB, but if Hwloc.jl is loaded then the default will be set to
+`:L1` for the L1 cache size.
 
 ## Examples
 ```julia
@@ -28,29 +41,38 @@ julia> nanmean(A, dims=2)
  3.5
 ```
 """
-nanmean(A; dims=:, dim=:) = __nanmean(A, dims, dim)
-__nanmean(A, ::Colon, ::Colon) = _nanmean(A, :)
-__nanmean(A, region, ::Colon) = _nanmean(A, region)
-__nanmean(A, ::Colon, region) = reducedims(__nanmean(A, region, :), region)
+nanmean(A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD) = __nanmean(A, dims, dim, size_threshold)
+__nanmean(A, ::Colon, ::Colon, st) = _nanmean(A, :, st)
+__nanmean(A, region, ::Colon, st) = _nanmean(A, region, st)
+__nanmean(A, ::Colon, region, st) = reducedims(__nanmean(A, region, :, st), region)
 export nanmean
 
 
 # Reduce one dim
-_nanmean(A, dims::Int) = _nanmean(A, (dims,))
+_nanmean(A, dims::Int, st) = _nanmean(A, (dims,), st)
 
 # Reduce some dims
-function _nanmean(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
+function _nanmean(A::AbstractArray{T,N}, dims::Tuple, st) where {T,N}
     sᵢ = size(A)
     sₒ = ntuple(Val{N}()) do d
         ifelse(d ∈ dims, 1, sᵢ[d])
     end
     Tₒ = Base.promote_op(/, T, Int)
     B = similar(A, Tₒ, sₒ)
-    _nanmean!(B, A, dims)
+
+    if 1 in dims || sizeof(A) < get_size_threshold(st)
+        # The generated-function approach is faster for small arrays and if
+        # we're reducing over the first dimension.
+        _nanmean!(B, A, dims, st)
+    else
+        # For reducing over the slow axes of large arrays we use the mapreduce
+        # approach.
+        _nanmean_mapreduce!(B, A, dims)
+    end
 end
 
 # Reduce all the dims!
-function _nanmean(A, ::Colon)
+function _nanmean(A, ::Colon, _)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
     Σ = ∅ = zero(Tₒ)
@@ -62,7 +84,7 @@ function _nanmean(A, ::Colon)
     end
     return Σ / n
 end
-function _nanmean(A::AbstractArray{T}, ::Colon) where T<:Integer
+function _nanmean(A::AbstractArray{T}, ::Colon, _) where T<:Integer
     Tₒ = Base.promote_op(/, T, Int)
     Σ = zero(Tₒ)
     @inbounds @simd ivdep for i ∈ eachindex(A)
@@ -71,6 +93,52 @@ function _nanmean(A::AbstractArray{T}, ::Colon) where T<:Integer
     return Σ / length(A)
 end
 
+# Tight loops for the mapreduce-style implementation. This is in a separate
+# function to ensure type-stability.
+function _nanmean_mapreduce_impl!(B, A, counts)
+    @_mapreduce_impl(B, A,
+                     if !isnan(x)
+                         B[ir, IR] += x
+                         counts[ir, IR] += 1
+                     end)
+
+    ∅ = zero(eltype(B))
+    @inbounds for i in eachindex(B)
+        if iszero(counts[i])
+            B[i] = ∅
+        else
+            B[i] /= counts[i]
+        end
+    end
+end
+
+function _nanmean_mapreduce!(B, A, dims::Tuple)
+    # Compute the length of the dimensions we're reducing over to pick
+    # the smallest valid eltype for the counts array. The downside is type
+    # instability and a few more allocations, but on large arrays this
+    # can improve performance by ~25%.
+    to_reduce_dims = ntuple(i -> size(B)[i] == 1 ? size(A)[i] : 1, ndims(B))
+    max_reduction_len = prod(to_reduce_dims)
+    counts_T = if max_reduction_len < typemax(UInt8)
+        UInt8
+    elseif max_reduction_len < typemax(UInt16)
+        UInt16
+    elseif max_reduction_len < typemax(UInt32)
+        UInt32
+    else
+        UInt64
+    end
+    counts = similar(B, counts_T)
+    fill!(counts, zero(counts_T))
+
+    # We need to initialize B with zeros because we start off using it to sum
+    # the array.
+    fill!(B, zero(eltype(B)))
+
+    _nanmean_mapreduce_impl!(B, A, counts)
+
+    return B
+end
 
 # Metaprogramming magic adapted from Chris Elrod example:
 # Generate customized set of loops for a given ndims and a vector
@@ -152,7 +220,7 @@ end
 
 # Turn non-static integers in `dims` tuple into `StaticInt`s
 # so we can construct `static_dims` vector within @generated code
-function branches_nanmean_quote(N::Int, M::Int, D)
+function branches_nanmean_quote(N::Int, M::Int, D, st)
     static_dims = Int[]
     for m ∈ 1:M
         param = D.parameters[m]
@@ -172,7 +240,7 @@ function branches_nanmean_quote(N::Int, M::Int, D)
                 n ∈ static_dims && continue
                 tc = copy(t)
                 push!(tc.args, :(StaticInt{$n}()))
-                qnew = Expr(ifsym, :(dimm == $n), :(return _nanmean!(B, A, $tc)))
+                qnew = Expr(ifsym, :(dimm == $n), :(return _nanmean!(B, A, $tc, $st)))
                 for r ∈ m+1:M
                     push!(tc.args, :(dims[$r]))
                 end
@@ -188,9 +256,9 @@ function branches_nanmean_quote(N::Int, M::Int, D)
 end
 
 # Efficient @generated in-place mean
-@generated function _nanmean!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
-    N == M && return :(B[1] = _nanmean(A, :); B)
-    branches_nanmean_quote(N, M, D)
+@generated function _nanmean!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D, st) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
+    N == M && return :(B[1] = _nanmean(A, :, st); B)
+    branches_nanmean_quote(N, M, D, st)
 end
 
 ## ---

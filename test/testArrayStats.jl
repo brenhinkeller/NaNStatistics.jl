@@ -419,6 +419,22 @@
     @test vec(nankurtosis(A, dims=1)) ≈ kurtosis.(eachcol(A))
     @test vec(nankurtosis(A, dims=2)) ≈ kurtosis.(eachrow(A))
 
+## --- Test the correctness of the mapreduce implementations of nansum/nanmean
+
+    A = rand(100, 100)
+    for i in rand(eachindex(A), 100)
+        A[i] = NaN
+    end
+
+    generated_func_nanmean = nanmean(A; dims=2, size_threshold=typemax(Int))
+    mapreduce_nanmean = nanmean(A; dims=2, size_threshold=0)
+    # If the values are completely identical then we're likely testing the same implementation
+    @test sum(mapreduce_nanmean .- generated_func_nanmean) != 0
+    @test generated_func_nanmean ≈ mapreduce_nanmean
+
+    A = rand(100, 100)
+    @test sum(A; dims=2) ≈ nansum(A; dims=2)
+
 ## --- Test fallbacks for complex reductions
 
     A = randn((2 .+ (1:6))...);

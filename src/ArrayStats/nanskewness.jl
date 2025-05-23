@@ -45,7 +45,7 @@ export nanskewness
 _nanskewness(μ, corrected::Bool, A, dims::Int) = _nanskewness(μ, corrected, A, (dims,))
 
 # If the mean isn't known, compute it
-_nanskewness(::Nothing, corrected::Bool, A, dims::Tuple) = _nanskewness!(_nanmean(A, dims), corrected, A, dims)
+_nanskewness(::Nothing, corrected::Bool, A, dims::Tuple) = _nanskewness!(_nanmean(A, dims, NANMEAN_SIZE_THRESHOLD), corrected, A, dims)
 # Reduce all the dims!
 function _nanskewness(::Nothing, corrected::Bool, A, ::Colon)
     T = eltype(A)

@@ -1,5 +1,5 @@
 module BaseTest
-    using Test, NaNStatistics, StatsBase, Statistics, LinearAlgebra, Distributions
+    using Test, NaNStatistics, StatsBase, Statistics, LinearAlgebra, Distributions, Hwloc
 
     @testset "ArrayStats" begin include("testArrayStats.jl") end
     @testset "Covariance and Correlation" begin include("testCovCor.jl") end

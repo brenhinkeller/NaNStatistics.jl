@@ -10,14 +10,17 @@ StaticArrayInterface = "0d7ed370-da01-4f52-bd93-41d350b8b718"
 
 [weakdeps]
 DimensionalData = "0703355e-b756-11e9-17c0-8b28908087d0"
+Hwloc = "0e44f5e4-bd66-52a0-8798-143a42290a1d"
 Unitful = "1986cc42-f94f-5a68-af5c-568840ba703d"
 
 [extensions]
+NaNStatisticsHwlocExt = "Hwloc"
 NaNStatisticsDimensionalDataExt = "DimensionalData"
 NaNStatisticsUnitfulExt = "Unitful"
 
 [compat]
 DimensionalData = "0.29"
+Hwloc = "3.3.0"
 PrecompileTools = "1"
 Static = "0.8, 1"
 StaticArrayInterface = "1"

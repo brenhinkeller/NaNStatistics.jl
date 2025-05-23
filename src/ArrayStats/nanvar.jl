@@ -43,7 +43,7 @@ export nanvar
 _nanvar(μ, corrected::Bool, A, dims::Int) = _nanvar(μ, corrected, A, (dims,))
 
 # If the mean isn't known, compute it
-_nanvar(::Nothing, corrected::Bool, A, dims::Tuple) = _nanvar!(_nanmean(A, dims), corrected, A, dims)
+_nanvar(::Nothing, corrected::Bool, A, dims::Tuple) = _nanvar!(_nanmean(A, dims, NANMEAN_SIZE_THRESHOLD), corrected, A, dims)
 # Reduce all the dims!
 function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
     Tₘ = Base.promote_op(/, eltype(A), Int)
