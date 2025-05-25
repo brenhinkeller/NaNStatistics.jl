@@ -45,7 +45,7 @@ export nankurtosis
 _nankurtosis(μ, corrected::Bool, A, dims::Int) = _nankurtosis(μ, corrected, A, (dims,))
 
 # If the mean isn't known, compute it
-_nankurtosis(::Nothing, corrected::Bool, A, dims::Tuple) = _nankurtosis!(_nanmean(A, dims), corrected, A, dims)
+_nankurtosis(::Nothing, corrected::Bool, A, dims::Tuple) = _nankurtosis!(_nanmean(A, dims, NANMEAN_SIZE_THRESHOLD), corrected, A, dims)
 # Reduce all the dims!
 function _nankurtosis(::Nothing, corrected::Bool, A, ::Colon)
     T = eltype(A)

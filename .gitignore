@@ -5,3 +5,6 @@
 /dev
 Manifest.toml
 .DS_Store
+
+# Output from AirspeedVelocity.jl
+results_*

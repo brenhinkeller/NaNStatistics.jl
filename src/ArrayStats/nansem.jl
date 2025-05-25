@@ -43,7 +43,7 @@ export nansem
 _nansem(μ, corrected::Bool, A, dims::Int) = _nansem(μ, corrected, A, (dims,))
 
 # If the mean isn't known, compute it
-_nansem(::Nothing, corrected::Bool, A, dims::Tuple) = _nansem!(_nanmean(A, dims), corrected, A, dims)
+_nansem(::Nothing, corrected::Bool, A, dims::Tuple) = _nansem!(_nanmean(A, dims, NANMEAN_SIZE_THRESHOLD), corrected, A, dims)
 # Reduce all the dims!
 function _nansem(::Nothing, corrected::Bool, A, ::Colon)
   Tₒ = Base.promote_op(/, eltype(A), Int)

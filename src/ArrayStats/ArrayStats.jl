@@ -288,16 +288,16 @@
     also drops any singleton dimensions that have been reduced over (as is the
     convention in some other languages).
     """
-    nanmean(A, W; dims=:, dim=:) = __nanmean(A, W, dims, dim)
-    __nanmean(A, W, ::Colon, ::Colon) = _nanmean(A, W, :)
-    __nanmean(A, W, region, ::Colon) = _nanmean(A, W, region)
-    __nanmean(A, W, ::Colon, region) = reducedims(_nanmean(A, W, region), region)
-    function _nanmean(A, W, region)
+    nanmean(A, W; dims=:, dim=:) = __nanmean_weighted(A, W, dims, dim)
+    __nanmean_weighted(A, W, ::Colon, ::Colon) = _nanmean_weighted(A, W, :)
+    __nanmean_weighted(A, W, region, ::Colon) = _nanmean_weighted(A, W, region)
+    __nanmean_weighted(A, W, ::Colon, region) = reducedims(_nanmean_weighted(A, W, region), region)
+    function _nanmean_weighted(A, W, region)
         mask = nanmask(A)
         return sum(A.*W.*mask, dims=region) ./ sum(W.*mask, dims=region)
     end
     # Can't have NaNs if array is all Integers
-    function _nanmean(A::AbstractArray{<:Integer}, W, ::Colon)
+    function _nanmean_weighted(A::AbstractArray{<:Integer}, W, ::Colon)
         n = zero(eltype(W))
         m = zero(promote_type(eltype(W), eltype(A)))
         @inbounds @simd ivdep for i ∈ eachindex(A,W)
@@ -307,7 +307,7 @@
         end
         return m / n
     end
-    function _nanmean(A, W, ::Colon)
+    function _nanmean_weighted(A, W, ::Colon)
         n = ∅ₙ = zero(eltype(W))
         m = ∅ₘ = zero(promote_type(eltype(W), eltype(A)))
         @inbounds @simd ivdep for i ∈ eachindex(A,W)
@@ -407,19 +407,21 @@
 
     """
     ```julia
-    nanaad(A; dims)
+    nanaad(A; dims, size_threshold=NANMEAN_SIZE_THRESHOLD)
     ```
     Mean (average) absolute deviation from the mean, ignoring `NaN`s, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
-    Note that for a Normal distribution, sigma = 1.253 * AAD.
+    Note that for a Normal distribution, sigma = 1.253 * AAD. The
+    `size_threshold` argument is supported for taking the mean, see `nanmean`
+    for more information.
 
     Also supports the `dim` keyword, which behaves identically to `dims`, but
     also drops any singleton dimensions that have been reduced over (as is the
     convention in some other languages).
     """
-    nanaad(A; dims=:, dim=:) = __nanaad(A, dims, dim)
-    __nanaad(A, dims, dim) = __nanmean(abs.(A .- _nanmean(A, dims)), dims, dim)
-    __nanaad(A, ::Colon, dim) = __nanmean(abs.(A .- _nanmean(A, dim)), :, dim)
+    nanaad(A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD) = __nanaad(A, dims, dim, size_threshold)
+    __nanaad(A, dims, dim, size_threshold) = __nanmean(abs.(A .- _nanmean(A, dims, size_threshold)), dims, dim, size_threshold)
+    __nanaad(A, ::Colon, dim, size_threshold) = __nanmean(abs.(A .- _nanmean(A, dim, size_threshold)), :, dim, size_threshold)
     export nanaad
 
 
@@ -585,5 +587,27 @@
     end
     export movmean
 
+## --- Internal helpers
+
+# This is a copy of the fallback branch of _mapreducedim!() in
+# base/reducedim.jl. This iteration style is faster than the generated functions
+# for large arrays. This is a macro instead of a function to guarantee that any
+# overhead from passing an inner function is avoided, instead an expression is
+# interpolated in.
+macro _mapreduce_impl(B, A, expr)
+    quote
+        indsAt = Base.safe_tail(axes($A))
+        indsRt = Base.safe_tail(axes($B))
+        keep, Idefault = Broadcast.shapeindexer(indsRt)
+
+        for IA in CartesianIndices(indsAt)
+            IR = Broadcast.newindex(IA, keep, Idefault)
+            @inbounds for ir in axes($A, 1)
+                x = A[ir, IA]
+                $expr
+            end
+        end
+    end |> esc
+end
 
 ## --- End of File
