@@ -240,7 +240,7 @@ function branches_nanmean_quote(N::Int, M::Int, D, st)
                 n ∈ static_dims && continue
                 tc = copy(t)
                 push!(tc.args, :(StaticInt{$n}()))
-                qnew = Expr(ifsym, :(dimm == $n), :(return _nanmean!(B, A, $tc, $st)))
+                qnew = Expr(ifsym, :(dimm == $n), :(return _nanmean!(B, A, $tc, st)))
                 for r ∈ m+1:M
                     push!(tc.args, :(dims[$r]))
                 end
