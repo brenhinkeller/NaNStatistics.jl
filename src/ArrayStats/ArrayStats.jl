@@ -610,4 +610,19 @@ macro _mapreduce_impl(B, A, expr)
     end |> esc
 end
 
+function _reduced_size(A::AbstractArray{T, N}, dims::Tuple) where {T, N}
+    sᵢ = size(A)
+    ntuple(Val{N}()) do d
+        ifelse(d ∈ dims, 1, sᵢ[d])
+    end
+end
+
+function _normalize_dims(dims)
+    if dims isa Integer
+        (dims,)
+    else
+        dims
+    end
+end
+
 ## --- End of File

@@ -30,10 +30,14 @@ res::DimArray = DimArray([1], :foo)
     res = nanstd(x, x; dims=:foo)
     @test res == nanstd(parent(x), parent(x); dims=1)
 
+    res = zeros(Dim{:bar}(size(x, :bar)))
+
     # Since all the reduction functions use the same machinery we only do sanity
     # checks for the other ones.
     @test nanmean(x; dim=:foo) isa DimArray
+    @test nanmean!(res, x; dim=:foo) isa DimArray
     @test nansum(x; dim=:foo) isa DimArray
+    @test nansum!(res, x; dim=:foo) isa DimArray
     @test nanstd(x; dim=:foo) isa DimArray
     @test nanvar(x; dim=:foo) isa DimArray
     @test nanaad(x; dim=:foo) isa DimArray

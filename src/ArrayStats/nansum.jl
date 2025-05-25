@@ -34,26 +34,49 @@ __nansum(A, region, ::Colon) = _nansum(A, region)
 __nansum(A, ::Colon, region) = reducedims(__nansum(A, region, :), region)
 export nansum
 
+"""
+    nansum!(B, A; dims=:, dim=:)
+
+Same as `nansum`, except that the result will be written to the array `B`. If
+`B` cannot be reshaped to the right size then a `DimensionMismatch` exception
+will be thrown. The returned array may be a different size than `B` depending on
+whether `dims`/`dim` is used, but it will always alias `B`.
+"""
+function nansum!(B, A; dims=:, dim=:)
+    if dims isa Colon && dim isa Colon
+        throw(ArgumentError("Cannot reduce an entire array into another array, use `nansum` instead"))
+    end
+
+    dims_tuple = dims isa Colon ? _normalize_dims(dim) : _normalize_dims(dims)
+    sₒ = _reduced_size(A, dims_tuple)
+    reshaped_B = reshape(B, sₒ)
+    _nansum!(reshape(B, sₒ), A, dims_tuple)
+
+    dims isa Colon ? reducedims(reshaped_B, dims_tuple) : reshaped_B
+end
+export nansum!
 
 # Reduce one dim
 _nansum(A, dims::Int) = _nansum(A, (dims,))
 
 # Reduce some dims
 function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
+    sₒ = _reduced_size(A, dims)
+    B = similar(A, T, sₒ)
+    _nansum!(B, A, dims)
+end
+
+function _nansum!(B, A, dims::Tuple)
     if 1 in dims
         # Use the generated-function approach for reducing over the first
         # dimension since it's faster.
-        sᵢ = size(A)
-        sₒ = ntuple(Val{N}()) do d
-            ifelse(d ∈ dims, 1, sᵢ[d])
-        end
-        B = similar(A, T, sₒ)
-        _nansum!(B, A, dims)
+        _nansum_generated!(B, A, dims)
     else
         # Base.sum() is faster at everything else
-        sum(x -> ifelse(isnan(x), zero(x), x), A; dims)
+        sum!(x -> ifelse(isnan(x), zero(x), x), B, A)
     end
 end
+
 function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T<:Integer,N}
     sᵢ = size(A)
     sₒ = ntuple(Val{N}()) do d
@@ -200,7 +223,7 @@ function branches_nansum_quote(N::Int, M::Int, D)
 end
 
 # Efficient @generated in-place sum
-@generated function _nansum!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
+@generated function _nansum_generated!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
     N == M && return :(B[1] = _nansum(A, :); B)
     branches_nansum_quote(N, M, D)
 end

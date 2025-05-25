@@ -47,23 +47,45 @@ __nanmean(A, region, ::Colon, st) = _nanmean(A, region, st)
 __nanmean(A, ::Colon, region, st) = reducedims(__nanmean(A, region, :, st), region)
 export nanmean
 
+"""
+    nanmean!(B, A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD)
+
+Same as `nanmean`, except that the result will be written to the array `B`. If
+`B` cannot be reshaped to the right size then a `DimensionMismatch` exception
+will be thrown. The returned array may be a different size than `B` depending on
+whether `dims`/`dim` is used, but it will always alias `B`.
+"""
+function nanmean!(B, A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD)
+    if dims isa Colon && dim isa Colon
+        throw(ArgumentError("Cannot reduce an entire array into another array, use `nanmean` instead"))
+    end
+
+    dims_tuple = dims isa Colon ? _normalize_dims(dim) : _normalize_dims(dims)
+    sₒ = _reduced_size(A, dims_tuple)
+    reshaped_B = reshape(B, sₒ)
+    _nanmean!(reshaped_B, A, dims_tuple, size_threshold)
+
+    dims isa Colon ? reducedims(reshaped_B, dims_tuple) : reshaped_B
+end
+export nanmean!
 
 # Reduce one dim
 _nanmean(A, dims::Int, st) = _nanmean(A, (dims,), st)
 
 # Reduce some dims
 function _nanmean(A::AbstractArray{T,N}, dims::Tuple, st) where {T,N}
-    sᵢ = size(A)
-    sₒ = ntuple(Val{N}()) do d
-        ifelse(d ∈ dims, 1, sᵢ[d])
-    end
+    sₒ = _reduced_size(A, dims)
     Tₒ = Base.promote_op(/, T, Int)
     B = similar(A, Tₒ, sₒ)
 
+    _nanmean!(B, A, dims, st)
+end
+
+function _nanmean!(B, A, dims, st)
     if 1 in dims || sizeof(A) < get_size_threshold(st)
         # The generated-function approach is faster for small arrays and if
         # we're reducing over the first dimension.
-        _nanmean!(B, A, dims, st)
+        _nanmean_generated!(B, A, dims, st)
     else
         # For reducing over the slow axes of large arrays we use the mapreduce
         # approach.
@@ -256,7 +278,7 @@ function branches_nanmean_quote(N::Int, M::Int, D, st)
 end
 
 # Efficient @generated in-place mean
-@generated function _nanmean!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D, st) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
+@generated function _nanmean_generated!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D, st) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
     N == M && return :(B[1] = _nanmean(A, :, st); B)
     branches_nanmean_quote(N, M, D, st)
 end
