@@ -7,7 +7,7 @@ import NaNStatistics
 
 
 # Crete methods for all the reduction functions
-for func in (:nanmean, :nansum, :nanstd, :nanvar,
+for func in (:nanmean, :nanmean!, :nansum, :nansum!, :nanstd, :nanvar,
              :nanaad, :nansem, :nanskewness, :nankurtosis,
              :nanmad, :nanmad!,
              :nanmedian, :nanmedian!,
@@ -20,19 +20,26 @@ for func in (:nanmean, :nansum, :nanstd, :nanvar,
     # - Reduce and keep all dimensions
     # - Reduce and drop singleton dimensions
     func_impl = Symbol('_', func)
+
+    # Create appropriate argument lists for modifying functions that take in two
+    # arrays, and regular functions that take in a single array.
+    is_modifying_func = func ∈ (:nanmean!, :nansum!)
+    func_impl_args = is_modifying_func ? [:(B), :(A)] : [:(A)]
+    inner_args = is_modifying_func ? [:(parent(B)), :(parent(A))] : [:(parent(A))]
+
     @eval begin
         # Reduce to a scalar
-        $func_impl(A, ::Colon, ::Colon, args...; kwargs...) = NaNStatistics.$func(parent(A), args...; kwargs...)
+        $func_impl($(func_impl_args...), ::Colon, ::Colon, args...; kwargs...) = NaNStatistics.$func($(inner_args...), args...; kwargs...)
 
         # Reduce and keep all dimensions
-        function $func_impl(A, dims, ::Colon, args...; kwargs...)
-            data = NaNStatistics.$func(parent(A), args...; dims=dimnum(A, dims), kwargs...)
+        function $func_impl($(func_impl_args...), dims, ::Colon, args...; kwargs...)
+            data = NaNStatistics.$func($(inner_args...), args...; dims=dimnum(A, dims), kwargs...)
             rebuild(A, data, DD.reducedims(A, dims))
         end
 
         # Reduce and drop singleton dimensions
-        function $func_impl(A, ::Colon, dim, args...; kwargs...)
-            data = NaNStatistics.$func(parent(A), args...; dim=dimnum(A, dim), kwargs...)
+        function $func_impl($(func_impl_args...), ::Colon, dim, args...; kwargs...)
+            data = NaNStatistics.$func($(inner_args...), args...; dim=dimnum(A, dim), kwargs...)
             rebuild(A, data, DD.otherdims(A, dim))
         end
     end
@@ -42,6 +49,10 @@ for func in (:nanmean, :nansum, :nanstd, :nanvar,
         # These functions need their second argument explicitly type-annotated
         # to avoid method ambiguities.
         @eval NaNStatistics.$func(A::AbstractDimArray, n::Number; dims=:, dim=:) = $func_impl(A, dims, dim, n)
+    elseif func ∈ (:nanmean!, :nansum!)
+        # The modifying functions dispatch on the second argument rather than the first
+        @eval NaNStatistics.$func(B, A::AbstractDimArray, args...; dims=:, dim=:, kwargs...) = $func_impl(B, A, dims, dim, args...; kwargs...)
+
     else
         @eval NaNStatistics.$func(A::AbstractDimArray, args...; dims=:, dim=:, kwargs...) = $func_impl(A, dims, dim, args...; kwargs...)
     end

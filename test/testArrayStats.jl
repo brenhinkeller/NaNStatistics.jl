@@ -452,6 +452,28 @@
     @test nanmedian(A) == nanmedian!(A)
     @test nanmad(A) == nanmad!(A)
 
+    for (f!, f) in ((nanmean!, nanmean), (nansum!, nansum))
+        local A = rand(10, 10, 10)
+        out = fill(NaN, (100,))
+
+        # We can't fully reduce an array into another array
+        @test_throws ArgumentError f!(out, A)
+
+        # The modified array should be returned, but it may be reshaped and thus
+        # wrapped in another Array.
+        @test Base.mightalias(f!(out, A; dims=3), out)
+
+        # Test `dims` and `dim` behaviour
+        @test size(f!(out, A; dims=3)) == (10, 10, 1)
+        @test size(f!(out, A; dim=3)) == (10, 10)
+
+        # Check that the array has been modified
+        @test out ≈ vec(f(A; dims=3))
+
+        # Passing an array that can't be reshaped to the right shape should throw an
+        # exception.
+        @test_throws DimensionMismatch f!(out[1:99], A; dims=3)
+    end
 
 ## --- A few tests with other types
     for T in (Bool, Float16, Float32)
