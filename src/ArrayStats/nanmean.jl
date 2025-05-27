@@ -124,10 +124,10 @@ function _nanmean_mapreduce_impl!(B, A, counts)
                          counts[ir, IR] += 1
                      end)
 
-    ∅ = zero(eltype(B))
+    nan_value = convert(eltype(B), NaN)
     @inbounds for i in eachindex(B)
         if iszero(counts[i])
-            B[i] = ∅
+            B[i] = nan_value
         else
             B[i] /= counts[i]
         end

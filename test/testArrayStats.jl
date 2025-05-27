@@ -432,8 +432,23 @@
     @test sum(mapreduce_nanmean .- generated_func_nanmean) != 0
     @test generated_func_nanmean ≈ mapreduce_nanmean
 
+    # Test that dimensions full of nans are handled correctly (all nans)
+    fill!(A, NaN)
+    @test all(isnan.(nanmean(A; dims=2, size_threshold=0)))
+
+    # Sanity tests for nansum
     A = rand(100, 100)
     @test sum(A; dims=2) ≈ nansum(A; dims=2)
+
+    A = ones(100, 100)
+    A[:, 1] .= NaN
+    A[1, :] .= NaN
+    @test nansum(A; dim=1) ≈ nansum(A; dim=2)
+
+    # Test that dimensions full of nans are handled the same as
+    # `_nansum_generated!` (all zeros).
+    fill!(A, NaN)
+    @test nansum(A; dim=1) == nansum(A; dim=2)
 
 ## --- Test fallbacks for complex reductions
 
