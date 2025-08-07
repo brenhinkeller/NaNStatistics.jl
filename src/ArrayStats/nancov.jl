@@ -104,7 +104,7 @@ function _nancovem(x::AbstractVector, y::AbstractVector, corrected::Bool)
     μᵪ = Σᵪ/n
     μᵧ = Σᵧ/n
 
-    return _nancov(x, y, corrected, μᵪ, μᵧ)/n
+    return _nancov(x, y, corrected, μᵪ, μᵧ)/max(n,1)
 end
 
 
