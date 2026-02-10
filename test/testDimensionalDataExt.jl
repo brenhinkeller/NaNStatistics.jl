@@ -89,3 +89,19 @@ end
     res = nanrange(x; dim=:foo)
     @test res == nanrange(parent(x); dim=1)
 end
+
+@testset "Allocation helpers" begin
+    data = rand(X(5), Y(11:15))
+
+    # Just test allocate_nanmean() since the other reduction allocators all go
+    # through _allocate_reduce().
+    out = NaNStatistics.allocate_nanmean(data, 1)
+    @test size(out) == (1, 5)
+    @test out isa DimMatrix{Float64}
+    @test lookup(out, Y) == lookup(data, Y)
+
+    # Test allocate_movmean() explicitly since it doesn't go through _allocate_reduce()
+    out = NaNStatistics.allocate_movmean(data)
+    @test size(out) == size(data)
+    @test out isa DimMatrix{Float64}
+end

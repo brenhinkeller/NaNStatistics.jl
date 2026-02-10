@@ -4,6 +4,22 @@ NANMEAN_SIZE_THRESHOLD::Union{Int, Symbol} = 2^20
 get_size_threshold(x::Integer) = x
 
 """
+    allocate_nanmean(A::AbstractArray, dims)
+
+Allocates an array that can be passed as the output array to `nanmean!()` for
+the given `A`.
+
+Note that you should prefer using the output of `nanmean!()` rather than the
+array returned from this function because `nanmean!()` will drop dimensions if
+`dim` is used (but that's a zero-copy operation, the underlying array is
+shared).
+"""
+function allocate_nanmean(A::AbstractArray{T}, dims) where T
+    Tₒ = Base.promote_op(/, T, Int)
+    _allocate_reduce(Tₒ, A, dims)
+end
+
+"""
 ```julia
 nanmean(A; dims, size_threshold)
 ```
@@ -73,13 +89,7 @@ export nanmean!
 _nanmean(A, dims::Int, st) = _nanmean(A, (dims,), st)
 
 # Reduce some dims
-function _nanmean(A::AbstractArray{T,N}, dims::Tuple, st) where {T,N}
-    sₒ = _reduced_size(A, dims)
-    Tₒ = Base.promote_op(/, T, Int)
-    B = similar(A, Tₒ, sₒ)
-
-    _nanmean!(B, A, dims, st)
-end
+_nanmean(A::AbstractArray, dims::Tuple, st) = _nanmean!(allocate_nanmean(A, dims), A, dims, st)
 
 function _nanmean!(B, A, dims, st)
     if 1 in dims || sizeof(A) < get_size_threshold(st)

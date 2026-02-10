@@ -14,12 +14,14 @@ See also [JuliaSIMD/VectorizedStatistics.jl](https://github.com/JuliaSIMD/Vector
 Summary statistics exported by NaNStatistics are generally named the same as their normal counterparts, but with "nan" in front of the name, similar to the Matlab and NumPy conventions. Options include:
 ##### Reductions
 * `nansum`
+* `nansum!`
 * `nanminimum`
 * `nanmaximum`
 * `nanextrema`
 
 ##### Measures of central tendency
 * `nanmean` &emsp; arithmetic mean, ignoring `NaN`s
+* `nanmean!`&emsp; as `nanmean`, but writes to a given output array
 * `nanmedian` &emsp; median, ignoring `NaN`s
 * `nanmedian!` &emsp; as `nanmedian` but quicksorts in-place for efficiency
 
@@ -127,7 +129,7 @@ julia> @btime nanbinmean($x,$y,xmin,xmax,nbins)
  90.30275863080671
 ```
 ### Other functions
-* `movmean`
+* `movmean` / `movmean!`
 A simple moving average function, which can operate in 1D or 2D, ignoring NaNs.
 ```
 julia> A = rand(1:10, 4,4)
@@ -147,6 +149,15 @@ julia> movmean(A, 3)
 
  * `nanstandardize` / `nanstandardize!`
  De-mean and set to unit variance
+
+### Allocation functions
+To use mutating functions like `nanmean!` you can call the appropriate
+allocation function and get back an array that can be passed as the output
+argument.
+
+* `allocate_nanmean`
+* `allocate_nansum`
+* `allocate_movmean`
 
 ### DimensionalData support
 Almost all functions support

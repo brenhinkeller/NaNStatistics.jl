@@ -1,4 +1,17 @@
 """
+    allocate_nansum(A::AbstractArray, dims)
+
+Allocates an array that can be passed as the output array to `nanmean!()` for
+the given `A`.
+
+See the `allocate_nanmean()` docstring for info on using the returned array.
+"""
+function allocate_nansum(A::AbstractArray{T}, dims) where T
+    Tₒ = T <: Integer ? Base.promote_op(+, T, Int) : T
+    _allocate_reduce(Tₒ, A, dims)
+end
+
+"""
 ```julia
 nansum(A; dims)
 ```
@@ -60,11 +73,7 @@ export nansum!
 _nansum(A, dims::Int) = _nansum(A, (dims,))
 
 # Reduce some dims
-function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
-    sₒ = _reduced_size(A, dims)
-    B = similar(A, T, sₒ)
-    _nansum!(B, A, dims)
-end
+_nansum(A::AbstractArray, dims::Tuple) = _nansum!(allocate_nansum(A, dims), A, dims)
 
 function _nansum!(B, A, dims::Tuple)
     if 1 in dims
@@ -75,16 +84,6 @@ function _nansum!(B, A, dims::Tuple)
         # Base.sum() is faster at everything else
         sum!(x -> ifelse(isnan(x), zero(x), x), B, A)
     end
-end
-
-function _nansum(A::AbstractArray{T,N}, dims::Tuple) where {T<:Integer,N}
-    sᵢ = size(A)
-    sₒ = ntuple(Val{N}()) do d
-        ifelse(d ∈ dims, 1, sᵢ[d])
-    end
-    Tₒ = Base.promote_op(+, T, Int)
-    B = similar(A, Tₒ, sₒ)
-    _nansum!(B, A, dims)
 end
 
 # Reduce all the dims!

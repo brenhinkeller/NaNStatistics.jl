@@ -78,4 +78,8 @@ function NaNStatistics.movmean(A::DD.AbstractDimVecOrMat, n::Number)
     rebuild(A, data)
 end
 
+function NaNStatistics._allocate_reduce(Tₒ, A::AbstractDimArray, dims)
+    rebuild(A, NaNStatistics._allocate_reduce(Tₒ, parent(A), dims), DD.reducedims(A, dims))
+end
+
 end
