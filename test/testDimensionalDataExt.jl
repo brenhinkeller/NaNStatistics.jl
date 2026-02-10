@@ -99,4 +99,9 @@ end
     @test size(out) == (1, 5)
     @test out isa DimMatrix{Float64}
     @test lookup(out, Y) == lookup(data, Y)
+
+    # Test allocate_movmean() explicitly since it doesn't go through _allocate_reduce()
+    out = NaNStatistics.allocate_movmean(data)
+    @test size(out) == size(data)
+    @test out isa DimMatrix{Float64}
 end

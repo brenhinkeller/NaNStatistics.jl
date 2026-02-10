@@ -576,5 +576,6 @@
     @test NaNStatistics.allocate_nanmean(rand(Float32, 10, 10), 1) isa Matrix{Float32}
     @test NaNStatistics.allocate_nansum(rand(10, 10), 1) isa Matrix{Float64}
     @test NaNStatistics.allocate_nansum(rand(Int, 10, 10), 1) isa Matrix{Int}
+    @test NaNStatistics.allocate_movmean(rand(10)) isa Vector{Float64}
 
 ## --- End of File

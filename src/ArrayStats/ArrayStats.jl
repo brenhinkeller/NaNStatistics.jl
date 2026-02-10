@@ -499,6 +499,17 @@
 ## -- Moving average, ignoring NaNs
 
     """
+        allocate_movmean(x::AbstractVecOrMat)
+
+    Allocate an array of the right type and shape to pass as the output parameter to
+    `movmean!()` for the given `x`.
+    """
+    function allocate_movmean(x::AbstractVecOrMat{T}) where T
+        mean_type = Base.promote_op(/, T, Int64)
+        similar(x, mean_type)
+    end
+
+    """
     ```julia
     movmean(x::AbstractVecOrMat, n::Number)
     ```
@@ -509,18 +520,23 @@
     if `n` is not an odd integer, the first odd integer greater than `n` will be
     used instead.
     """
-    function movmean(x::AbstractVector{T}, n::Number) where T
-        mean_type = Base.promote_op(/, T, Int64)
-        m = Array{mean_type}(undef, size(x))
+    movmean(x::AbstractVector, n::Number) = movmean!(allocate_movmean(x), x, n)
+
+    """
+        movmean!(out, x, win_or_n::Union{Number, Tuple})
+
+    Non-allocating version of `movmean()`. Generate the `out` parameter with
+    `allocate_movmean(x)`.
+    """
+    function movmean!(out::AbstractVector, x::AbstractVector{T}, n::Number) where T
         δ = ceil(Int, (n-1)/2)
         @inbounds for i ∈ eachindex(x)
             iₗ = max(i-δ, firstindex(x))
             iᵤ = min(i+δ, lastindex(x))
-            m[i] = nanmean(view(x, iₗ:iᵤ))
+            out[i] = nanmean(view(x, iₗ:iᵤ))
         end
-        return m
+        return out
     end
-
 
     """
         movmean(x::AbstractVector{T}, win::Tuple{Int, Int}=(1, 1); skip_centre=false) where {T<:Real}
@@ -542,13 +558,13 @@
     movmean(x, win)  # returns [1.5, 2.0, 3.0, 4.0, 4.5]
     ```
     """
-    function movmean(x::AbstractVector{T}, win::Tuple{Int, Int}=(1, 1); 
+    movmean(x::AbstractVector, win::Tuple{Int, Int}=(1, 1); skip_centre=false) = movmean!(allocate_movmean(x), x, win; skip_centre)
+
+    function movmean!(out::AbstractVector, x::AbstractVector{T}, win::Tuple{Int, Int}=(1, 1);
         skip_centre=false) where {T<:Real}
         win_left, win_right = win
         
-        FT = Base.promote_op(/, T, Int64)
-        z = similar(x, FT)
-        ∑ = ∅ = FT(0)
+        ∑ = ∅ = zero(eltype(out))
         ∑w = ∅w = 0
 
         @inbounds @simd for i ∈ eachindex(x)
@@ -563,14 +579,14 @@
                 ∑ += ifelse(notnan, xᵢ, ∅)
                 ∑w += ifelse(notnan, 1, 0)
             end
-            z[i] = ∑ / ∑w
+            out[i] = ∑ / ∑w
         end
-        z
+        return out
     end
 
-    function movmean(x::AbstractMatrix{T}, n::Number) where T
-        mean_type = Base.promote_op(/, T, Int64)
-        m = Array{mean_type}(undef, size(x))
+    movmean(x::AbstractMatrix, n::Number) = movmean!(allocate_movmean(x), x, n)
+
+    function movmean!(out::AbstractMatrix, x::AbstractMatrix{T}, n::Number) where T
         δ = ceil(Int, (n-1)/2)
         𝐼 = repeat((firstindex(x,1):lastindex(x,1)), 1, size(x,2))
         𝐽 = repeat((firstindex(x,2):lastindex(x,2))', size(x,1), 1)
@@ -581,11 +597,11 @@
             j = 𝐽[k]
             jₗ = max(j-δ, firstindex(x,2))
             jᵤ = min(j+δ, lastindex(x,2))
-            m[i,j] = nanmean(view(x, iₗ:iᵤ, jₗ:jᵤ))
+            out[i,j] = nanmean(view(x, iₗ:iᵤ, jₗ:jᵤ))
         end
-        return m
+        return out
     end
-    export movmean
+    export movmean, movmean!
 
 ## --- Internal helpers
 

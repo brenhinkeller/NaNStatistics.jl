@@ -129,7 +129,7 @@ julia> @btime nanbinmean($x,$y,xmin,xmax,nbins)
  90.30275863080671
 ```
 ### Other functions
-* `movmean`
+* `movmean` / `movmean!`
 A simple moving average function, which can operate in 1D or 2D, ignoring NaNs.
 ```
 julia> A = rand(1:10, 4,4)
@@ -157,6 +157,7 @@ argument.
 
 * `allocate_nanmean`
 * `allocate_nansum`
+* `allocate_movmean`
 
 ### DimensionalData support
 Almost all functions support
