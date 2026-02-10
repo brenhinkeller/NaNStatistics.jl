@@ -570,5 +570,11 @@
     @test nanmedian(x, dim=(1, 3)) == ones(100)
     @test nanmedian(x, dim=(1, 2, 3)) == fill(1.0)
 
+## --- Allocation functions
+
+    @test size(NaNStatistics.allocate_nanmean(rand(10, 10), 1)) == (1, 10)
+    @test NaNStatistics.allocate_nanmean(rand(Float32, 10, 10), 1) isa Matrix{Float32}
+    @test NaNStatistics.allocate_nansum(rand(10, 10), 1) isa Matrix{Float64}
+    @test NaNStatistics.allocate_nansum(rand(Int, 10, 10), 1) isa Matrix{Int}
 
 ## --- End of File

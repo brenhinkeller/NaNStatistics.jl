@@ -625,4 +625,10 @@ function _normalize_dims(dims)
     end
 end
 
+function _allocate_reduce(Tₒ, A, dims)
+    output_size = _normalize_dims(dims)
+    sₒ = _reduced_size(A, output_size)
+    similar(A, Tₒ, sₒ)
+end
+
 ## --- End of File
