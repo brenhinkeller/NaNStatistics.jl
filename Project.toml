@@ -19,7 +19,7 @@ NaNStatisticsDimensionalDataExt = "DimensionalData"
 NaNStatisticsUnitfulExt = "Unitful"
 
 [compat]
-DimensionalData = "0.29"
+DimensionalData = "0.29, 0.30"
 Hwloc = "3.3"
 PrecompileTools = "1"
 Static = "0.8, 1"
