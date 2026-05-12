@@ -407,21 +407,22 @@
 
     """
     ```julia
-    nanaad(A; dims, size_threshold=NANMEAN_SIZE_THRESHOLD)
+    nanaad(A; dims, dim, size_threshold=NANMEAN_SIZE_THRESHOLD, workspace=nothing)
     ```
     Mean (average) absolute deviation from the mean, ignoring `NaN`s, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
     Note that for a Normal distribution, sigma = 1.253 * AAD. The
-    `size_threshold` argument is supported for taking the mean, see `nanmean`
-    for more information.
+    `size_threshold` and `workspace` arguments are supported for taking the
+    mean, see `nanmean` for more information.
 
     Also supports the `dim` keyword, which behaves identically to `dims`, but
     also drops any singleton dimensions that have been reduced over (as is the
     convention in some other languages).
     """
-    nanaad(A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD) = __nanaad(A, dims, dim, size_threshold)
-    __nanaad(A, dims, dim, size_threshold) = __nanmean(abs.(A .- _nanmean(A, dims, size_threshold)), dims, dim, size_threshold)
-    __nanaad(A, ::Colon, dim, size_threshold) = __nanmean(abs.(A .- _nanmean(A, dim, size_threshold)), :, dim, size_threshold)
+    nanaad(A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD, workspace=nothing) = __nanaad(A, dims, dim, size_threshold, workspace)
+    __nanaad(A, dims, dim, st, ws) = __nanmean(abs.(A .- _nanmean(A, dims, st, ws)), dims, dim, st, ws)
+    __nanaad(A, ::Colon, dim, st, ws) = __nanmean(abs.(A .- _nanmean(A, dim, st, ws)), :, dim, st, ws)
+    __nanaad(A, ::Colon, ::Colon, st, ws) = __nanmean(abs.(A .- _nanmean(A, :, st)), :, :, st, ws)
     export nanaad
 
 
