@@ -32,10 +32,10 @@ As `nancumsum`, but operating on logarithms; as `nanlogsumexp`, but returning a 
 ```julia
 ```
 """
-nanlogcumsumexp(A; reverse=false) = _nanlogcumsumexp(A, static(reverse))
+nanlogcumsumexp(A; reverse=false) = _nanlogcumsumexp(A, _static(reverse))
 export nanlogcumsumexp
 
-function _nanlogcumsumexp(A, ::False)
+function _nanlogcumsumexp(A, ::_False)
     Tᵣ = Base.promote_op(exp, eltype(A))
     Σ = ∅ = zero(Tᵣ)
     lΣ = fill!(similar(A, Tᵣ), ∅)
@@ -59,7 +59,7 @@ function _nanlogcumsumexp(A, ::False)
     end
     return lΣ
 end
-function _nanlogcumsumexp(A, ::True)
+function _nanlogcumsumexp(A, ::_True)
     Tᵣ = Base.promote_op(exp, eltype(A))
     Σ = ∅ = zero(Tᵣ)
     lΣ = fill!(similar(A, Tᵣ), ∅)

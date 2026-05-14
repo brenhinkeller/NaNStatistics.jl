@@ -157,11 +157,11 @@ function staticdim_nankurtosis_quote(static_dims::Vector{Int}, N::Int)
   firstn = first(nonreduct_inds)
   # Secondly, build up our set of loops
   block = Expr(:block)
-  loops = Expr(:for, :($(inds[firstn]) = indices((A,B),$firstn)), block)
+  loops = Expr(:for, :($(inds[firstn]) = axes(A,$firstn)), block)
   if length(nonreduct_inds) > 1
     for n ∈ @view(nonreduct_inds[2:end])
       newblock = Expr(:block)
-      push!(block.args, Expr(:for, :($(inds[n]) = indices((A,B),$n)), newblock))
+      push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
       block = newblock
     end
   end
@@ -201,20 +201,20 @@ function staticdim_nankurtosis_quote(static_dims::Vector{Int}, N::Int)
   end
 end
 
-# Turn non-static integers in `dims` tuple into `StaticInt`s
+# Turn non-static integers in `dims` tuple into `_StaticInt`s
 # so we can construct `static_dims` vector within @generated code
 function branches_nankurtosis_quote(N::Int, M::Int, D)
   static_dims = Int[]
   for m ∈ 1:M
     param = D.parameters[m]
-    if param <: StaticInt
+    if param <: _StaticInt
       new_dim = _dim(param)::Int
       @assert new_dim ∉ static_dims
       push!(static_dims, new_dim)
     else
       t = Expr(:tuple)
       for n ∈ static_dims
-        push!(t.args, :(StaticInt{$n}()))
+        push!(t.args, :(_StaticInt{$n}()))
       end
       q = Expr(:block, :(dimm = dims[$m]))
       qold = q
@@ -222,7 +222,7 @@ function branches_nankurtosis_quote(N::Int, M::Int, D)
       for n ∈ 1:N
         n ∈ static_dims && continue
         tc = copy(t)
-        push!(tc.args, :(StaticInt{$n}()))
+        push!(tc.args, :(_StaticInt{$n}()))
         qnew = Expr(ifsym, :(dimm == $n), :(return _nankurtosis!(B, corrected, A, $tc)))
         for r ∈ m+1:M
           push!(tc.args, :(dims[$r]))
@@ -239,7 +239,7 @@ function branches_nankurtosis_quote(N::Int, M::Int, D)
 end
 
 # Efficient @generated in-place var
-@generated function _nankurtosis!(B::AbstractArray{Tₒ,N}, corrected::Bool, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{IntOrStaticInt,M}}}
+@generated function _nankurtosis!(B::AbstractArray{Tₒ,N}, corrected::Bool, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
   N == M && return :(B[1] = _nankurtosis(B[1], corrected, A, :); B)
   branches_nankurtosis_quote(N, M, D)
 end
