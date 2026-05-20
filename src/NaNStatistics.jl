@@ -1,14 +1,6 @@
 module NaNStatistics
 
-    struct _StaticInt{N} end
-    _StaticInt(N::Int) = _StaticInt{N}()
-    const _IntOrStaticInt = Union{Integer, _StaticInt}
-    _dim(::Type{_StaticInt{N}}) where {N} = N::Int
-
-    struct _True end
-    struct _False end
-    _static(b::Bool) = b ? _True() : _False()
-
+    include("static.jl")
     include("ArrayStats/ArrayStats.jl")
     include("ArrayStats/nanmean.jl")
     include("ArrayStats/nansum.jl")
