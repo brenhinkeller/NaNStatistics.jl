@@ -578,4 +578,17 @@
     @test NaNStatistics.allocate_nansum(rand(Int, 10, 10), 1) isa Matrix{Int}
     @test NaNStatistics.allocate_movmean(rand(10)) isa Vector{Float64}
 
+## --- Additional tests for dimensional cases
+
+    # Check reducing along one dimension of a higher-dimensional array
+    data = randn(9, 192, 96)
+    m = mean(data, dims=1)
+    for _ in 1:10
+        @test nanmean(data, dims=1) ≈ m
+    end
+    
+    # Used during construction of such reductions
+    @test NaNStatistics._StaticInt(1) == 1
+    @test 10 == NaNStatistics._StaticInt(10)
+
 ## --- End of File
