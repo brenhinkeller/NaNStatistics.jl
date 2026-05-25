@@ -26,6 +26,11 @@ res::DimArray = DimArray([1], :foo)
     res = nansem(x; dims=:foo, corrected=false)
     @test res == nansem(parent(x); dims=1, corrected=false)
 
+    # Smoke test for NanmeanWorkspace being forwarded through the extension
+    ws = NaNStatistics.NanmeanWorkspace()
+    res = nanmean(x; dims=:foo, workspace=ws)
+    @test res == nanmean(parent(x); dims=1)
+
     # Test nanstd()'s with weights
     res = nanstd(x, x; dims=:foo)
     @test res == nanstd(parent(x), parent(x); dims=1)

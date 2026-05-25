@@ -4,6 +4,50 @@ NANMEAN_SIZE_THRESHOLD::Union{Int, Symbol} = 2^20
 get_size_threshold(x::Integer) = x
 
 """
+    NanmeanWorkspace()
+
+A reusable workspace object that caches internal temporary arrays used by
+`nanmean!()`. Passing a workspace to `nanmean!()` via the `workspace` keyword
+avoids repeated allocations when calling `nanmean!()` in a loop. The workspace
+automatically manages arrays of different sizes and element types. It is not
+threadsafe.
+
+## Examples
+```julia
+julia> using NaNStatistics
+
+julia> A = rand(1000, 1000); A[rand(Bool, size(A))] .= NaN;
+
+julia> B = allocate_nanmean(A, 2);
+
+julia> ws = NanmeanWorkspace();
+
+# Minimal allocation example
+julia> for _ in 1:100
+           nanmean!(B, A; dims=2, workspace=ws)
+       end
+```
+"""
+struct NanmeanWorkspace
+    array::Vector{UInt8}
+end
+
+function NanmeanWorkspace(len::Int)
+    NanmeanWorkspace(Vector{UInt8}(undef, len))
+end
+
+NanmeanWorkspace() = NanmeanWorkspace(UInt8[])
+
+function Base.show(io::IO, workspace::NanmeanWorkspace)
+    print(io, NanmeanWorkspace, "()")
+end
+
+function _get_workspace_array(ws::NanmeanWorkspace, B::AbstractArray, ::Type{T}) where T
+    resize!(ws.array, sizeof(T) * length(B))
+    reshape(reinterpret(T, ws.array), size(B))
+end
+
+"""
     allocate_nanmean(A::AbstractArray, dims)
 
 Allocates an array that can be passed as the output array to `nanmean!()` for
@@ -20,15 +64,18 @@ function allocate_nanmean(A::AbstractArray{T}, dims) where T
 end
 
 """
-```julia
-nanmean(A; dims, size_threshold)
-```
+    nanmean(A; dims, size_threshold, workspace)
+
 Compute the mean of all non-`NaN` elements in `A`, optionally over dimensions
 specified by `dims`. As `Statistics.mean`, but ignoring `NaN`s.
 
 As an alternative to `dims`, `nanmean` also supports the `dim` keyword, which
 behaves identically to `dims`, but also drops any singleton dimensions that have
 been reduced over (as is the convention in some other languages).
+
+A `NanmeanWorkspace` object can be passed via the `workspace` keyword to avoid
+internal temporary allocations when calling `nanmean()` in a loop. For minimal
+allocations, use `nanmean!()` with `allocate_nanmean()` and a workspace.
 
 `nanmean` has optimized implementations for big and small arrays for reducing
 over slow dimensions. Which implementation is used can be tuned by setting the
@@ -57,21 +104,21 @@ julia> nanmean(A, dims=2)
  3.5
 ```
 """
-nanmean(A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD) = __nanmean(A, dims, dim, size_threshold)
-__nanmean(A, ::Colon, ::Colon, st) = _nanmean(A, :, st)
-__nanmean(A, region, ::Colon, st) = _nanmean(A, region, st)
-__nanmean(A, ::Colon, region, st) = reducedims(__nanmean(A, region, :, st), region)
+nanmean(A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD, workspace=nothing) = __nanmean(A, dims, dim, size_threshold, workspace)
+__nanmean(A, ::Colon, ::Colon, st, workspace) = _nanmean(A, :, st)
+__nanmean(A, region, ::Colon, st, workspace) = _nanmean(A, region, st, workspace)
+__nanmean(A, ::Colon, region, st, workspace) = reducedims(__nanmean(A, region, :, st, workspace), region)
 export nanmean
 
 """
-    nanmean!(B, A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD)
+    nanmean!(B, A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD, workspace=nothing)
 
 Same as `nanmean`, except that the result will be written to the array `B`. If
 `B` cannot be reshaped to the right size then a `DimensionMismatch` exception
 will be thrown. The returned array may be a different size than `B` depending on
 whether `dims`/`dim` is used, but it will always alias `B`.
 """
-function nanmean!(B, A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD)
+function nanmean!(B, A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD, workspace=nothing)
     if dims isa Colon && dim isa Colon
         throw(ArgumentError("Cannot reduce an entire array into another array, use `nanmean` instead"))
     end
@@ -79,27 +126,27 @@ function nanmean!(B, A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD)
     dims_tuple = dims isa Colon ? _normalize_dims(dim) : _normalize_dims(dims)
     sₒ = _reduced_size(A, dims_tuple)
     reshaped_B = reshape(B, sₒ)
-    _nanmean!(reshaped_B, A, dims_tuple, size_threshold)
+    _nanmean!(reshaped_B, A, dims_tuple, size_threshold, workspace)
 
     dims isa Colon ? reducedims(reshaped_B, dims_tuple) : reshaped_B
 end
 export nanmean!
 
 # Reduce one dim
-_nanmean(A, dims::Int, st) = _nanmean(A, (dims,), st)
+_nanmean(A, dims::Int, st, workspace) = _nanmean(A, (dims,), st, workspace)
 
 # Reduce some dims
-_nanmean(A::AbstractArray, dims::Tuple, st) = _nanmean!(allocate_nanmean(A, dims), A, dims, st)
+_nanmean(A::AbstractArray, dims::Tuple, st, workspace) = _nanmean!(allocate_nanmean(A, dims), A, dims, st, workspace)
 
-function _nanmean!(B, A, dims, st)
+function _nanmean!(B, A, dims, st, workspace)
     if 1 in dims || sizeof(A) < get_size_threshold(st)
         # The generated-function approach is faster for small arrays and if
         # we're reducing over the first dimension.
-        _nanmean_generated!(B, A, dims, st)
+        _nanmean_generated!(B, A, dims, st, workspace)
     else
         # For reducing over the slow axes of large arrays we use the mapreduce
         # approach.
-        _nanmean_mapreduce!(B, A, dims)
+        _nanmean_mapreduce!(B, A, dims, workspace)
     end
 end
 
@@ -144,7 +191,7 @@ function _nanmean_mapreduce_impl!(B, A, counts)
     end
 end
 
-function _nanmean_mapreduce!(B, A, dims::Tuple)
+function _nanmean_mapreduce!(B, A, dims::Tuple, workspace)
     # Compute the length of the dimensions we're reducing over to pick
     # the smallest valid eltype for the counts array. The downside is type
     # instability and a few more allocations, but on large arrays this
@@ -160,7 +207,12 @@ function _nanmean_mapreduce!(B, A, dims::Tuple)
     else
         UInt64
     end
-    counts = similar(B, counts_T)
+
+    if isnothing(workspace)
+        workspace = NanmeanWorkspace(sizeof(counts_T) * length(B))
+    end
+
+    counts = _get_workspace_array(workspace, B, counts_T)
     fill!(counts, zero(counts_T))
 
     # We need to initialize B with zeros because we start off using it to sum
@@ -252,7 +304,7 @@ end
 
 # Turn non-static integers in `dims` tuple into `_StaticInt`s
 # so we can construct `static_dims` vector within @generated code
-function branches_nanmean_quote(N::Int, M::Int, D, st)
+function branches_nanmean_quote(N::Int, M::Int, D, st, workspace)
     static_dims = Int[]
     for m ∈ 1:M
         param = D.parameters[m]
@@ -272,7 +324,7 @@ function branches_nanmean_quote(N::Int, M::Int, D, st)
                 n ∈ static_dims && continue
                 tc = copy(t)
                 push!(tc.args, :(_StaticInt{$n}()))
-                qnew = Expr(ifsym, :(dimm == $n), :(return _nanmean!(B, A, $tc, st)))
+                qnew = Expr(ifsym, :(dimm == $n), :(return _nanmean!(B, A, $tc, st, workspace)))
                 for r ∈ m+1:M
                     push!(tc.args, :(dims[$r]))
                 end
@@ -288,9 +340,9 @@ function branches_nanmean_quote(N::Int, M::Int, D, st)
 end
 
 # Efficient @generated in-place mean
-@generated function _nanmean_generated!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D, st) where {Tₒ,T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
+@generated function _nanmean_generated!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D, st, workspace) where {Tₒ,T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
     N == M && return :(B[1] = _nanmean(A, :, st); B)
-    branches_nanmean_quote(N, M, D, st)
+    branches_nanmean_quote(N, M, D, st, workspace)
 end
 
 ## ---

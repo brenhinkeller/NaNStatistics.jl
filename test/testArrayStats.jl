@@ -490,6 +490,30 @@
         @test_throws DimensionMismatch f!(out[1:99], A; dims=3)
     end
 
+## --- NanmeanWorkspace
+
+    let
+        ws = NaNStatistics.NanmeanWorkspace()
+        @test sprint(show, ws) == "NaNStatistics.NanmeanWorkspace()"
+
+        A = rand(64, 64, 64)
+        A[rand(Bool, size(A))] .= NaN
+
+        # Force the mapreduce path with size_threshold=0
+        expected = nanmean(A; dims=3)
+        @test nanmean(A; dims=3, size_threshold=0, workspace=ws) ≈ expected
+
+        # Reusing the same workspace should produce the same result
+        @test nanmean(A; dims=3, size_threshold=0, workspace=ws) ≈ expected
+
+        # The workspace should work after being reused for a different output size/eltype
+        A2 = rand(Float32, 32, 32, 32)
+        @test nanmean(A2; dims=2, size_threshold=0, workspace=ws) ≈ nanmean(A2; dims=2)
+
+        # And we can go back to the larger Float64 array
+        @test nanmean(A; dims=3, size_threshold=0, workspace=ws) ≈ expected
+    end
+
 ## --- A few tests with other types
     for T in (Bool, Float16, Float32)
         let A = rand(T, 100)
