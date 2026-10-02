@@ -2,7 +2,7 @@
 
     maxdims = 2
 
-    R = rand(10000)
+    R = sin.(1:10000)
     x = [1:100..., 1]
     y = [1:100..., NaN]
     Y = collect(reshape(1:300.,100,3))
