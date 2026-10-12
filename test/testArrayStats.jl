@@ -132,6 +132,15 @@
     @test nanargmin(A) === 1
     @test nanargmax(A) === 1
 
+    # Reducing an empty dimension keeps the shape of the non-reduced ones
+    A = zeros(0, 2)
+    @test isequal(nanmedian(A, dims=1), [NaN NaN])
+    @test isequal(nanpctile(A, 90, dims=1), [NaN NaN])
+    @test isequal(nanquantile(A, 0.9, dims=1), [NaN NaN])
+    @test isequal(nanmedian(A, dim=1), [NaN, NaN])
+    @test isequal(nanpctile(A, 90, dim=1), [NaN, NaN])
+    @test nanmedian(A, dims=2) == nanpctile(A, 90, dims=2) == zeros(0, 1)
+
 
 ## --- Summary statistics: simple cases, Int64
 
