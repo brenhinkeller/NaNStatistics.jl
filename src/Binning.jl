@@ -36,7 +36,7 @@
 
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
-        fill!(MU, 0) # Fill the output array with zeros to start
+        fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
             yₙ = y[n]
@@ -71,7 +71,7 @@
 
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
-        fill!(MU, 0) # Fill the output array with zeros to start
+        fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
             if (0 < 𝑖 < nbins)
@@ -129,7 +129,7 @@
 
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
-        fill!(MU, 0) # Fill the output array with zeros to start
+        fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
             𝑖 = (y[n] - ymin) * δiδy
             𝑗 = (x[n] - xmin) * δjδx
@@ -178,8 +178,8 @@
         end
 
         # Calculate the means for each bin, ignoring NaNs
-        fill!(W, 0)
-        fill!(MU, 0) # Fill the output array with zeros to start
+        fill!(W, zero(eltype(W)))
+        fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
             yₙ = y[n]
@@ -212,8 +212,8 @@
         end
 
         # Calculate the means for each bin, ignoring NaNs
-        fill!(W, 0)
-        fill!(MU, 0) # Fill the output array with zeros to start
+        fill!(W, zero(eltype(W)))
+        fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
             if (0 < 𝑖 < nbins)
@@ -391,7 +391,7 @@
     treated as a separate variable.
     """
     function nanbinmean(x::AbstractVector, y::AbstractVecOrMat, w::AbstractVector, xedges::AbstractRange)
-        W = Array{float(eltype(y))}(undef, length(xedges)-1, size(y)[2:end]...)
+        W = Array{eltype(w)}(undef, length(xedges)-1, size(y)[2:end]...)
         MU = Array{float(eltype(y))}(undef, length(xedges)-1, size(y)[2:end]...)
         return nanbinmean!(MU, W, x, y, w, xedges)
     end

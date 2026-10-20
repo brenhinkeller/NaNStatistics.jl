@@ -51,5 +51,10 @@ module UnitfulTest
         @test nanskewness(X, dim=1) ≈ [0., 0., 0.]
         @test nankurtosis(x, dim=1) ≈ [-1.5,]
         @test nankurtosis(X, dim=1) ≈ [-1.5, -1.5, -1.5]
+
+        # Binning tests
+        @test nanbinmean([1:100..., 1].*u"cm", [1:100..., NaN].*u"nT", 0*u"cm", 100*u"cm", 3) == [17, 50, 83] .* u"nT"
+        @test nanbinmean([1:100..., 1].*u"cm", [1:100..., NaN].*u"nT", ones(101), 0*u"cm", 100*u"cm", 3) == [17, 50, 83] .* u"nT"
+        @test nanbinmedian([1:100..., 1].*u"cm", [1:100..., NaN].*u"nT", 0*u"cm", 100*u"cm", 3) == [17, 50, 83] .* u"nT"
     end
 end
