@@ -391,7 +391,7 @@
     treated as a separate variable.
     """
     function nanbinmean(x::AbstractVector, y::AbstractVecOrMat, w::AbstractVector, xedges::AbstractRange)
-        W = Array{float(eltype(y))}(undef, length(xedges)-1, size(y)[2:end]...)
+        W = Array{eltype(w)}(undef, length(xedges)-1, size(y)[2:end]...)
         MU = Array{float(eltype(y))}(undef, length(xedges)-1, size(y)[2:end]...)
         return nanbinmean!(MU, W, x, y, w, xedges)
     end
