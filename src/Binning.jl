@@ -373,7 +373,7 @@
     """
     function nanbinmean(x::AbstractVector, y::AbstractVector, z::AbstractVector, xedges::AbstractRange, yedges::AbstractRange)
         N = Array{Int}(undef, length(yedges)-1, length(xedges)-1)
-        MU = Array{float(eltype(y))}(undef, length(yedges)-1, length(xedges)-1)
+        MU = Array{float(eltype(z))}(undef, length(yedges)-1, length(xedges)-1)
         return nanbinmean!(MU, N, x, y, z, xedges, yedges)
     end
 

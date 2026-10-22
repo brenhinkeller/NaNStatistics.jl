@@ -56,5 +56,10 @@ module UnitfulTest
         @test nanbinmean([1:100..., 1].*u"cm", [1:100..., NaN].*u"nT", 0*u"cm", 100*u"cm", 3) == [17, 50, 83] .* u"nT"
         @test nanbinmean([1:100..., 1].*u"cm", [1:100..., NaN].*u"nT", ones(101), 0*u"cm", 100*u"cm", 3) == [17, 50, 83] .* u"nT"
         @test nanbinmedian([1:100..., 1].*u"cm", [1:100..., NaN].*u"nT", 0*u"cm", 100*u"cm", 3) == [17, 50, 83] .* u"nT"
+        x = y = (0.5:9.5).*u"cm"
+        z = (0.5:9.5).*u"nT"
+        xedges = yedges = (0:10).*u"cm"
+        mu = nanbinmean(x,y,z,xedges,yedges)
+        @test isequal(mu, [((i==j) ? i-0.5 : NaN)*u"nT" for i in 1:10, j in 1:10])
     end
 end
