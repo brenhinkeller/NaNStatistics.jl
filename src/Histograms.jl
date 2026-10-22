@@ -106,7 +106,7 @@ function histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange;  T::Type
     N = fill(zero(Tᵣ), length(yedges)-1, length(xedges)-1)
     histcounts!(N, x, y, xedges, yedges)
     if normalize
-        N ./= nansum(N) * step(xedges)
+        N ./= nansum(N) * step(xedges) * step(yedges)
      end
     return N
 end

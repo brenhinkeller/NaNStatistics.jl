@@ -200,7 +200,7 @@ end
 
 # Efficient @generated in-place sum
 @generated function _nancumsum!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
-  N == M && return _nancumsum!(B, A, :)
+  N == M && return :(_nancumsum!(B, A, :))
   branches_nancumsum_quote(N, M, D)
 end
 

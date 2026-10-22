@@ -10,7 +10,7 @@ function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool, μᵪ::N
             n += notnan
             σᵪᵧ += ifelse(notnan, δ², ∅)
     end
-    σᵪᵧ = σᵪᵧ / (n-corrected)
+    σᵪᵧ = σᵪᵧ / max(n-corrected, 0)
     return σᵪᵧ
 end
 

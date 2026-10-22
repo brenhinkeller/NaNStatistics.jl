@@ -103,18 +103,18 @@
 
     """
     ```julia
-    inpctile(A, p::Number; dims)
+    inpctile(A, p::Number)
     ```
     Return a boolean array that identifies which values of the iterable
-    collection `A` fall within the central `p`th percentile, optionally along a
-    dimension specified by `dims`.
+    collection `A` fall within the central `p`th Percentile
 
     A valid percentile value must satisfy `0 <= p <= 100`.
     """
     function inpctile(A::AbstractArray{T}, p::Number) where {T}
+        @assert 0 <= p <= 100
         q₊₋ = (100 - p) / 200
         Aₜ = copyto!(Array{T,1}(undef, length(A)), A)
-        return _nanquantile!(Aₜ, q₊₋, :) .< A .< _nanquantile!(Aₜ, 1-q₊₋, :)
+        return _nanquantile!(Aₜ, q₊₋, :) .<= A .<= _nanquantile!(Aₜ, 1-q₊₋, :)
     end
     export inpctile
 
@@ -530,7 +530,7 @@
     """
     function movmean!(out::AbstractVector, x::AbstractVector{T}, n::Number) where T
         δ = ceil(Int, (n-1)/2)
-        @inbounds for i ∈ eachindex(x)
+        @inbounds for i ∈ eachindex(out,x)
             iₗ = max(i-δ, firstindex(x))
             iᵤ = min(i+δ, lastindex(x))
             out[i] = nanmean(view(x, iₗ:iᵤ))
@@ -567,7 +567,7 @@
         ∑ = ∅ = zero(eltype(out))
         ∑w = ∅w = 0
 
-        @inbounds @simd for i ∈ eachindex(x)
+        @inbounds @simd for i ∈ eachindex(out,x)
             ibeg = max(i - win_left, firstindex(x))
             iend = min(i + win_right, lastindex(x))
             ∑ = ∅
@@ -590,7 +590,7 @@
         δ = ceil(Int, (n-1)/2)
         𝐼 = repeat((firstindex(x,1):lastindex(x,1)), 1, size(x,2))
         𝐽 = repeat((firstindex(x,2):lastindex(x,2))', size(x,1), 1)
-        @inbounds for k ∈ eachindex(𝐼,𝐽)
+        for k ∈ eachindex(𝐼,𝐽)
             i = 𝐼[k]
             iₗ = max(i-δ, firstindex(x,1))
             iᵤ = min(i+δ, lastindex(x,1))
