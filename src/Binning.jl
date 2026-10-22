@@ -40,7 +40,7 @@
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
             yₙ = y[n]
-            if (0 < 𝑖 < nbins) && (yₙ==yₙ)
+            if (0 < 𝑖 <= nbins) && (yₙ==yₙ)
                 i = ceil(Int, 𝑖)
                 N[i] += 1
                 MU[i] += yₙ
@@ -74,7 +74,7 @@
         fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
-            if (0 < 𝑖 < nbins)
+            if (0 < 𝑖 <= nbins)
                 i = ceil(Int, 𝑖)
                 for j ∈ 1:ncols
                     if y[n,j]==y[n,j]
@@ -134,7 +134,7 @@
             𝑖 = (y[n] - ymin) * δiδy
             𝑗 = (x[n] - xmin) * δjδx
             zₙ = z[n]
-            if (zₙ==zₙ) && (0 < 𝑖 < nybins) && (0 < 𝑗 < nxbins)
+            if (zₙ==zₙ) && (0 < 𝑖 <= nybins) && (0 < 𝑗 <= nxbins)
                 i = ceil(Int, 𝑖)
                 j = ceil(Int, 𝑗)
                 N[i,j] += 1
@@ -183,7 +183,7 @@
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
             yₙ = y[n]
-            if (0 < 𝑖 < nbins) && (yₙ==yₙ)
+            if (0 < 𝑖 <= nbins) && (yₙ==yₙ)
                 i = ceil(Int, 𝑖)
                 W[i] += w[n]
                 MU[i] += yₙ * w[n]
@@ -216,7 +216,7 @@
         fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
-            if (0 < 𝑖 < nbins)
+            if (0 < 𝑖 <= nbins)
                 i = ceil(Int, 𝑖)
                 for j ∈ 1:ncols
                     if y[n,j]==y[n,j]
@@ -247,7 +247,7 @@
         nbins = length(xedges) - 1
         t = Array{Bool}(undef, length(x))
         @inbounds for i = 1:nbins
-            t .= (xedges[i] .<= x .< xedges[i+1])
+            t .= (xedges[i] .< x .<= xedges[i+1])
             M[i] = _nanmedian!(y[t],:)
         end
         return M
@@ -256,7 +256,7 @@
         nbins = length(xedges) - 1
         t = Array{Bool}(undef, length(x))
         @inbounds for i = 1:nbins
-            t .= xedges[i] .<= x .< xedges[i+1]
+            t .= xedges[i] .< x .<= xedges[i+1]
             if any(t)
                 for j = 1:size(y,2)
                     M[i,j] = _nanmedian!(y[t,j],:)
@@ -271,7 +271,7 @@
         nbins = length(xedges) - 1
         t = Array{Bool}(undef, length(x))
         @inbounds for i = 1:nbins
-            t .= (xedges[i] .<= x .< xedges[i+1]) .& (y.==y)
+            t .= (xedges[i] .< x .<= xedges[i+1]) .& (y.==y)
             yₜ = y[t]
             M[i] = _nanmedian!(yₜ,:)
             N[i] = countnotnans(yₜ)
@@ -283,7 +283,7 @@
         t = Array{Bool}(undef, length(x))
         tj = Array{Bool}(undef, length(x))
         @inbounds for i = 1:nbins
-            t .= xedges[i] .<= x .< xedges[i+1]
+            t .= xedges[i] .< x .<= xedges[i+1]
             if any(t)
                 for j = 1:size(y,2)
                     yₜ = y[t,j]
@@ -324,14 +324,14 @@
      13.0
      38.0
      63.0
-     87.5
+     88.0
 
     julia> nanbinmean(1:100, reshape(1:300,100,3), 0:25:100)
     4×3 Matrix{Float64}:
      13.0  113.0  213.0
      38.0  138.0  238.0
      63.0  163.0  263.0
-     87.5  187.5  287.5
+     88.0  188.0  288.0
     ```
     """
     function nanbinmean(x::AbstractVector, y::AbstractVecOrMat, xedges::AbstractRange)
@@ -410,19 +410,18 @@
 
     ## Examples
     ```julia
-    julia> nanbinmedian([1:100..., 1], [1:100..., NaN], 0:25:100)
     4-element Vector{Float64}:
-     12.5
-     37.0
-     62.0
-     87.0
+     13.0
+     38.0
+     63.0
+     88.0
 
     julia> nanbinmedian(1:100, reshape(1:300,100,3), 0:25:100)
     4×3 Matrix{Float64}:
-     12.5  112.5  212.5
-     37.0  137.0  237.0
-     62.0  162.0  262.0
-     87.0  187.0  287.0
+     13.0  113.0  213.0
+     38.0  138.0  238.0
+     63.0  163.0  263.0
+     88.0  188.0  288.0
     ```
     """
     function nanbinmedian(x::AbstractVector, y::AbstractVecOrMat, xedges::AbstractRange)
