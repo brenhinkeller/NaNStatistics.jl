@@ -443,16 +443,16 @@
     @test nanargmin(A) === 1
     @test nanargmax(A) === 12
     @test nanextrema(A) === (1.0, Inf)
-    @test nanvar([1,2,3,NaN,Inf]) === NaN
-    @test nanstd([1,2,3,NaN,Inf]) === NaN
-    @test nansem([1,2,3,NaN,Inf]) === NaN
-    @test nanstd([1,2,3,NaN,Inf], ones(5)) === NaN # weighted
+    @test isnan(nanvar([1,2,3,NaN,Inf]))
+    @test isnan(nanstd([1,2,3,NaN,Inf]))
+    @test isnan(nansem([1,2,3,NaN,Inf]))
+    @test isnan(nanstd([1,2,3,NaN,Inf], ones(5)))# weighted
     @test nanmad([1,2,3,NaN,Inf]) === 1.0
     @test nanaad([1,2,3,NaN,Inf]) === Inf
     @test nanmedian([1,2,3,NaN,Inf]) === 2.5
     @test nanpctile([0:100...,NaN,Inf],99) === 99.99
-    @test nanskewness([1,2,3,NaN,Inf]) === NaN
-    @test nankurtosis([1,2,3,NaN,Inf]) === NaN
+    @test isnan(nanskewness([1,2,3,NaN,Inf]))
+    @test isnan(nankurtosis([1,2,3,NaN,Inf]))
 
 
 ## --- Test the correctness of the mapreduce implementations of nansum/nanmean
