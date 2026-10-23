@@ -22,15 +22,16 @@
     end
     # As above, but also return an array of counts, N; y, N, and MU as 1D vectors
     function nanbinmean!(MU::AbstractVector, N::AbstractVector, x::AbstractVector, y::AbstractVector, xedges::AbstractRange)
+        # Check inputs
+        @assert eachindex(x) == axes(y,1) "Indices of `x` and `y` must match, got $(eachindex(x)), $(axes(y,1))"
+        @assert eachindex(MU) == eachindex(N) "Indices axis of `MU` and `N` must match, got $(eachindex(MU)), $(eachindex(N))"
+        imin, imax = firstindex(MU)::Int-1, lastindex(MU)
+
         # What is the size of each bin?
         nbins = length(xedges) - 1
         xmin, xmax = extrema(xedges)
         δ𝑖δx = nbins / (xmax - xmin)
-
-        # Make sure we don't have a segfault by filling beyond the length of N
-        # in the @inbounds loop below
         if length(MU) < nbins
-            nbins = length(MU)
             @warn "length(MU) < nbins; any bins beyond length(MU) will not be filled"
         end
 
@@ -40,7 +41,7 @@
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
             yₙ = y[n]
-            if (0 < 𝑖 <= nbins) && (yₙ==yₙ)
+            if (yₙ==yₙ) && (imin < 𝑖 <= imax)
                 i = ceil(Int, 𝑖)
                 N[i] += 1
                 MU[i] += yₙ
@@ -52,21 +53,18 @@
     end
     # In-place binning; as above but with y, N, MU as 2D matrices instead of 1D vectors
     function nanbinmean!(MU::AbstractMatrix, N::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, xedges::AbstractRange)
+        # Check inputs
+        @assert eachindex(x) == axes(y,1) "Indices of `x` and `y` must match, got $(eachindex(x)), $(axes(y,1))"
+        @assert axes(MU,1) == axes(N,1) "First axis of `MU` and `N` must match, got $(axes(MU,1)), $(axes(N,1))"
+        @assert axes(MU,2) == axes(N,2) == axes(y,2) "Second axes of `MU`, `N`, and `y` must match, got $(axes(MU,2)), $(axes(N,2)), $(axes(y,2))"
+        imin, imax = firstindex(MU,1)::Int-1, lastindex(MU,1)
+
         # What is the size of each bin?
         nbins = length(xedges) - 1
         xmin, xmax = extrema(xedges)
         δ𝑖δx = nbins / (xmax - xmin)
-        ncols = size(y,2)
-
-        # Make sure we don't have a segfault by filling beyond the length of N
-        # in the @inbounds loop below
         if size(MU,1) < nbins
-            nbins = size(MU,1)
             @warn "size(MU,1) < nbins; any bins beyond size(MU,1) will not be filled"
-        end
-        if size(MU,2) < ncols
-            ncols = size(MU,2)
-            @warn "size(MU,2) < size(y,2); any columns beyond size(MU,2) will not be filled"
         end
 
         # Calculate the means for each bin, ignoring NaNs
@@ -74,9 +72,9 @@
         fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
-            if (0 < 𝑖 <= nbins)
+            if (imin < 𝑖 <= imax)
                 i = ceil(Int, 𝑖)
-                for j ∈ 1:ncols
+                for j ∈ axes(y,2)
                     if y[n,j]==y[n,j]
                         N[i,j] += 1
                         MU[i,j] += y[n,j]
@@ -107,23 +105,23 @@
     `length(yedges)-1` rows and `length(xedges)-1` columns.
     """
     function nanbinmean!(MU::AbstractMatrix, N::AbstractMatrix, x::AbstractVector, y::AbstractVector, z::AbstractVector, xedges::AbstractRange, yedges::AbstractRange)
-        # Calculate bin index from x value
+        # Check inputs
+        @assert eachindex(x) == eachindex(y) == eachindex(z) "Indices of `x`, `y` and `z` must match, got $(eachindex(x)), $(eachindex(y)), $(eachindex(z))"
+        @assert axes(MU) == axes(N) "Indices of `MU` and `N` must match, got $(axes(MU)), $(axes(N))"
+        imin, imax = firstindex(MU,1)::Int-1, lastindex(MU,1)
+        jmin, jmax = firstindex(MU,2)::Int-1, lastindex(MU,2)
+
+        # What is the size of each bin?
         nxbins = length(xedges)-1
         xmin, xmax = extrema(xedges)
         δjδx = nxbins / (xmax - xmin)
-
         nybins = length(yedges)-1
         ymin, ymax = extrema(yedges)
         δiδy = nybins / (ymax - ymin)
-
-        # Make sure we don't have a segfault by filling beyond the length of N
-        # in the @inbounds loop below
         if size(MU,1) < nybins
-            nybins = size(MU,1)
             @warn "size(MU,1) < nybins; any y bins beyond size(MU,1) will not be filled"
         end
         if size(MU,2) < nxbins
-            nxbins = size(MU,2)
             @warn "size(MU,2) < nxbins; any x bins beyond size(MU,2) will not be filled"
         end
 
@@ -134,7 +132,7 @@
             𝑖 = (y[n] - ymin) * δiδy
             𝑗 = (x[n] - xmin) * δjδx
             zₙ = z[n]
-            if (zₙ==zₙ) && (0 < 𝑖 <= nybins) && (0 < 𝑗 <= nxbins)
+            if (zₙ==zₙ) && (imin < 𝑖 <= imax) && (jmin < 𝑗 <= jmax)
                 i = ceil(Int, 𝑖)
                 j = ceil(Int, 𝑗)
                 N[i,j] += 1
@@ -165,6 +163,11 @@
     """
     # In-place binning with weights; y, W, MU as 1D vectors
     function nanbinmean!(MU::AbstractVector, W::AbstractVector, x::AbstractVector, y::AbstractVector, w::AbstractVector, xedges::AbstractRange)
+        # Check inputs
+        @assert eachindex(x) == eachindex(y) == eachindex(w) "Indices of `x`, `y` and `w` must match, got $(eachindex(x)), $(eachindex(y)), $(eachindex(w))"
+        @assert eachindex(MU) == eachindex(W) "Indices of `MU` and `W` must match, got $(axes(MU)), $(axes(W))"
+        imin, imax = firstindex(MU)::Int-1, lastindex(MU)
+
         # What is the size of each bin?
         nbins = length(xedges) - 1
         xmin, xmax = extrema(xedges)
@@ -173,7 +176,6 @@
         # Make sure we don't have a segfault by filling beyond the length of N
         # in the @inbounds loop below
         if length(MU) < nbins
-            nbins = length(MU)
             @warn "length(MU) < nbins; any bins beyond length(MU) will not be filled"
         end
 
@@ -183,7 +185,7 @@
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
             yₙ = y[n]
-            if (0 < 𝑖 <= nbins) && (yₙ==yₙ)
+            if (yₙ==yₙ) && (imin < 𝑖 <= imax)
                 i = ceil(Int, 𝑖)
                 W[i] += w[n]
                 MU[i] += yₙ * w[n]
@@ -195,20 +197,18 @@
     end
     # In-place binning with weights; y, W, MU as 2D matrices
     function nanbinmean!(MU::AbstractMatrix, W::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, w::AbstractVector, xedges::AbstractRange)
+        # Check inputs
+        @assert eachindex(x) == eachindex(w) == axes(y,1) "Indices of `x` and `w` must match with first axis of `y`, got $(eachindex(x)), $(eachindex(w)), $(axes(y,1))"
+        @assert axes(MU,1) == axes(W,1) "First axis of `MU` and `W` must match, got $(axes(MU,1)), $(axes(W,1))"
+        @assert axes(MU,2) == axes(W,2) == axes(y,2) "Second axes of `MU`, `N`, and `y` must match, got $(axes(MU,2)), $(axes(W,2)), $(axes(y,2))"
+        imin, imax = firstindex(MU,1)::Int-1, lastindex(MU,1)
+        
+        # What is the size of each bin?
         nbins = length(xedges) - 1
         xmin, xmax = extrema(xedges)
         δ𝑖δx = nbins / (xmax - xmin)
-        ncols = size(y,2)
-
-        # Make sure we don't have a segfault by filling beyond the length of N
-        # in the @inbounds loop below
         if size(MU,1) < nbins
-            nbins = size(MU,1)
             @warn "size(MU,1) < nbins; any bins beyond size(MU,1) will not be filled"
-        end
-        if size(MU,2) < ncols
-            ncols = size(MU,2)
-            @warn "size(MU,2) < size(y,2); any columns beyond size(MU,2) will not be filled"
         end
 
         # Calculate the means for each bin, ignoring NaNs
@@ -216,9 +216,9 @@
         fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
             𝑖 = (x[n] - xmin) * δ𝑖δx
-            if (0 < 𝑖 <= nbins)
+            if (imin < 𝑖 <= imax)
                 i = ceil(Int, 𝑖)
-                for j ∈ 1:ncols
+                for j ∈ axes(y,2)
                     if y[n,j]==y[n,j]
                         W[i,j] += w[n]
                         MU[i,j] += y[n,j]*w[n]
@@ -244,21 +244,29 @@
     If `y` is a 2-d array (matrix), each column will be treated as a separate variable
     """
     function nanbinmedian!(M::AbstractVector, x::AbstractVector, y::AbstractVector, xedges::AbstractRange)
-        nbins = length(xedges) - 1
-        t = Array{Bool}(undef, length(x))
-        @inbounds for i = 1:nbins
+        # Check inputs
+        @assert eachindex(x) == eachindex(y) "Indices of `x` and `y` must match, got $(eachindex(x)) and $(eachindex(y))"
+        @assert eachindex(M) == eachindex(xedges)[1:end-1] "Indices of bins and bin edges must be compatible"
+        # Median for each bin
+        t = BitVector(undef, length(x))
+        @inbounds for i = eachindex(M)
             t .= (xedges[i] .< x .<= xedges[i+1])
             M[i] = _nanmedian!(y[t],:)
         end
         return M
     end
     function nanbinmedian!(M::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, xedges::AbstractRange)
+        # Check inputs
+        @assert eachindex(x) == axes(y,1) "First axis of `x` and `y` must match, got $(eachindex(x)) and $(axes(y,1))"
+        @assert axes(M,1) == eachindex(xedges)[1:end-1] "Indices of bins and bin edges must be compatible"
+        @assert axes(M,2) == axes(y,2) "Second axis of `M` and `y` must match, got $(axes(M,2)) and $(axes(y,2))"
+        # Median for each bin
         nbins = length(xedges) - 1
-        t = Array{Bool}(undef, length(x))
-        @inbounds for i = 1:nbins
+        t = BitVector(undef, length(x))
+        @inbounds for i ∈ axes(M,1)
             t .= xedges[i] .< x .<= xedges[i+1]
             if any(t)
-                for j = 1:size(y,2)
+                for j ∈ axes(y,2)
                     M[i,j] = _nanmedian!(y[t,j],:)
                 end
             else
@@ -268,10 +276,13 @@
         return M
     end
     function nanbinmedian!(M::AbstractVector, N::AbstractVector, x::AbstractVector, y::AbstractVector, xedges::AbstractRange)
-        nbins = length(xedges) - 1
-        t = Array{Bool}(undef, length(x))
-        @inbounds for i = 1:nbins
-            t .= (xedges[i] .< x .<= xedges[i+1]) .& (y.==y)
+        # Check inputs
+        @assert eachindex(x) == eachindex(y) "Indices of `x` and `y` must match, got $(eachindex(x)) and $(eachindex(y))"
+        @assert eachindex(M) == eachindex(N) == eachindex(xedges)[1:end-1] "Indices of bins and bin edges must be compatible"
+        # Median for each bin
+        t = BitVector(undef, length(x))
+        @inbounds for i ∈ eachindex(M)
+            t .= (xedges[i] .< x .<= xedges[i+1])
             yₜ = y[t]
             M[i] = _nanmedian!(yₜ,:)
             N[i] = countnotnans(yₜ)
@@ -279,13 +290,16 @@
         return M
     end
     function nanbinmedian!(M::AbstractMatrix, N::AbstractMatrix, x::AbstractVector, y::AbstractMatrix, xedges::AbstractRange)
-        nbins = length(xedges) - 1
-        t = Array{Bool}(undef, length(x))
-        tj = Array{Bool}(undef, length(x))
-        @inbounds for i = 1:nbins
+        # Check inputs
+        @assert eachindex(x) == axes(y,1) "First axis of `x` and `y` must match, got $(eachindex(x)) and $(axes(y,1))"
+        @assert axes(M,1) == axes(N,1) == eachindex(xedges)[1:end-1] "Indices of bins and bin edges must be compatible"
+        @assert axes(M,2) == axes(N,2) == axes(y,2) "Second axis of `M`, `N`, and `y` must match, got $(axes(M,2)), $(axes(N,2)), and $(axes(y,2))"
+        # Median for each bin
+        t = BitVector(undef, length(x))
+        @inbounds for i ∈ axes(M,1)
             t .= xedges[i] .< x .<= xedges[i+1]
             if any(t)
-                for j = 1:size(y,2)
+                for j ∈ axes(y,2)
                     yₜ = y[t,j]
                     M[i,j] = _nanmedian!(yₜ,:)
                     N[i,j] = countnotnans(yₜ)

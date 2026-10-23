@@ -223,7 +223,7 @@ function histcounts!(N::AbstractMatrix, x::AbstractVector, y::AbstractVector, xe
     end
 
     # Calculate the means for each bin, ignoring NaNs
-    @inbounds for n ∈ eachindex(x)
+    @inbounds for n ∈ eachindex(x,y)
         𝑖 = (y[n] - ymin) * δ𝑖δy
         𝑗 = (x[n] - xmin) * δ𝑗δx
         if (0 < 𝑖 <= nybins) && (0 < 𝑗 <= nxbins)
