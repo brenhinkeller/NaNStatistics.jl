@@ -305,8 +305,8 @@
                     N[i,j] = countnotnans(yₜ)
                 end
             else
-                M[i,j] = float(eltype(y))(NaN)
-                N[i,j] = 0
+                M[i,:] .= NaN
+                N[i,:] .= 0
             end
         end
         return M
