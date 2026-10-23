@@ -61,8 +61,9 @@ function _nanskewness(::Nothing, corrected::Bool, A, ::Colon)
     μ₂ = ∅² = zero(Base.promote_op(*, typeof(μ), typeof(μ)))
     μ₃ = ∅³ = zero(Base.promote_op(*, typeof(μ₂), typeof(μ)))
     @inbounds @simd ivdep for i ∈ eachindex(A)
-        δ = A[i] - μ
-        notnan = δ==δ
+        Aᵢ = A[i]
+        δ = Aᵢ - μ
+        notnan = Aᵢ==Aᵢ
         δ² = δ * δ
         μ₂ += ifelse(notnan, δ², ∅²)
         μ₃ += ifelse(notnan, δ² * δ, ∅³)
@@ -99,8 +100,9 @@ function _nanskewness(μ::Number, corrected::Bool, A, ::Colon)
     n = 0
     μ₃ = μ₂ = ∅ₒ = zero(typeof(μ))
     @inbounds @simd ivdep for i ∈ eachindex(A)
-        δ = A[i] - μ
-        notnan = δ==δ
+        Aᵢ = A[i]
+        δ = Aᵢ - μ
+        notnan = Aᵢ==Aᵢ
         n += notnan
         δ² = δ * δ
         μ₂ += ifelse(notnan, δ², ∅ₒ)
@@ -180,7 +182,7 @@ function staticdim_nanskewness_quote(static_dims::Vector{Int}, N::Int)
   end
   # Push more things here if you want them in the innermost loop
   push!(block.args, :(δ = $Aind - μ))
-  push!(block.args, :(notnan = δ==δ))
+  push!(block.args, :(notnan = $Aind==$Aind))
   push!(block.args, :(n += notnan))
   push!(block.args, :(δ² = δ * δ))
   push!(block.args, :(μ₂ += ifelse(notnan, δ², ∅)))

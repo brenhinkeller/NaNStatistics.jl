@@ -428,6 +428,33 @@
     @test vec(nankurtosis(A, dims=1)) ≈ kurtosis.(eachcol(A))
     @test vec(nankurtosis(A, dims=2)) ≈ kurtosis.(eachrow(A))
 
+## --- Test for consistent handling of infinities
+
+    A = [1:10.0..., NaN, Inf]
+    @test nansum(A) === Inf
+    @test nancumsum!(copy(A)) == nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0, 55.0, Inf]
+    @test nanlogsumexp(A) === Inf
+    @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671, 10.45862974442671, Inf]
+    @test nanmean(A) === Inf
+    @test nanmean(A, ones(12)) === Inf # weighted
+    @test nanrange(A) === Inf
+    @test nanminimum(A) === 1.0
+    @test nanmaximum(A) === Inf
+    @test nanargmin(A) === 1
+    @test nanargmax(A) === 12
+    @test nanextrema(A) === (1.0, Inf)
+    @test nanvar([1,2,3,NaN,Inf]) === NaN
+    @test nanstd([1,2,3,NaN,Inf]) === NaN
+    @test nansem([1,2,3,NaN,Inf]) === NaN
+    @test nanstd([1,2,3,NaN,Inf], ones(5)) === NaN # weighted
+    @test nanmad([1,2,3,NaN,Inf]) === 1.0
+    @test nanaad([1,2,3,NaN,Inf]) === Inf
+    @test nanmedian([1,2,3,NaN,Inf]) === 2.5
+    @test nanpctile([0:100...,NaN,Inf],99) === 99.99
+    @test nanskewness([1,2,3,NaN,Inf]) === NaN
+    @test nankurtosis([1,2,3,NaN,Inf]) === NaN
+
+
 ## --- Test the correctness of the mapreduce implementations of nansum/nanmean
 
     A = rand(100, 100)

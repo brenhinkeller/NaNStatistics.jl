@@ -2,8 +2,8 @@
 ```julia
 nanstd(A; dims=:, mean=nothing, corrected=true)
 ```
-Compute the variance of all non-`NaN` elements in `A`, optionally over dimensions specified by `dims`.
-As `Statistics.var`, but ignoring `NaN`s.
+Compute the standard deviation of all non-`NaN` elements in `A`, optionally over dimensions specified by `dims`.
+As `Statistics.std`, but ignoring `NaN`s.
 
 A precomputed `mean` may optionally be provided, which results in a somewhat faster
 calculation. If `corrected` is `true`, then _Bessel's correction_ is applied, such

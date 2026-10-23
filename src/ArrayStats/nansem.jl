@@ -58,9 +58,9 @@ function _nansem(::Nothing, corrected::Bool, A, ::Colon)
   μ = Σ / n
   σ² = ∅² = zero(Base.promote_op(*,Tₒ,Tₒ))
   @inbounds @simd ivdep for i ∈ eachindex(A)
-      δ = A[i] - μ
-      notnan = δ==δ
-      σ² += ifelse(notnan, δ * δ, ∅²)
+      Aᵢ = A[i]
+      δ = Aᵢ - μ
+      σ² += ifelse(Aᵢ==Aᵢ, δ * δ, ∅²)
   end
   return sqrt(σ² / max(n-corrected,0) / n)
 end
@@ -90,8 +90,9 @@ function _nansem(μ::Number, corrected::Bool, A, ::Colon)
   n = 0
   σ² = ∅ = zero(typeof(μ))
   @inbounds @simd ivdep for i ∈ eachindex(A)
-      δ = A[i] - μ
-      notnan = δ==δ
+      Aᵢ = A[i]
+      δ = Aᵢ - μ
+      notnan = Aᵢ==Aᵢ
       n += notnan
       σ² += ifelse(notnan, δ * δ, ∅)
   end
@@ -159,7 +160,7 @@ function staticdim_nansem_quote(static_dims::Vector{Int}, N::Int)
   end
   # Push more things here if you want them in the innermost loop
   push!(block.args, :(δ = $Aind - μ))
-  push!(block.args, :(notnan = δ==δ))
+  push!(block.args, :(notnan = $Aind==$Aind))
   push!(block.args, :(n += notnan))
   push!(block.args, :(σ² += ifelse(notnan, δ * δ, ∅)))
   # Push more things here if you want them at the end of the reduction loop

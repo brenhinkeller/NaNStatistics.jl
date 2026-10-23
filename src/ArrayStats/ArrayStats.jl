@@ -158,11 +158,13 @@
 
     uinit(T::Type) = uinit(float(T))
     uinit(T::Type{<:Integer}) = typemax(T)
+    uinit(T::Type{<:AbstractFloat}) = T(NaN)
     uinit(::Type{Float64}) = NaN
     uinit(::Type{Float32}) = NaN32
     uinit(::Type{Float16}) = NaN16
     linit(T::Type) = linit(float(T))
     linit(T::Type{<:Integer}) = typemin(T)
+    linit(T::Type{<:AbstractFloat}) = T(NaN)
     linit(::Type{Float64}) = NaN
     linit(::Type{Float32}) = NaN32
     linit(::Type{Float16}) = NaN16

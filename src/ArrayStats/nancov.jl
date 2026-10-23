@@ -3,10 +3,11 @@ function _nancov(x::AbstractVector, y::AbstractVector, corrected::Bool, μᵪ::N
     σᵪᵧ = ∅ = zero(Base.promote_op(*, typeof(μᵪ), typeof(μᵧ)))
     n = 0
     @inbounds @simd ivdep for i ∈ eachindex(x,y)
-            δᵪ = x[i] - μᵪ
-            δᵧ = y[i] - μᵧ
+            xᵢ, yᵢ = x[i], y[i]
+            δᵪ = xᵢ - μᵪ
+            δᵧ = yᵢ - μᵧ
             δ² = δᵪ * δᵧ
-            notnan = δ²==δ²
+            notnan = (xᵢ==xᵢ) & (yᵢ==yᵢ)
             n += notnan
             σᵪᵧ += ifelse(notnan, δ², ∅)
     end

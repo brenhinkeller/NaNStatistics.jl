@@ -13,6 +13,7 @@ nanlogsumexp(A) = _nanlogsumexp(A, nanmaximum(A))
 export nanlogsumexp
 
 function _nanlogsumexp(A, c)
+    isfinite(c) || return c
     Σ = ∅ = zero(Base.promote_op(exp, eltype(A)))
     @inbounds @simd ivdep for i ∈ eachindex(A)
         Aᵢ = exp(A[i] - c)
@@ -43,7 +44,7 @@ function _nanlogcumsumexp(A, ::_False)
     i₀ = firstindex(A)
     @inbounds for i ∈ eachindex(A)
         isnan(c) && (c = A[i])
-        if A[i] > c
+        if c < A[i] && isfinite(A[i])
             c = A[i]
             Σ = ∅ 
             @simd ivdep for j ∈ i₀:i
@@ -67,7 +68,7 @@ function _nanlogcumsumexp(A, ::_True)
     iₗ = lastindex(A)
     @inbounds for i ∈ reverse(eachindex(A))
         isnan(c) && (c = A[i])
-        if A[i] > c
+        if c < A[i] && isfinite(A[i])
             c = A[i]
             Σ = ∅ 
             @simd ivdep for j ∈ i:iₗ
