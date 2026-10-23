@@ -6,13 +6,11 @@ Compute the kurtosis of all non-`NaN` elements in `A`, optionally over dimension
 As `StatsBase.kurtosis`, but ignoring `NaN`s.
 
 A precomputed `mean` may optionally be provided, which results in a somewhat faster
-calculation. If `corrected` is `true`, then _Bessel's correction_ is applied, such
-that the sum is divided by `n-1` rather than `n`.
+calculation.
 
 As an alternative to `dims`, `nankurtosis` also supports the `dim` keyword, which
 behaves identically to `dims`, but also drops any singleton dimensions that have
 been reduced over (as is the convention in some other languages).
-
 
 ## Examples
 ```julia
@@ -92,9 +90,11 @@ end
 
 
 # If the mean is known, pass it on in the appropriate form
-_nankurtosis(μ, corrected::Bool, A, dims::Tuple) = _nankurtosis!(collect(μ), corrected, A, dims)
-_nankurtosis(μ::AbstractArray, corrected::Bool, A, dims::Tuple) = _nankurtosis!(copy(μ), corrected, A, dims)
-_nankurtosis(μ::Number, corrected::Bool, A, dims::Tuple) = _nankurtosis!([μ], corrected, A, dims)
+function _nankurtosis(μ, corrected::Bool, A, dims::Tuple)
+  μ_alloc = allocate_nanmean(A, dims)
+  @assert length(μ) == length(μ_alloc) "Precomputed mean has $(length(μ)) elements, expected $(length(μ_alloc))"
+  return _nankurtosis!((μ_alloc .= μ), corrected, A, dims)
+end
 # Reduce all the dims!
 function _nankurtosis(μ::Number, corrected::Bool, A, ::Colon)
     n = 0

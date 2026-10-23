@@ -82,9 +82,11 @@ end
 
 
 # If the mean is known, pass it on in the appropriate form
-_nansem(μ, corrected::Bool, A, dims::Tuple) = _nansem!(collect(μ), corrected, A, dims)
-_nansem(μ::AbstractArray, corrected::Bool, A, dims::Tuple) = _nansem!(copy(μ), corrected, A, dims)
-_nansem(μ::Number, corrected::Bool, A, dims::Tuple) = _nansem!([μ], corrected, A, dims)
+function _nansem(μ, corrected::Bool, A, dims::Tuple)
+  μ_alloc = allocate_nanmean(A, dims)
+  @assert length(μ) == length(μ_alloc) "Precomputed mean has $(length(μ)) elements, expected $(length(μ_alloc))"
+  return _nansem!((μ_alloc .= μ), corrected, A, dims)
+end
 # Reduce all the dims!
 function _nansem(μ::Number, corrected::Bool, A, ::Colon)
   n = 0

@@ -12,7 +12,6 @@ As an alternative to `dims`, `nanskewness` also supports the `dim` keyword, whic
 behaves identically to `dims`, but also drops any singleton dimensions that have
 been reduced over (as is the convention in some other languages).
 
-
 ## Examples
 ```julia
 julia> using NaNStatistics
@@ -92,9 +91,11 @@ end
 
 
 # If the mean is known, pass it on in the appropriate form
-_nanskewness(μ, corrected::Bool, A, dims::Tuple) = _nanskewness!(collect(μ), corrected, A, dims)
-_nanskewness(μ::AbstractArray, corrected::Bool, A, dims::Tuple) = _nanskewness!(copy(μ), corrected, A, dims)
-_nanskewness(μ::Number, corrected::Bool, A, dims::Tuple) = _nanskewness!([μ], corrected, A, dims)
+function _nanskewness(μ, corrected::Bool, A, dims::Tuple)
+    μ_alloc = allocate_nanmean(A, dims)
+    @assert length(μ) == length(μ_alloc) "Precomputed mean has $(length(μ)) elements, expected $(length(μ_alloc))"
+    return _nanskewness!((μ_alloc .= μ), corrected, A, dims)
+end
 # Reduce all the dims!
 function _nanskewness(μ::Number, corrected::Bool, A, ::Colon)
     n = 0

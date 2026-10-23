@@ -84,9 +84,11 @@ end
 
 
 # If the mean is known, pass it on in the appropriate form
-_nanvar(μ, corrected::Bool, A, dims::Tuple) = _nanvar!(collect(μ), corrected, A, dims)
-_nanvar(μ::AbstractArray, corrected::Bool, A, dims::Tuple) = _nanvar!(copy(μ), corrected, A, dims)
-_nanvar(μ::Number, corrected::Bool, A, dims::Tuple) = _nanvar!([μ], corrected, A, dims)
+function _nanvar(μ, corrected::Bool, A, dims::Tuple)
+  μ_alloc = allocate_nanmean(A, dims)
+  @assert length(μ) == length(μ_alloc) "Precomputed mean has $(length(μ)) elements, expected $(length(μ_alloc))"
+  return _nanvar!((μ_alloc .= μ), corrected, A, dims)
+end
 # Reduce all the dims!
 function _nanvar(μ::Number, corrected::Bool, A, ::Colon)
   Tₒ = Base.promote_op(*, typeof(μ), typeof(μ))
