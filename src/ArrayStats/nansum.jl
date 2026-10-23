@@ -120,7 +120,6 @@ function staticdim_nansum_quote(static_dims::Vector{Int}, N::Int)
     Aind = :(A[])
     Bind = :(Bᵥ[])
     inds = Vector{Symbol}(undef, N)
-
     for n ∈ 1:N
         ind = Symbol(:i_,n)
         inds[n] = ind
@@ -134,28 +133,21 @@ function staticdim_nansum_quote(static_dims::Vector{Int}, N::Int)
             push!(Bind.args, ind)
         end
     end
-
     # Reverse the axis lists so that we build up the loops from slow-axis to
     # fast-axis for column major arrays.
     reverse!(nonreduct_inds)
     reverse!(reduct_inds)
 
     # Secondly, build up our set of loops
-    firstn = first(nonreduct_inds)
-    block = Expr(:block)
-    loops = Expr(:for, :($(inds[firstn]) = axes(A,$firstn)), block)
-    if length(nonreduct_inds) > 1
-        for n ∈ @view(nonreduct_inds[2:end])
-            newblock = Expr(:block)
-            push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
-            block = newblock
-        end
+    block = loops = Expr(:block)
+    for n ∈ nonreduct_inds
+        newblock = Expr(:block)
+        push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
+        block = newblock
     end
-
     # Push more things here if you want them at the beginning of the reduction loop
     rblock = block
     push!(rblock.args, :(Σ = ∅))
-
     # Build the reduction loop
     for n ∈ reduct_inds
         newblock = Expr(:block)
@@ -166,12 +158,10 @@ function staticdim_nansum_quote(static_dims::Vector{Int}, N::Int)
         end
         block = newblock
     end
-
     # Push more things here if you want them in the innermost loop
     push!(block.args, :(Aᵢ = $Aind))
     push!(block.args, :(notnan = Aᵢ==Aᵢ))
     push!(block.args, :(Σ += ifelse(notnan, Aᵢ, ∅)))
-
     # Push more things here if you want them at the end of the reduction loop
     push!(rblock.args, :($Bind = Σ))
 
@@ -223,7 +213,7 @@ end
 
 # Efficient @generated in-place sum
 @generated function _nansum_generated!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
-    N == M && return :(B[1] = _nansum(A, :); B)
+    # N == M && return :(B[1] = _nansum(A, :); B)
     branches_nansum_quote(N, M, D)
 end
 

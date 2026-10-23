@@ -1,8 +1,8 @@
 ## --- Transformations of arrays with NaNs
 
     # Dropdims if there are dims to be dropped
-    reducedims(A, dims) = A
-    reducedims(A::AbstractVector, dims) = A
+    reducedims(A::Number, dims) = A
+    reducedims(A::AbstractVector, dims) = A # Do not reduce dimensions below 1
     reducedims(A::AbstractArray, dims) = dropdims(A; dims)
 
     """

@@ -154,19 +154,20 @@ function staticdim_nanskewness_quote(static_dims::Vector{Int}, N::Int)
       push!(Bind.args, ind)
     end
   end
-  firstn = first(nonreduct_inds)
+  # Reverse the axis lists so that we build up the loops from slow-axis to
+  # fast-axis for column major arrays.
+  reverse!(nonreduct_inds)
+  reverse!(reduct_inds)
+
   # Secondly, build up our set of loops
-  block = Expr(:block)
-  loops = Expr(:for, :($(inds[firstn]) = axes(A,$firstn)), block)
-  if length(nonreduct_inds) > 1
-    for n ∈ @view(nonreduct_inds[2:end])
-      newblock = Expr(:block)
-      push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
-      block = newblock
-    end
+  block = loops = Expr(:block)
+  for n ∈ nonreduct_inds
+    newblock = Expr(:block)
+    push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
+    block = newblock
   end
-  rblock = block
   # Push more things here if you want them at the beginning of the reduction loop
+  rblock = block
   push!(rblock.args, :(μ = $Bind))
   push!(rblock.args, :(n = 0))
   push!(rblock.args, :(μ₃ = μ₂ = ∅))
@@ -187,7 +188,6 @@ function staticdim_nanskewness_quote(static_dims::Vector{Int}, N::Int)
   push!(block.args, :(δ² = δ * δ))
   push!(block.args, :(μ₂ += ifelse(notnan, δ², ∅)))
   push!(block.args, :(μ₃ += ifelse(notnan, δ² * δ, ∅)))
-
   # Push more things here if you want them at the end of the reduction loop
   push!(rblock.args, :(σ = sqrt(μ₂ * inv(max(n-corrected,0))) ))
   push!(rblock.args, :($Bind = (μ₃/n)/σ^3 ))
@@ -240,6 +240,6 @@ end
 
 # Efficient @generated in-place var
 @generated function _nanskewness!(B::AbstractArray{Tₒ,N}, corrected::Bool, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
-  N == M && return :(B[1] = _nanskewness(B[1], corrected, A, :); B)
+  # N == M && return :(B[1] = _nanskewness(B[1], corrected, A, :); B)
   branches_nanskewness_quote(N, M, D)
 end

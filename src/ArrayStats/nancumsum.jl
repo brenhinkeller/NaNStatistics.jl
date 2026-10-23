@@ -220,19 +220,20 @@ function staticdim_nancumsum!_quote(static_dims::Vector{Int}, N::Int)
       push!(nonreduct_inds, n)
     end
   end
-  firstn = first(nonreduct_inds)
+  # Reverse the axis lists so that we build up the loops from slow-axis to
+  # fast-axis for column major arrays.
+  reverse!(nonreduct_inds)
+  reverse!(reduct_inds)
+
   # Secondly, build up our set of loops
-  block = Expr(:block)
-  loops = Expr(:for, :($(inds[firstn]) = axes(A,$firstn)), block)
-  if length(nonreduct_inds) > 1
-    for n ∈ @view(nonreduct_inds[2:end])
-      newblock = Expr(:block)
-      push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
-      block = newblock
-    end
+  block = loops = Expr(:block)
+  for n ∈ nonreduct_inds
+    newblock = Expr(:block)
+    push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
+    block = newblock
   end
-  rblock = block
   # Push more things here if you want them at the beginning of the reduction loop
+  rblock = block
   push!(rblock.args, :(Σ = ∅))
   # Build the reduction loop
   for n ∈ reduct_inds
@@ -247,6 +248,7 @@ function staticdim_nancumsum!_quote(static_dims::Vector{Int}, N::Int)
   push!(block.args, :($Aind = Σ))
   # Push more things here if you want them at the end of the reduction loop
   # push!(rblock.args, :(....))
+
   # Put it all together
   quote
     ∅ = zero(eltype(A))
@@ -292,6 +294,6 @@ end
 
 # Efficient @generated in-place sum
 @generated function _nancumsum!(A::AbstractArray{T,N}, dims::D) where {T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
-  N == M && return _nancumsum!(A, :)
+  # N == M && return _nancumsum!(A, :)
   branches_nancumsum!_quote(N, M, D)
 end

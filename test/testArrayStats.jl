@@ -454,6 +454,47 @@
     @test isnan(nanskewness([1,2,3,NaN,Inf]))
     @test isnan(nankurtosis([1,2,3,NaN,Inf]))
 
+    A = [Inf, -Inf] # Vector
+    B = [Inf -Inf]  # Row vector (matrix)
+    @test nansum(A, dim=1) ≈ [NaN,]  nans=true
+    @test nansum(B, dim=1) ≈ [Inf, -Inf] nans=true
+    @test nansum(B, dim=2) ≈ [NaN,] nans=true
+    @test nanmean(A, dim=1) ≈ [NaN,]  nans=true
+    @test nanmean(B, dim=1) ≈ [Inf, -Inf] nans=true
+    @test nanmean(B, dim=2) ≈ [NaN,] nans=true
+    @test nanrange(A, dim=1) ≈ [Inf,]  nans=true
+    @test nanrange(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nanrange(B, dim=2) ≈ [Inf,] nans=true
+    @test nanminimum(A, dim=1) ≈ [-Inf,]  nans=true
+    @test nanminimum(B, dim=1) ≈ [Inf, -Inf] nans=true
+    @test nanminimum(B, dim=2) ≈ [-Inf,] nans=true
+    @test nanmaximum(A, dim=1) ≈ [Inf,]  nans=true
+    @test nanmaximum(B, dim=1) ≈ [Inf, -Inf] nans=true
+    @test nanmaximum(B, dim=2) ≈ [Inf,] nans=true
+    @test nanvar(A, dim=1) ≈ [NaN,]  nans=true
+    @test nanvar(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nanvar(B, dim=2) ≈ [NaN,]  nans=true
+    @test nanstd(A, dim=1) ≈ [NaN,]  nans=true
+    @test nanstd(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nanstd(B, dim=2) ≈ [NaN,]  nans=true
+    @test nansem(A, dim=1) ≈ [NaN,]  nans=true
+    @test nansem(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nansem(B, dim=2) ≈ [NaN,]  nans=true
+    @test nanmad(A, dim=1) ≈ [NaN,]  nans=true
+    @test nanmad(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nanmad(B, dim=2) ≈ [NaN,]  nans=true
+    @test nanaad(A, dim=1) ≈ [NaN,]  nans=true
+    @test nanaad(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nanaad(B, dim=2) ≈ [NaN,]  nans=true
+    @test nanmedian(A, dim=1) ≈ [NaN,]  nans=true
+    @test nanmedian(B, dim=1) ≈ [Inf, -Inf] nans=true
+    @test nanmedian(B, dim=2) ≈ [NaN,]  nans=true
+    @test nanskewness(A, dim=1) ≈ [NaN,]  nans=true
+    @test nanskewness(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nanskewness(B, dim=2) ≈ [NaN,]  nans=true
+    @test nankurtosis(A, dim=1) ≈ [NaN,]  nans=true
+    @test nankurtosis(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nankurtosis(B, dim=2) ≈ [NaN,]  nans=true
 
 ## --- Test the correctness of the mapreduce implementations of nansum/nanmean
 

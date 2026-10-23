@@ -139,6 +139,7 @@ function staticdim_nankurtosis_quote(static_dims::Vector{Int}, N::Int)
   Bᵥ = Expr(:call, :view, :B)
   reduct_inds = Int[]
   nonreduct_inds = Int[]
+  
   # Firstly, build our expressions for indexing each array
   Aind = :(A[])
   Bind = :(Bᵥ[])
@@ -156,19 +157,20 @@ function staticdim_nankurtosis_quote(static_dims::Vector{Int}, N::Int)
       push!(Bind.args, ind)
     end
   end
-  firstn = first(nonreduct_inds)
+  # Reverse the axis lists so that we build up the loops from slow-axis to
+  # fast-axis for column major arrays.
+  reverse!(nonreduct_inds)
+  reverse!(reduct_inds)
+  
   # Secondly, build up our set of loops
-  block = Expr(:block)
-  loops = Expr(:for, :($(inds[firstn]) = axes(A,$firstn)), block)
-  if length(nonreduct_inds) > 1
-    for n ∈ @view(nonreduct_inds[2:end])
-      newblock = Expr(:block)
-      push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
-      block = newblock
-    end
+  block = loops = Expr(:block)
+  for n ∈ nonreduct_inds
+    newblock = Expr(:block)
+    push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
+    block = newblock
   end
-  rblock = block
   # Push more things here if you want them at the beginning of the reduction loop
+  rblock = block
   push!(rblock.args, :(μ = $Bind))
   push!(rblock.args, :(n = 0))
   push!(rblock.args, :(μ₄ = μ₂ = ∅))
@@ -242,6 +244,6 @@ end
 
 # Efficient @generated in-place var
 @generated function _nankurtosis!(B::AbstractArray{Tₒ,N}, corrected::Bool, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
-  N == M && return :(B[1] = _nankurtosis(B[1], corrected, A, :); B)
+  # N == M && return :(B[1] = _nankurtosis(B[1], corrected, A, :); B)
   branches_nankurtosis_quote(N, M, D)
 end

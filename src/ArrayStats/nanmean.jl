@@ -58,9 +58,9 @@ julia> nanmean(A, dims=2)
 ```
 """
 nanmean(A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD) = __nanmean(A, dims, dim, size_threshold)
-__nanmean(A, ::Colon, ::Colon, st) = _nanmean(A, :, st)
+__nanmean(A, ::Colon, ::Colon, st) = _nanmean(A, :)
 __nanmean(A, region, ::Colon, st) = _nanmean(A, region, st)
-__nanmean(A, ::Colon, region, st) = reducedims(__nanmean(A, region, :, st), region)
+__nanmean(A, ::Colon, region, st) = reducedims(_nanmean(A, region, st), region)
 export nanmean
 
 """
@@ -95,7 +95,7 @@ function _nanmean!(B, A, dims, st)
     if 1 in dims || sizeof(A) < get_size_threshold(st)
         # The generated-function approach is faster for small arrays and if
         # we're reducing over the first dimension.
-        _nanmean_generated!(B, A, dims, st)
+        _nanmean_generated!(B, A, dims)
     else
         # For reducing over the slow axes of large arrays we use the mapreduce
         # approach.
@@ -104,7 +104,8 @@ function _nanmean!(B, A, dims, st)
 end
 
 # Reduce all the dims!
-function _nanmean(A, ::Colon, _)
+_nanmean(A, ::Colon, st) = _nanmean(A, :)
+function _nanmean(A, ::Colon)
     Tₒ = Base.promote_op(/, eltype(A), Int)
     n = 0
     Σ = ∅ = zero(Tₒ)
@@ -116,7 +117,7 @@ function _nanmean(A, ::Colon, _)
     end
     return Σ / n
 end
-function _nanmean(A::AbstractArray{T}, ::Colon, _) where T<:Integer
+function _nanmean(A::AbstractArray{T}, ::Colon) where T<:Integer
     Tₒ = Base.promote_op(/, T, Int)
     Σ = zero(Tₒ)
     @inbounds @simd ivdep for i ∈ eachindex(A)
@@ -199,24 +200,18 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
             push!(Bind.args, ind)
         end
     end
-
     # Reverse the axis lists so that we build up the loops from slow-axis to
     # fast-axis for column major arrays.
     reverse!(nonreduct_inds)
     reverse!(reduct_inds)
 
     # Secondly, build up our set of loops
-    firstn = first(nonreduct_inds)
-    block = Expr(:block)
-    loops = Expr(:for, :($(inds[firstn]) = axes(A,$firstn)), block)
-    if length(nonreduct_inds) > 1
-        for n ∈ @view(nonreduct_inds[2:end])
-            newblock = Expr(:block)
-            push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
-            block = newblock
-        end
+    block = loops = Expr(:block)
+    for n ∈ nonreduct_inds
+        newblock = Expr(:block)
+        push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
+        block = newblock
     end
-
     # Push more things here if you want them at the beginning of the reduction loop
     rblock = block
     push!(rblock.args, :(n = 0))
@@ -231,13 +226,11 @@ function staticdim_nanmean_quote(static_dims::Vector{Int}, N::Int)
         end
         block = newblock
     end
-
     # Push more things here if you want them in the innermost loop
     push!(block.args, :(Aᵢ = $Aind))
     push!(block.args, :(notnan = Aᵢ==Aᵢ))
     push!(block.args, :(n += notnan))
     push!(block.args, :(Σ += ifelse(notnan, Aᵢ, ∅)))
-
     # Push more things here if you want them at the end of the reduction loop
     push!(rblock.args, :($Bind = Σ * inv(n)))
 
@@ -252,7 +245,7 @@ end
 
 # Turn non-static integers in `dims` tuple into `_StaticInt`s
 # so we can construct `static_dims` vector within @generated code
-function branches_nanmean_quote(N::Int, M::Int, D, st)
+function branches_nanmean_quote(N::Int, M::Int, D)
     static_dims = Int[]
     for m ∈ 1:M
         param = D.parameters[m]
@@ -272,7 +265,7 @@ function branches_nanmean_quote(N::Int, M::Int, D, st)
                 n ∈ static_dims && continue
                 tc = copy(t)
                 push!(tc.args, :(_StaticInt{$n}()))
-                qnew = Expr(ifsym, :(dimm == $n), :(return _nanmean!(B, A, $tc, st)))
+                qnew = Expr(ifsym, :(dimm == $n), :(return _nanmean_generated!(B, A, $tc)))
                 for r ∈ m+1:M
                     push!(tc.args, :(dims[$r]))
                 end
@@ -288,9 +281,9 @@ function branches_nanmean_quote(N::Int, M::Int, D, st)
 end
 
 # Efficient @generated in-place mean
-@generated function _nanmean_generated!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D, st) where {Tₒ,T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
-    N == M && return :(B[1] = _nanmean(A, :, st); B)
-    branches_nanmean_quote(N, M, D, st)
+@generated function _nanmean_generated!(B::AbstractArray{Tₒ,N}, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
+    # N == M && return :(B[1] = _nanmean(A, :); B)
+    branches_nanmean_quote(N, M, D)
 end
 
 ## ---

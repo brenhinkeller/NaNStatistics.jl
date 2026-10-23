@@ -136,19 +136,20 @@ function staticdim_nansem_quote(static_dims::Vector{Int}, N::Int)
       push!(Bind.args, ind)
     end
   end
-  firstn = first(nonreduct_inds)
+  # Reverse the axis lists so that we build up the loops from slow-axis to
+  # fast-axis for column major arrays.
+  reverse!(nonreduct_inds)
+  reverse!(reduct_inds)
+  
   # Secondly, build up our set of loops
-  block = Expr(:block)
-  loops = Expr(:for, :($(inds[firstn]) = axes(A,$firstn)), block)
-  if length(nonreduct_inds) > 1
-    for n ∈ @view(nonreduct_inds[2:end])
-      newblock = Expr(:block)
-      push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
-      block = newblock
-    end
+  block = loops = Expr(:block)
+  for n ∈ nonreduct_inds
+    newblock = Expr(:block)
+    push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
+    block = newblock
   end
-  rblock = block
   # Push more things here if you want them at the beginning of the reduction loop
+  rblock = block
   push!(rblock.args, :(μ = $Bind))
   push!(rblock.args, :(n = 0))
   push!(rblock.args, :(σ² = ∅))
@@ -212,12 +213,6 @@ end
 
 # Efficient @generated in-place var
 @generated function _nansem!(B::AbstractArray{Tₒ,N}, corrected::Bool, A::AbstractArray{T,N}, dims::D) where {Tₒ,T,N,M,D<:Tuple{Vararg{_IntOrStaticInt,M}}}
-  N == M && return :(B[1] = _nansem(B[1], corrected, A, :); B)
-  # total_combinations = binomial(N,M)
-  # if total_combinations > 6
-  #   # Fallback, for overly-complex reductions
-  #   return :(_nansem_fallback!(B, corrected, A, dims))
-  # else
-    branches_nansem_quote(N, M, D)
-  # end
+  # N == M && return :(B[1] = _nansem(B[1], corrected, A, :); B)
+  branches_nansem_quote(N, M, D)
 end
