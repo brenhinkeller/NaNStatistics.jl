@@ -4,9 +4,13 @@
 nanlogsumexp(A)
 ```
 Return the logarithm of the sum of `exp.(A)` -- i.e., `log(sum(exp.(A)))`, but ignoring `NaN`s and avoiding numerical over/underflow.
-As `nancumsum`, but operating on logarithms; as `nanlogsumexp`, but returning a array of cumulative sums, rather than a single value.
 ## Examples
 ```julia
+julia> A = -10:-1
+-10:-1
+
+julia> nanlogsumexp(A)
+-0.5413702555732887
 ```
 """
 nanlogsumexp(A) = _nanlogsumexp(A, nanmaximum(A))
@@ -28,9 +32,24 @@ end
 nanlogcumsumexp(A)
 ```
 Return the logarithm of the cumulative sum of `exp.(A)` -- i.e., `log.(cumsum.(exp.(A)))`, but ignoring `NaN`s and avoiding numerical over/underflow.
-As `nancumsum`, but operating on logarithms; as `nanlogsumexp`, but returning a array of cumulative sums, rather than a single value.
+As `nanlogsumexp`, but returning a array of cumulative sums, rather than a single value.
 ## Examples
 ```julia
+julia> A = -10:-1
+-10:-1
+
+julia> nanlogcumsumexp(A)
+10-element Vector{Float64}:
+ -10.0
+ -8.686738312481777
+ -7.592394035555619
+ -6.559810301438804
+ -5.548085604062407
+ -4.543806683981877
+ -3.5422371525957574
+ -2.541660373520995
+ -1.5414482720326212
+ -0.5413702555732887
 ```
 """
 nanlogcumsumexp(A; reverse=false) = _nanlogcumsumexp(A, _static(reverse))

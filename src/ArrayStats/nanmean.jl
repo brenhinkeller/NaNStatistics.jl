@@ -4,13 +4,14 @@ NANMEAN_SIZE_THRESHOLD::Union{Int, Symbol} = 2^20
 get_size_threshold(x::Integer) = x
 
 """
-    allocate_nanmean(A::AbstractArray, dims)
-
-Allocates an array that can be passed as the output array to `nanmean!()` for
+```julia
+allocate_nanmean(A::AbstractArray, dims)
+```
+Allocates an array that can be passed as the output array to `nanmean!` for
 the given `A`.
 
-Note that you should prefer using the output of `nanmean!()` rather than the
-array returned from this function because `nanmean!()` will drop dimensions if
+Note that you should prefer using the output of `nanmean!` rather than the
+array returned from this function because `nanmean!` will drop dimensions if
 `dim` is used (but that's a zero-copy operation, the underlying array is
 shared).
 """
@@ -64,8 +65,9 @@ __nanmean(A, ::Colon, region, st) = reducedims(_nanmean(A, region, st), region)
 export nanmean
 
 """
-    nanmean!(B, A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD)
-
+```julia
+nanmean!(B, A; dims, size_threshold)
+```
 Same as `nanmean`, except that the result will be written to the array `B`. If
 `B` cannot be reshaped to the right size then a `DimensionMismatch` exception
 will be thrown. The returned array may be a different size than `B` depending on

@@ -1,7 +1,8 @@
 """
-    allocate_nansum(A::AbstractArray, dims)
-
-Allocates an array that can be passed as the output array to `nanmean!()` for
+```julia
+allocate_nansum(A::AbstractArray, dims)
+```
+Allocates an array that can be passed as the output array to `nansum!` for
 the given `A`.
 
 See the `allocate_nanmean()` docstring for info on using the returned array.
@@ -48,9 +49,10 @@ __nansum(A, ::Colon, region) = reducedims(__nansum(A, region, :), region)
 export nansum
 
 """
-    nansum!(B, A; dims=:, dim=:)
-
-Same as `nansum`, except that the result will be written to the array `B`. If
+```julia
+nansum!(B, A; dims)
+```
+As `nansum`, except that the result will be written to the array `B`. If
 `B` cannot be reshaped to the right size then a `DimensionMismatch` exception
 will be thrown. The returned array may be a different size than `B` depending on
 whether `dims`/`dim` is used, but it will always alias `B`.

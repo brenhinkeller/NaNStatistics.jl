@@ -2,8 +2,8 @@
 ```julia
 nancumsum(A; dims)
 ```
-Calculate the sum of an indexable collection `A`, ignoring `NaN`s, optionally
-along dimensions specified by `dims`.
+Calculate the cumulative sum of an indexable collection `A`, ignoring `NaN`s, 
+optionally along dimensions specified by `dims`.
 
 ## Examples
 ```julia

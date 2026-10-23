@@ -28,7 +28,7 @@ julia> nanskewness(A, dims=1)
 
 
 julia> nanskewness(A, dims=2)
-3-element Vector{Float64}:
+3×1 Matrix{Float64}:
  0.0
  0.0
  0.0

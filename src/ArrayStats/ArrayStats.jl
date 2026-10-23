@@ -325,7 +325,7 @@
 
     """
     ```julia
-    nanstd(A, W; dims)
+    nanstd(A, W; dims, corrected)
     ```
     Calculate the weighted standard deviation, ignoring `NaN`s, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
@@ -333,12 +333,17 @@
     Also supports the `dim` keyword, which behaves identically to `dims`, but
     also drops any singleton dimensions that have been reduced over (as is the
     convention in some other languages).
+
+    The `corrected` keyword determines whether _Bessel's correction_ for population
+    variance is applied; this is provided for consistency with unweighted `nanstd` 
+    (such that `nanstd(A, ones(size(A)))` matches `nanstd(A)`)
+    but may not be typical for weighted standard deviations.
     """
-    nanstd(A, W; dims=:, dim=:) = __nanstd(A, W, dims, dim)
-    __nanstd(A, W, ::Colon, ::Colon) = _nanstd(A, W, :)
-    __nanstd(A, W, region, ::Colon) = _nanstd(A, W, region)
-    __nanstd(A, W, ::Colon, region) = reducedims(_nanstd(A, W, region), region)
-    function _nanstd(A, W, region)
+    nanstd(A, W; dims=:, dim=:, corrected=true) = __nanstd(A, W, corrected, dims, dim)
+    __nanstd(A, W, corrected, ::Colon, ::Colon) = _nanstd(A, W, corrected, :)
+    __nanstd(A, W, corrected, region, ::Colon) = _nanstd(A, W, corrected, region)
+    __nanstd(A, W, corrected, ::Colon, region) = reducedims(_nanstd(A, W, corrected, region), region)
+    function _nanstd(A, W, corrected::Bool, region)
         mask = nanmask(A)
         n = sum(mask, dims=region)
         w = sum(W.*mask, dims=region)
@@ -350,11 +355,11 @@
         end
         s .= sum(d, dims=region)
         @inbounds @simd ivdep for i ∈ eachindex(s,n,w)
-            s[i] = sqrt((s[i] * n[i]) / (w[i] * (n[i] - 1)))
+            s[i] = sqrt((s[i] * n[i]) / (w[i] * max(n[i]-corrected, 0)))
         end
         return s
     end
-    function _nanstd(A, W, ::Colon)
+    function _nanstd(A, W, corrected::Bool, ::Colon)
         @assert eachindex(A) == eachindex(W)
         n = 0
         w = zero(eltype(W))
@@ -370,10 +375,11 @@
         s = zero(typeof(mu))
         @inbounds @simd ivdep for i ∈ eachindex(A,W)
             Aᵢ = A[i]
+            t = Aᵢ == Aᵢ
             d = Aᵢ - mu
-            s += (d * d * W[i]) * (Aᵢ == Aᵢ) # Zero if Aᵢ is NaN
+            s += (d * d * W[i]) * t # Zero if Aᵢ is NaN
         end
-        return sqrt(s / w * n / (n-1))
+        return sqrt(s / w * n / max(n-corrected, 0))
     end
     export nanstd
 

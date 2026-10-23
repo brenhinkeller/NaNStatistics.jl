@@ -220,7 +220,7 @@ function _nancor(x::AbstractVector{Tx}, y::AbstractVector{Ty}, corrected::Bool) 
     σᵪᵧ = _nancov(x, y, corrected, μᵪ, μᵧ)
     ρᵪᵧ = σᵪᵧ / (σᵪ * σᵧ)
 
-    return ρᵪᵧ
+    return clamp(ρᵪᵧ, -1, 1)
 end
 
 
@@ -236,10 +236,6 @@ function nancor(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
     n = size(X, dims)
     m = size(X, mod(dims,2)+1)
     Ρ = similar(X, Tₒ, (m, m))
-    # Diagonal must be unity
-    @inbounds for i = 1:m
-        Ρ[i,i] = one(Tₒ)
-    end
     # Only two dimensions are possible, so handle each manually
     if dims == 1
         # Fill off-diagonals symmetrically
@@ -250,7 +246,7 @@ function nancor(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
         end
     elseif dims == 2
         @inbounds for i = 1:m
-            for j = 1:i-1
+            for j = 1:i
                 Ρ[i,j] = Ρ[j,i] = _nancor(view(X,i,:), view(X,j,:), corrected)
             end
         end

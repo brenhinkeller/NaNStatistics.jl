@@ -27,7 +27,7 @@ julia> nankurtosis(A, dims=1)
  -1.5  -1.5  -1.5
 
 julia> nankurtosis(A, dims=2)
-3-element Vector{Float64}:
+3×1 Matrix{Float64}:
  -1.5
  -1.5
  -1.5
