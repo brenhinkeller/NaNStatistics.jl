@@ -203,12 +203,7 @@ function branches_median_quote(N::Int, M::Int, D)
         qold = qnew
         ifsym = :elseif
       end
-      # Else, if dimm ∉ 1:N, drop it from list and continue
-      tc = copy(t)
-      for r ∈ m+1:M
-        push!(tc.args, :(dims[$r]))
-      end
-      push!(qold.args, Expr(:block, :(return _nanmedian!(B, A, $tc))))
+      push!(qold.args, Expr(:block, :(throw("Dimension `$dimm` not found."))))
       return q
     end
   end
