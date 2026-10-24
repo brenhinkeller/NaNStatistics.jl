@@ -57,48 +57,44 @@ export nanlogcumsumexp
 
 function _nanlogcumsumexp(A, ::_False)
     Tᵣ = Base.promote_op(exp, eltype(A))
-    Σ = ∅ = zero(Tᵣ)
-    lΣ = fill!(similar(A, Tᵣ), ∅)
-    c = linit(eltype(A))
-    i₀ = firstindex(A)
-    @inbounds for i ∈ eachindex(A)
-        isnan(c) && (c = A[i])
-        if c < A[i] && isfinite(A[i])
-            c = A[i]
-            Σ = ∅ 
-            @simd ivdep for j ∈ i₀:i
-                Aᵢ = exp(A[j] - c)
-                Σ += ifelse(isnan(Aᵢ), ∅, Aᵢ)
+    Σ = zero(Tᵣ)
+    lΣ = similar(A, Tᵣ)
+    if !isempty(A)
+        c = first(A)
+        @inbounds for i ∈ eachindex(A)
+            if isnan(c)
+                isnan(A[i]) || (Σ += one(Tᵣ))
+                lΣ[i] = c = A[i]
+            else
+                isnan(A[i]) || (Σ += exp(A[i] - c))
+                if c < A[i] && isfinite(A[i])
+                    Σ *= exp(c - A[i])
+                    c = A[i]
+                end
+                lΣ[i] = log(Σ) + c
             end
-            lΣ[i] = log(Σ) + c
-        else
-            Aᵢ = exp(A[i] - c)
-            Σ += ifelse(isnan(Aᵢ), ∅, Aᵢ)
-            lΣ[i] = log(Σ) + c
         end
     end
     return lΣ
 end
 function _nanlogcumsumexp(A, ::_True)
     Tᵣ = Base.promote_op(exp, eltype(A))
-    Σ = ∅ = zero(Tᵣ)
-    lΣ = fill!(similar(A, Tᵣ), ∅)
-    c = linit(eltype(A))
-    iₗ = lastindex(A)
-    @inbounds for i ∈ reverse(eachindex(A))
-        isnan(c) && (c = A[i])
-        if c < A[i] && isfinite(A[i])
-            c = A[i]
-            Σ = ∅ 
-            @simd ivdep for j ∈ i:iₗ
-                Aᵢ = exp(A[j] - c)
-                Σ += ifelse(isnan(Aᵢ), ∅, Aᵢ)
+    Σ = zero(Tᵣ)
+    lΣ = similar(A, Tᵣ)
+    if !isempty(A)
+        c = last(A)
+        @inbounds for i ∈ reverse(eachindex(A))
+            if isnan(c)
+                isnan(A[i]) || (Σ += one(Tᵣ))
+                lΣ[i] = c = A[i]
+            else
+                isnan(A[i]) || (Σ += exp(A[i] - c))
+                if c < A[i] && isfinite(A[i])
+                    Σ *= exp(c - A[i])
+                    c = A[i]
+                end
+                lΣ[i] = log(Σ) + c
             end
-            lΣ[i] = log(Σ) + c
-        else
-            Aᵢ = exp(A[i] - c)
-            Σ += ifelse(isnan(Aᵢ), ∅, Aᵢ)
-            lΣ[i] = log(Σ) + c
         end
     end
     return lΣ
