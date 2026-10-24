@@ -272,7 +272,7 @@ function branches_quantile_quote(N::Int, M::Int, D)
         qold = qnew
         ifsym = :elseif
       end
-      push!(qold.args, Expr(:block, :(throw("Dimension `$dimm` not found."))))
+      push!(qold.args, Expr(:block, :(throw(ArgumentError("Dimension `$dimm` not found.")))))
       return q
     end
   end
