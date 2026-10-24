@@ -175,11 +175,17 @@ function _nanquantile!(A::AbstractArray{T}, q::Real, ::Colon) where {T}
     iₚ₋ = floor(Int, iₚ)
     iₚ₊ = ceil(Int, iₚ)
     f = iₚ - iₚ₋
-    Aᵢ₋, Aᵢ₊ = if n₋ < 384
+    if n₋ < 384
         quicksort!(A, iₗ, iᵤ)
-        A[iₚ₋], A[iₚ₊]
+        Aᵢ₋, Aᵢ₊ = A[iₚ₋], A[iₚ₊]
     else
-        quickselect!(A, iₗ, iᵤ, iₚ₋), quickselect!(A, iₗ, iᵤ, iₚ₊)
+        if f == 0
+            Aᵢ₋ = Aᵢ₊ = quickselect!(A, iₗ, iᵤ, iₚ₋)
+        elseif f == 1
+            Aᵢ₋ = Aᵢ₊ = quickselect!(A, iₗ, iᵤ, iₚ₊)
+        else
+            Aᵢ₋, Aᵢ₊ = quickselect!(A, iₗ, iᵤ, iₚ₋), quickselect!(A, iₗ, iᵤ, iₚ₊)
+        end
     end
     return f*Aᵢ₊ + (1-f)*Aᵢ₋
 end
@@ -211,34 +217,27 @@ function staticdim_quantile_quote(static_dims::Vector{Int}, N::Int)
       push!(Bind.args, ind)
     end
   end
+  # Reverse the axis lists so that we build up the loops from slow-axis to
+  # fast-axis for column major arrays.
+  reverse!(nonreduct_inds)
+  reverse!(reduct_inds)
+
   # Secondly, build up our set of loops
-  if !isempty(nonreduct_inds)
-    firstn = first(nonreduct_inds)
-    block = Expr(:block)
-    loops = Expr(:for, :($(inds[firstn]) = axes(A,$firstn)), block)
-    if length(nonreduct_inds) > 1
-      for n ∈ @view(nonreduct_inds[2:end])
-        newblock = Expr(:block)
-        push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
-        block = newblock
-      end
-    end
-    rblock = block
-    # Push more things here if you want them at the beginning of the reduction loop
-    push!(rblock.args, :(Aᵥ = $Aᵥ))
-    push!(rblock.args, :($Bind = _nanquantile!(Aᵥ, q, :)))
-    # Put it all together
-    return quote
-      Bᵥ = $Bᵥ
-      @inbounds $loops
-      return B
-    end
-  else
-    return quote
-      Bᵥ = $Bᵥ
-      Bᵥ[] = _nanquantile!(A, q, :)
-      return B
-    end
+  block = loops = Expr(:block)
+  for n ∈ nonreduct_inds
+    newblock = Expr(:block)
+    push!(block.args, Expr(:for, :($(inds[n]) = axes(A,$n)), newblock))
+    block = newblock
+  end
+  # Push more things here if you want them at the beginning of the reduction loop
+  rblock = block
+  push!(rblock.args, :(Aᵥ = $Aᵥ))
+  push!(rblock.args, :($Bind = _nanquantile!(Aᵥ, q, :)))
+  # Put it all together
+  return quote
+    Bᵥ = $Bᵥ
+    @inbounds $loops
+    return B
   end
 end
 
