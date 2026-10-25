@@ -1,3 +1,33 @@
+"""
+```julia
+nanlogaddexp(a, b)
+```
+Return the logarithm of the sum of the exponentials of `a` and `b`, i.e., 
+`log(exp(a) + exp(b))`, ignoring `NaN`s and avoiding numerical over/underflow.
+
+## Examples
+julia> nanlogaddexp(1,1)
+1.6931471805599454
+
+julia> nanlogaddexp(10000, 10000)
+10000.69314718056
+```
+"""
+function nanlogaddexp(a, b)
+    if isnan(a)
+        b
+    elseif isnan(b)
+        a
+    elseif isinf(a)
+        a > 0 ? a : b
+    elseif isinf(b)
+        b > 0 ? b : a
+    elseif a < b
+        log1p(exp(a - b)) + b
+    else
+        log1p(exp(b - a)) + a
+    end
+end
 
 """
 ```julia
@@ -5,8 +35,7 @@ nanlogsumexp(A)
 ```
 Return the logarithm of the sum of `exp.(A)` -- i.e., `log(sum(exp.(A)))`, but ignoring `NaN`s and avoiding numerical over/underflow.
 ## Examples
-```julia
-julia> A = -10:-1
+ julia> A = -10:-1
 -10:-1
 
 julia> nanlogsumexp(A)
@@ -57,44 +86,26 @@ export nanlogcumsumexp
 
 function _nanlogcumsumexp(A, ::_False)
     Tᵣ = Base.promote_op(exp, eltype(A))
-    Σ = zero(Tᵣ)
     lΣ = similar(A, Tᵣ)
+    @assert eachindex(A) == eachindex(lΣ) # Should always be true, but just to be sure
     if !isempty(A)
-        c = first(A)
-        @inbounds for i ∈ eachindex(A)
-            if isnan(c)
-                isnan(A[i]) || (Σ += one(Tᵣ))
-                lΣ[i] = c = A[i]
-            else
-                isnan(A[i]) || (Σ += exp(A[i] - c))
-                if c < A[i] && isfinite(A[i])
-                    Σ *= exp(c - A[i])
-                    c = A[i]
-                end
-                lΣ[i] = log(Σ) + c
-            end
+        i = firstindex(A)
+        lΣ[i] = lΣ₋ = A[i]
+        @inbounds for i ∈ Iterators.drop(eachindex(A),1)
+            lΣ[i] = lΣ₋ = nanlogaddexp(lΣ₋, A[i])
         end
     end
     return lΣ
 end
 function _nanlogcumsumexp(A, ::_True)
     Tᵣ = Base.promote_op(exp, eltype(A))
-    Σ = zero(Tᵣ)
     lΣ = similar(A, Tᵣ)
+    @assert eachindex(A) == eachindex(lΣ) # Should always be true, but just to be sure
     if !isempty(A)
-        c = last(A)
-        @inbounds for i ∈ reverse(eachindex(A))
-            if isnan(c)
-                isnan(A[i]) || (Σ += one(Tᵣ))
-                lΣ[i] = c = A[i]
-            else
-                isnan(A[i]) || (Σ += exp(A[i] - c))
-                if c < A[i] && isfinite(A[i])
-                    Σ *= exp(c - A[i])
-                    c = A[i]
-                end
-                lΣ[i] = log(Σ) + c
-            end
+        i = lastindex(A)
+        lΣ[i] = lΣ₋ = A[i]
+        @inbounds for i ∈ Iterators.drop(reverse(eachindex(A)),1)
+            lΣ[i] = lΣ₋ = nanlogaddexp(lΣ₋, A[i])
         end
     end
     return lΣ

@@ -31,8 +31,8 @@
     @test nansum(A) === 55.0
     @test nancumsum!(copy(A)) == nancumsum(A) == [1.0, 3.0, 6.0, 10.0, 15.0, 21.0, 28.0, 36.0, 45.0, 55.0, 55.0]
     @test nanlogsumexp(A) ≈ 10.45862974442671
-    @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671, 10.45862974442671]
-    @test isequal(nanlogcumsumexp(A, reverse=true), [10.45862974442671, 10.458551727967379, 10.458339626479004, 10.457762847404243, 10.456193316018123, 10.451914395937594, 10.440189698561195, 10.40760596444438, 10.313261687518223, 10.0, NaN])
+    @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 6.456193316018123, 7.457762847404243, 8.458339626479004, 9.458551727967379, 10.45862974442671, 10.45862974442671] nans=true
+    @test nanlogcumsumexp(A, reverse=true) ≈ [10.45862974442671, 10.458551727967379, 10.458339626479004, 10.457762847404242, 10.45619331601812, 10.451914395937592, 10.440189698561195, 10.40760596444438, 10.313261687518223, 10.0, NaN] nans=true
     @test nanmean(A) === 5.5
     @test nanmean(A, ones(11)) === 5.5 # weighted
     @test nanrange(A) === 9.0
@@ -60,6 +60,8 @@
     @test nancumsum!(copy(A)) == nancumsum(A) ≈ [1.0, 3.0, 6.0, 10.0, 15.0, 15.0, 20.0, 24.0, 27.0, 29.0, 30.0]
     @test nanlogcumsumexp(A) ≈ [1.0, 2.313261687518223, 3.4076059644443806, 4.440189698561196, 5.451914395937593, 5.451914395937593, 5.944418386887494, 6.078136371527456, 6.123152745316754, 6.139216411276987, 6.145061576497539]
     @test nanlogcumsumexp(A, reverse=true) ≈ [6.145061576497539, 6.139216411276987, 6.123152745316754, 6.078136371527456, 5.944418386887494, 5.451914395937593, 5.451914395937593, 4.440189698561196, 3.4076059644443806, 2.313261687518223, 1.0]
+    @test nanlogcumsumexp(A .* 1000) ≈  [1000.0, 2000.0, 3000.0, 4000.0, 5000.0, 5000.0, 5000.69314718056, 5000.69314718056, 5000.69314718056, 5000.69314718056, 5000.69314718056] 
+    @test nanlogcumsumexp(A .* 1000, reverse=true) ≈ [5000.69314718056, 5000.69314718056, 5000.69314718056, 5000.69314718056, 5000.69314718056, 5000.0, 5000.0, 4000.0, 3000.0, 2000.0, 1000.0]
 
     A = [1:10.0..., NaN, 10:-1:1...]
     @test nansum(A) === 110.0
@@ -495,6 +497,39 @@
     @test nankurtosis(A, dim=1) ≈ [NaN,]  nans=true
     @test nankurtosis(B, dim=1) ≈ [NaN, NaN] nans=true
     @test nankurtosis(B, dim=2) ≈ [NaN,]  nans=true
+
+## --- Test inproper and repeated dims
+
+    A = [1:10.0..., NaN]
+    # Repeated dims
+    @test nansum(A, dim=(1,1)) ≈ nansum(A, dim=1)
+    @test nanmean(A, dim=(1,1)) ≈ nanmean(A, dim=1)
+    @test nanrange(A, dim=(1,1)) ≈ nanrange(A, dim=1)
+    @test nanminimum(A, dim=(1,1)) ≈ nanminimum(A, dim=1)
+    @test nanmaximum(A, dim=(1,1)) ≈ nanmaximum(A, dim=1)
+    @test nanvar(A, dim=(1,1)) ≈ nanvar(A, dim=1)
+    @test nanstd(A, dim=(1,1)) ≈ nanstd(A, dim=1)
+    @test nansem(A, dim=(1,1)) ≈ nansem(A, dim=1)
+    @test nanmad(A, dim=(1,1)) ≈ nanmad(A, dim=1)
+    @test nanaad(A, dim=(1,1)) ≈ nanaad(A, dim=1)
+    @test nanmedian(A, dim=(1,1)) ≈ nanmedian(A, dim=1)
+    @test nanskewness(A, dim=(1,1)) ≈ nanskewness(A, dim=1)
+    @test nankurtosis(A, dim=(1,1)) ≈ nankurtosis(A, dim=1)
+
+    # Out-of-range dims
+    @test nansum(A, dim=3) ≈ [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 0.0] nans=true
+    @test nanmean(A, dim=3) ≈ A nans=true
+    @test nanrange(A, dim=3) ≈ [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, NaN] nans=true
+    @test nanminimum(A, dim=3) ≈ A nans=true
+    @test nanmaximum(A, dim=3) ≈ A nans=true
+    @test nanvar(A, dim=3) ≈ [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN] nans=true
+    @test nanstd(A, dim=3) ≈ [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN] nans=true
+    @test nansem(A, dim=3) ≈ [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN] nans=true
+    @test nanmad(A, dim=3) ≈ [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, NaN] nans=true
+    @test nanaad(A, dim=3) ≈ [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, NaN] nans=true
+    @test nanmedian(A, dim=3) ≈ A nans=true
+    @test nanskewness(A, dim=3) ≈ [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN] nans=true
+    @test nankurtosis(A, dim=3) ≈ [NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN, NaN] nans=true
 
 ## --- Test the correctness of the mapreduce implementations of nansum/nanmean
 
