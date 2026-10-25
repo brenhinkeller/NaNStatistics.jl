@@ -82,7 +82,7 @@ function nancov(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
             end
         end
     else
-        throw("Dimension not in range")
+        throw(ArgumentError("Dimension not in range"))
     end
     return Σ
 end
@@ -164,7 +164,7 @@ function nancovem(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
             end
         end
     else
-        throw("Dimension not in range")
+        throw(ArgumentError("Dimension not in range"))
     end
     return Σ
 end
@@ -251,7 +251,7 @@ function nancor(X::AbstractMatrix; dims::Int=1, corrected::Bool=true)
             end
         end
     else
-        throw("Dimension not in range")
+        throw(ArgumentError("Dimension not in range"))
     end
     return Ρ
 end

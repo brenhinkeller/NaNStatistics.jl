@@ -77,13 +77,13 @@ _nansum(A, dims::Int) = _nansum(A, (dims,))
 # Reduce some dims
 _nansum(A::AbstractArray, dims::Tuple) = _nansum!(allocate_nansum(A, dims), A, dims)
 
-function _nansum!(B, A, dims::Tuple)
-    if 1 in dims
-        # Use the generated-function approach for reducing over the first
-        # dimension since it's faster.
+function _nansum!(B, A, dims)
+    if 1 in dims || sizeof(A) < get_size_threshold(NANMEAN_SIZE_THRESHOLD)
+        # The generated-function approach is faster for small arrays and if
+        # we're reducing over the first dimension.
         _nansum_generated!(B, A, dims)
     else
-        # Base.sum() is faster at everything else
+        # Base.sum! is faster at everything else
         sum!(x -> ifelse(isnan(x), zero(x), x), B, A)
     end
 end
@@ -206,7 +206,12 @@ function branches_nansum_quote(N::Int, M::Int, D)
                 qold = qnew
                 ifsym = :elseif
             end
-            push!(qold.args, Expr(:block, :(throw("Dimension `$dimm` not found."))))
+            # Else, if dimm ∉ 1:N, drop it from list and continue
+            tc = copy(t)
+            for r ∈ m+1:M
+                push!(tc.args, :(dims[$r]))
+            end
+            push!(qold.args, Expr(:block, :(return _nansum!(B, A, $tc))))
             return q
         end
     end

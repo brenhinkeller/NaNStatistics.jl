@@ -218,7 +218,12 @@ function branches_nanvar_quote(N::Int, M::Int, D)
         qold = qnew
         ifsym = :elseif
       end
-      push!(qold.args, Expr(:block, :(throw("Dimension `$dimm` not found."))))
+      # Else, if dimm ∉ 1:N, drop it from list and continue
+      tc = copy(t)
+      for r ∈ m+1:M
+          push!(tc.args, :(dims[$r]))
+      end
+      push!(qold.args, Expr(:block, :(return _nanvar!(B, corrected, A, $tc))))
       return q
     end
   end

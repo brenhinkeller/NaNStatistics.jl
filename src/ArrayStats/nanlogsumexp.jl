@@ -28,6 +28,7 @@ function nanlogaddexp(a, b)
         log1p(exp(b - a)) + a
     end
 end
+export nanlogaddexp
 
 """
 ```julia
