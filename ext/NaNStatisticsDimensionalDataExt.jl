@@ -71,7 +71,7 @@ end
 # have to do is convert `dims` to indices so that users can pass in dimensions
 # by name.
 NaNStatistics.nancumsum(A::AbstractDimArray; dims=:) = NaNStatistics._nancumsum(A, dimnum(A, dims))
-NaNStatistics.nancumsum!(A::AbstractDimArray; dims=:) = NaNStatistics._nancumsum(A, dimnum(A, dims))
+NaNStatistics.nancumsum!(A::AbstractDimArray; dims=:) = NaNStatistics._nancumsum!(A, dimnum(A, dims))
 
 function NaNStatistics.movmean(A::DD.AbstractDimVecOrMat, n::Number)
     data = NaNStatistics.movmean(parent(A), n)
