@@ -7,6 +7,9 @@ A 1D histogram, ignoring `NaN`s: calculate the number of `x` values that fall in
 each of `length(xedges)-1` equally spaced bins along the `x` axis with bin edges
 specified by `xedges`.
 
+Bins are open on the left and closed on the right, i.e., 
+(`xedges[i]`, `exedges[i+1]`] for the `i`th bin.
+
 By default, the counts are returned as `Int64`s, though this can be changed by
 specifying an output type with the optional keyword argument `T`.
 
@@ -47,6 +50,9 @@ histcountindices(x, xedges::AbstractRange; T=Int64)
 A 1D histogram, ignoring `NaN`s; as `histcounts` but also returning a vector of
 the bin index of each `x` value.
 
+Bins are open on the left and closed on the right, i.e., 
+(`xedges[i]`, `exedges[i+1]`] for the `i`th bin.
+
 ## Examples
 ```julia
 julia> b = 10 * rand(100000);
@@ -71,7 +77,10 @@ histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange; T=Int64, normaliz
 ```
 A 2D histogram, ignoring `NaN`s: calculate the number of `x, y` pairs that fall into
 each square of a 2D grid of equally-spaced square bins with edges specified by
-`xedges` and `yedges`.
+`xedges` and `yedges`. 
+
+Bins are open on the left and closed on the right, i.e., 
+(`xedges[i]`, `exedges[i+1]`] for the `i`th x bin.
 
 The resulting matrix `N` of counts is oriented with the lowest x and y bins in
 `N[1,1]`, where the first (vertical / row) dimension of `N` corresponds to the y
@@ -116,8 +125,9 @@ export histcounts
 ```julia
 histcounts!(N, x, xedges::AbstractRange)
 ```
-Simple 1D histogram; as `histcounts`, but in-place, adding counts to the first
-`length(xedges)-1` elements of Array `N`.
+A 1D histogram, ignoring NaNs; as `histcounts`, but in-place, adding counts to N.
+Bins are open on the left and closed on the right, i.e., 
+(`xedges[i]`, `exedges[i+1]`] for the `i`th bin.
 
 Note that counts will be added to `N`, not overwrite `N`, allowing you to produce
 cumulative histograms. However, this means you will have to initialize `N` with
@@ -156,8 +166,13 @@ end
 ```julia
 histcountindices!(N, bin, x, xedges::AbstractRange)
 ```
-Simple 1D histogram; as `histcounts!`, but also recording the bin index of each
-`x` value.
+A 1D histogram, ignoring NaNs; as `histcounts!`, but also recording the bin index of each
+`x` value. Bins are open on the left and closed on the right, i.e., 
+(`xedges[i]`, `exedges[i+1]`] for the `i`th bin.
+
+Note that counts will be added to `N`, not overwrite `N`, allowing you to produce
+cumulative histograms. However, this means you will have to initialize `N` with
+zeros before first use.
 """
 function histcountindices!(N::AbstractArray, bin::AbstractArray, x::AbstractArray, xedges::AbstractRange)
     @assert eachindex(x) == eachindex(bin) # Must have one bin record for each x value

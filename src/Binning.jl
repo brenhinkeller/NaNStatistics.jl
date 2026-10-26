@@ -8,6 +8,9 @@
     the counts) of non-NAN `y` values that fall into each of `length(xedges)-1`
     equally spaced bins along the `x` axis with bin edges specified by `xedges`.
 
+    Bins are open on the left and closed on the right, i.e., 
+    (`xedges[i]`, `exedges[i+1]`] for the `i`th x bin.
+
     The array of `x` data should given as a one-dimensional array (any subtype
     of AbstractVector) and `y` as either a 1-d or 2-d array (any subtype of
     AbstractVecOrMat).
@@ -97,6 +100,9 @@
     as well as the dependent variable `z`, are all expected as 1D vectors (any
     subtype of AbstractVector).
 
+    Bins are open on the left and closed on the right, i.e., 
+    (`xedges[i]`, `exedges[i+1]`] for the `i`th x bin.
+
     The output matrices `MU` and `N` must be the same size, and must each have
     `length(yedges)-1` rows and `length(xedges)-1` columns.
     """
@@ -144,6 +150,9 @@
     the sum of weights) of non-NAN `y` values that fall into each of
     `length(xedges)-1` equally spaced bins along the `x` axis with bin edges
     specified by `xedges`.
+
+    Bins are open on the left and closed on the right, i.e., 
+    (`xedges[i]`, `exedges[i+1]`] for the `i`th x bin.
 
     The array of `x` data should given as a one-dimensional array (any subtype
     of AbstractVector) and `y` as either a 1-d or 2-d array (any subtype of
@@ -311,6 +320,9 @@
     `length(xedges)-1` equally spaced bins along the `x` axis with bin edges
     specified by `xedges`.
 
+    Bins are open on the left and closed on the right, i.e., 
+    (`xedges[i]`, `exedges[i+1]`] for the `i`th x bin.
+
     The array of `x` data should be given as a one-dimensional array (any subtype
     of AbstractVector) and `y` as either a 1-d or 2-d array (any subtype of
     AbstractVecOrMat). If `y` is a 2-d array, then each column of `y` will be
@@ -350,6 +362,9 @@
     variables `x` and `y`, as well as the dependent variable `z`, are all expected
     as 1D vectors (any subtype of AbstractVector).
 
+    Bins are open on the left and closed on the right, i.e., 
+    (`xedges[i]`, `exedges[i+1]`] for the `i`th x bin.
+
     ## Examples
     ```julia
     julia> x = y = z = 0.5:9.5;
@@ -383,6 +398,9 @@
     Ignoring `NaN`s, calculate the weighted mean of `y` values that
     fall into each of `length(xedges)-1` equally spaced bins along the `x`
     axis with bin edges specified by `xedges`.
+
+    Bins are open on the left and closed on the right, i.e., 
+    (`xedges[i]`, `exedges[i+1]`] for the `i`th x bin.
 
     The array of `x` data should given as a one-dimensional array (any subtype
     of AbstractVector) and `y` as either a 1-d or 2-d array (any subtype of
