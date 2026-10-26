@@ -217,7 +217,7 @@
         imin = firstindex(x)
         @inbounds for i in eachindex(x)
             xᵢ = x[i]
-            if xᵢ==xᵢ && !(xᵢ > x[imin])
+            if xᵢ==xᵢ && (xᵢ < x[imin])
                 imin = i
             end
         end
@@ -236,7 +236,7 @@
         imax = firstindex(x)
         @inbounds for i in eachindex(x)
             xᵢ = x[i]
-            if xᵢ==xᵢ && !(xᵢ < x[imax])
+            if xᵢ==xᵢ && (xᵢ > x[imax])
                 imax = i
             end
         end

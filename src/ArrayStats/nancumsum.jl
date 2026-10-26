@@ -37,11 +37,11 @@ export nancumsum
 nancumsum!(A; dims=:) = _nancumsum!(A, dims) # In-place variant
 export nancumsum!
 
-# Reduce one dim
+# Accumulate over one dim
 _nancumsum(A, dims::Int) = _nancumsum(A, (dims,))
 _nancumsum!(A, dims::Int) = _nancumsum!(A, A, (dims,))
 
-# Reduce some dims
+# Accumulate over some dims
 function _nancumsum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
     B = similar(A)
     _nancumsum!(B, A, dims)

@@ -458,44 +458,65 @@
 
     A = [Inf, -Inf] # Vector
     B = [Inf -Inf]  # Row vector (matrix)
+    @test nansum(A) ≈ NaN  nans=true
     @test nansum(A, dim=1) ≈ [NaN,]  nans=true
     @test nansum(B, dim=1) ≈ [Inf, -Inf] nans=true
     @test nansum(B, dim=2) ≈ [NaN,] nans=true
+    @test nancumsum(A) ≈ [Inf, NaN]  nans=true
+    @test nancumsum(A, dims=1) ≈ [Inf, NaN]  nans=true
+    @test nancumsum(B, dims=1) ≈ [Inf -Inf]  nans=true
+    @test nancumsum(B, dims=2) ≈ [Inf NaN] nans=true
+    @test nanlogcumsumexp(A) ≈ [Inf, Inf]  nans=true
+    @test nanlogcumsumexp(B) ≈ [Inf Inf]  nans=true
+    @test nanlogcumsumexp([0, 1000]) ≈ [0, 1000]
+    @test nanlogcumsumexp([-Inf, 1]) ≈ [-Inf, 1]
+    @test nanmean(A) ≈ NaN  nans=true
     @test nanmean(A, dim=1) ≈ [NaN,]  nans=true
     @test nanmean(B, dim=1) ≈ [Inf, -Inf] nans=true
     @test nanmean(B, dim=2) ≈ [NaN,] nans=true
+    @test nanrange(A) ≈ Inf  nans=true
     @test nanrange(A, dim=1) ≈ [Inf,]  nans=true
     @test nanrange(B, dim=1) ≈ [NaN, NaN] nans=true
     @test nanrange(B, dim=2) ≈ [Inf,] nans=true
+    @test nanminimum(A) ≈ -Inf  nans=true
     @test nanminimum(A, dim=1) ≈ [-Inf,]  nans=true
-    @test nanminimum(B, dim=1) ≈ [Inf, -Inf] nans=true
-    @test nanminimum(B, dim=2) ≈ [-Inf,] nans=true
+    @test nanminimum(B, dim=1) ≈ [Inf, -Inf]  nans=true
+    @test nanminimum(B, dim=2) ≈ [-Inf,]  nans=true
+    @test nanmaximum(A) ≈ Inf  nans=true
     @test nanmaximum(A, dim=1) ≈ [Inf,]  nans=true
     @test nanmaximum(B, dim=1) ≈ [Inf, -Inf] nans=true
     @test nanmaximum(B, dim=2) ≈ [Inf,] nans=true
+    @test nanvar(A) ≈ NaN  nans=true
     @test nanvar(A, dim=1) ≈ [NaN,]  nans=true
-    @test nanvar(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nanvar(B, dim=1) ≈ [NaN, NaN]  nans=true
     @test nanvar(B, dim=2) ≈ [NaN,]  nans=true
     @test nanstd(A, dim=1) ≈ [NaN,]  nans=true
+    @test nanstd(A) ≈ NaN  nans=true
     @test nanstd(B, dim=1) ≈ [NaN, NaN] nans=true
     @test nanstd(B, dim=2) ≈ [NaN,]  nans=true
+    @test nansem(A) ≈ NaN  nans=true
     @test nansem(A, dim=1) ≈ [NaN,]  nans=true
-    @test nansem(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nansem(B, dim=1) ≈ [NaN, NaN]  nans=true
     @test nansem(B, dim=2) ≈ [NaN,]  nans=true
+    @test nanmad(A) ≈ NaN  nans=true
     @test nanmad(A, dim=1) ≈ [NaN,]  nans=true
-    @test nanmad(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nanmad(B, dim=1) ≈ [NaN, NaN]  nans=true
     @test nanmad(B, dim=2) ≈ [NaN,]  nans=true
-    @test nanaad(A, dim=1) ≈ [NaN,]  nans=true
-    @test nanaad(B, dim=1) ≈ [NaN, NaN] nans=true
     @test nanaad(B, dim=2) ≈ [NaN,]  nans=true
+    @test nanaad(A, dim=1) ≈ [NaN,]  nans=true
+    @test nanaad(B, dim=1) ≈ [NaN, NaN]  nans=true
+    @test nanaad(B, dim=2) ≈ [NaN,]  nans=true
+    @test nanmedian(A) ≈ NaN  nans=true
     @test nanmedian(A, dim=1) ≈ [NaN,]  nans=true
-    @test nanmedian(B, dim=1) ≈ [Inf, -Inf] nans=true
+    @test nanmedian(B, dim=1) ≈ [Inf, -Inf]  nans=true
     @test nanmedian(B, dim=2) ≈ [NaN,]  nans=true
+    @test nanskewness(A) ≈ NaN  nans=true
     @test nanskewness(A, dim=1) ≈ [NaN,]  nans=true
-    @test nanskewness(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nanskewness(B, dim=1) ≈ [NaN, NaN]  nans=true
     @test nanskewness(B, dim=2) ≈ [NaN,]  nans=true
+    @test nankurtosis(A) ≈ NaN  nans=true
     @test nankurtosis(A, dim=1) ≈ [NaN,]  nans=true
-    @test nankurtosis(B, dim=1) ≈ [NaN, NaN] nans=true
+    @test nankurtosis(B, dim=1) ≈ [NaN, NaN]  nans=true
     @test nankurtosis(B, dim=2) ≈ [NaN,]  nans=true
 
 ## --- Test inproper and repeated dims
@@ -624,7 +645,9 @@
     @test nanminimum((1,2,3,4,5)) === 1
     @test nanmaximum((1,2,3,4,5)) === 5
     @test nanargmin((1,2,3,4,5)) === 1
+    @test nanargmin((1,1,1,2,3,4,5)) === 1
     @test nanargmax((1,2,3,4,5)) === 5
+    @test nanargmax((1,2,3,4,5,5,5)) === 5
     @test nanrange((1,2,3,4,5)) === 4
     @test nansum((1,2,3,4,5)) === 15
     @test nanmean((1,2,3,4,5)) === 3.0
