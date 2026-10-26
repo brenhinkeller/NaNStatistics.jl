@@ -124,10 +124,11 @@ cumulative histograms. However, this means you will have to initialize `N` with
 zeros before first use.
 """
 function histcounts!(N::AbstractArray, x::AbstractArray, xedges::AbstractRange)
-    @assert firstindex(N) === 1
+    imin, imax = firstindex(N)::Int-1, lastindex(N)
 
     # What is the size of each bin?
     nbins = length(xedges) - 1
+    @assert length(N) == nbins "`N`` has $(length(N)) bins but `xedges` has $nbins"
     xmin, xmax = extrema(xedges)
     δ𝑖δx = nbins/(xmax-xmin)
 
@@ -141,8 +142,8 @@ function histcounts!(N::AbstractArray, x::AbstractArray, xedges::AbstractRange)
     # Loop through each element of x
     @inbounds for n ∈ eachindex(x)
         xᵢ = x[n]
-        𝑖 = (xᵢ - xmin) * δ𝑖δx
-        if 0 < 𝑖 <= nbins
+        𝑖 = (xᵢ - xmin) * δ𝑖δx + imin
+        if imin < 𝑖 <= imax
             i = ceil(Int, 𝑖)
             N[i] += 1
         end
@@ -159,26 +160,20 @@ Simple 1D histogram; as `histcounts!`, but also recording the bin index of each
 `x` value.
 """
 function histcountindices!(N::AbstractArray, bin::AbstractArray, x::AbstractArray, xedges::AbstractRange)
-    @assert firstindex(N) === 1
-    @assert firstindex(bin) === 1
+    @assert eachindex(x) == eachindex(bin) # Must have one bin record for each x value
+    imin, imax = firstindex(N)::Int-1, lastindex(N)
 
     # What is the size of each bin?
     nbins = length(xedges) - 1
+    @assert length(N) == nbins "`N`` has $(length(N)) bins but `xedges` has $nbins"
     xmin, xmax = extrema(xedges)
     δ𝑖δx = nbins/(xmax-xmin)
-
-    # Make sure we don't have a segfault by filling beyond the length of N
-    # in the @inbounds loop below
-    if length(N) < nbins
-        nbins = length(N)
-        @warn "length(N) < nbins; any bins beyond length(N) will not be filled"
-    end
 
     # Loop through each element of x
     @inbounds for n ∈ eachindex(x)
         xᵢ = x[n]
-        𝑖 = (xᵢ - xmin) * δ𝑖δx
-        if 0 < 𝑖 <= nbins
+        𝑖 = (xᵢ - xmin) * δ𝑖δx + imin
+        if imin < 𝑖 <= imax
             i = ceil(Int, 𝑖)
             N[i] += 1
             bin[n] = i
@@ -200,33 +195,26 @@ cumulative histograms. However, this means you will have to initialize `N` with
 zeros before first use.
 """
 function histcounts!(N::AbstractMatrix, x::AbstractVector, y::AbstractVector, xedges::AbstractRange, yedges::AbstractRange)
-    @assert firstindex(N) === 1
+    imin, imax = firstindex(N,1)::Int-1, lastindex(N,1)
+    jmin, jmax = firstindex(N,2)::Int-1, lastindex(N,2)
 
     # Calculate bin index from x value
     nxbins = length(xedges)-1
+    @assert size(N,2) == nxbins "`N`` has $(size(N,2)) x bins but `xedges` has $nxbins"
     xmin, xmax = extrema(xedges)
     δ𝑗δx = nxbins / (xmax - xmin)
 
     nybins = length(yedges)-1
+    @assert size(N,1) == nybins "`N`` has $(size(N,1)) y bins but `yedges` has $nybins"
     ymin, ymax = extrema(yedges)
     δ𝑖δy = nybins / (ymax - ymin)
 
-    # Make sure we don't have a segfault by filling beyond the length of N
-    # in the @inbounds loop below
-    if size(N,1) < nybins
-        nybins = size(N,1)
-        @warn "size(N,1) < nybins; any y bins beyond size(N,1) will not be filled"
-    end
-    if size(N,2) < nxbins
-        nxbins = size(N,2)
-        @warn "size(N,2) < nxbins; any x bins beyond size(N,2) will not be filled"
-    end
 
     # Calculate the means for each bin, ignoring NaNs
     @inbounds for n ∈ eachindex(x,y)
-        𝑖 = (y[n] - ymin) * δ𝑖δy
-        𝑗 = (x[n] - xmin) * δ𝑗δx
-        if (0 < 𝑖 <= nybins) && (0 < 𝑗 <= nxbins)
+        𝑖 = (y[n] - ymin) * δ𝑖δy + imin
+        𝑗 = (x[n] - xmin) * δ𝑗δx + jmin
+        if (imin < 𝑖 <= imax) && (jmin < 𝑗 <= jmax)
             i = ceil(Int, 𝑖)
             j = ceil(Int, 𝑗)
             N[i,j] += 1

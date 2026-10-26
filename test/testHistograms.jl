@@ -18,10 +18,9 @@
     @test bin == vec(repeat((1:10)', 10, 1))
 
     # Test results and warnings when N is too small to hold results
-    w = "length(N) < nbins; any bins beyond length(N) will not be filled"
-    @test (@test_logs (:warn, w) histcounts!(zeros(5), 1:100 ,0:10:100)) == fill(10,5)
-    @test (@test_logs (:warn, w) histcounts!(zeros(5), 1:100. ,0:10:100)) == fill(10,5)
-    @test (@test_logs (:warn, w) NaNStatistics.histcountindices!(zeros(5), zeros(100), 1:100. ,0:10:100))[1] == fill(10,5)
+    @test_throws AssertionError histcounts!(zeros(5), 1:100 ,0:10:100)
+    @test_throws AssertionError histcounts!(zeros(5), 1:100. ,0:10:100)
+    @test_throws AssertionError NaNStatistics.histcountindices!(zeros(5), zeros(100), 1:100. ,0:10:100)
 
 ## --- 2D histograms
 
@@ -33,10 +32,8 @@
     @test N == I(10)./10
 
     # Test results and warnings when N is too small to hold results
-    w = "size(N,1) < nybins; any y bins beyond size(N,1) will not be filled"
-    @test (@test_logs (:warn, w) histcounts!(zeros(5,10), x, y, xedges, yedges)) == I(10)[1:5,:]
-    w = "size(N,2) < nxbins; any x bins beyond size(N,2) will not be filled"
-    @test (@test_logs (:warn, w) histcounts!(zeros(10,5), x, y, xedges, yedges)) == I(10)[:,1:5]
+    @test_throws AssertionError histcounts!(zeros(5,10), x, y, xedges, yedges)
+    @test_throws AssertionError histcounts!(zeros(10,5), x, y, xedges, yedges)
 
 ## --- Statistics on histograms
 

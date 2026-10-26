@@ -51,39 +51,26 @@
     # Means
     M2 = zeros(2)
     N2 = fill(0,2)
-    w = "length(MU) < nbins; any bins beyond length(MU) will not be filled"
-    @test_logs (:warn, w) nanbinmean!(M2, N2, [1:100..., 1],[1:100..., NaN],0,100,3)
-    @test M2 == [17, 50]
-    @test_logs (:warn, w) nanbinmean!(M2, N2, 1:100,1:100,0,100,3)
-    @test M2 == [17, 50]
+    @test_throws AssertionError nanbinmean!(M2, N2, [1:100..., 1],[1:100..., NaN],0,100,3)
+    @test_throws AssertionError nanbinmean!(M2, N2, 1:100,1:100,0,100,3)
 
     M23 = zeros(2,3)
     N23 = fill(0,2,3)
-    w = "size(MU,1) < nbins; any bins beyond size(MU,1) will not be filled"
-    @test_logs (:warn, w) nanbinmean!(M23, N23, 1:100, reshape(1:300,100,3), 0, 100, 3)
-    @test M23 == r[1:2,1:3]
+    @test_throws AssertionError nanbinmean!(M23, N23, 1:100, reshape(1:300,100,3), 0, 100, 3)
 
     # Weighted Means
     M2 = zeros(2)
     N2 = fill(0,2)
-    w = "length(MU) < nbins; any bins beyond length(MU) will not be filled"
-    @test_logs (:warn, w) nanbinmean!(M2, N2, [1:100..., 1], [1:100..., NaN], ones(101), 0, 100, 3)
-    @test M2 == [17, 50]
-    @test_logs (:warn, w) nanbinmean!(M2, N2, 1:100, 1:100, ones(100), 0,100,3)
-    @test M2 == [17, 50]
+    @test_throws AssertionError nanbinmean!(M2, N2, [1:100..., 1], [1:100..., NaN], ones(101), 0, 100, 3)
+    @test_throws AssertionError nanbinmean!(M2, N2, 1:100, 1:100, ones(100), 0,100,3)
 
     M23 = zeros(2,3)
     N23 = fill(0,2,3)
-    w = "size(MU,1) < nbins; any bins beyond size(MU,1) will not be filled"
-    @test_logs (:warn, w) nanbinmean!(M23, N23, 1:100, reshape(1:300,100,3), ones(100), 0, 100, 3)
-    @test M23 == r[1:2,1:3]
+    @test_throws AssertionError nanbinmean!(M23, N23, 1:100, reshape(1:300,100,3), ones(100), 0, 100, 3)
 
     # 2D case
     x = y = z = 0.5:9.5
     xedges = yedges = 0:10
-    w1 = "size(MU,1) < nybins; any y bins beyond size(MU,1) will not be filled"
-    w2 = "size(MU,2) < nxbins; any x bins beyond size(MU,2) will not be filled"
-    @test_logs (:warn, w1) (:warn, w2) nanbinmean!(M33, N33, x,y,z,xedges,yedges)
-    @test isequal(M33, [((i==j) ? i-0.5 : NaN) for i in 1:3, j in 1:3])
+    @test_throws AssertionError nanbinmean!(M33, N33, x,y,z,xedges,yedges)
 
 ## -- End of File

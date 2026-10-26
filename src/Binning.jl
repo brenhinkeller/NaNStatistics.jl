@@ -29,17 +29,15 @@
 
         # What is the size of each bin?
         nbins = length(xedges) - 1
+        @assert length(MU) == nbins "`MU`` has $(length(MU)) bins but `xedges` has $nbins bins"
         xmin, xmax = extrema(xedges)
         δ𝑖δx = nbins / (xmax - xmin)
-        if length(MU) < nbins
-            @warn "length(MU) < nbins; any bins beyond length(MU) will not be filled"
-        end
 
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
         fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
-            𝑖 = (x[n] - xmin) * δ𝑖δx
+            𝑖 = (x[n] - xmin) * δ𝑖δx + imin
             yₙ = y[n]
             if (yₙ==yₙ) && (imin < 𝑖 <= imax)
                 i = ceil(Int, 𝑖)
@@ -61,17 +59,15 @@
 
         # What is the size of each bin?
         nbins = length(xedges) - 1
+        @assert size(MU,1) == nbins "`MU`` has $(size(MU,1)) bins but `xedges` has $nbins bins"
         xmin, xmax = extrema(xedges)
         δ𝑖δx = nbins / (xmax - xmin)
-        if size(MU,1) < nbins
-            @warn "size(MU,1) < nbins; any bins beyond size(MU,1) will not be filled"
-        end
 
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
         fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
-            𝑖 = (x[n] - xmin) * δ𝑖δx
+            𝑖 = (x[n] - xmin) * δ𝑖δx + imin
             if (imin < 𝑖 <= imax)
                 i = ceil(Int, 𝑖)
                 for j ∈ axes(y,2)
@@ -113,24 +109,20 @@
 
         # What is the size of each bin?
         nxbins = length(xedges)-1
+        @assert size(MU,2) == nxbins "`MU`` has $(size(MU,2)) x bins but `xedges` has $nxbins"
         xmin, xmax = extrema(xedges)
         δjδx = nxbins / (xmax - xmin)
         nybins = length(yedges)-1
+        @assert size(MU,1) == nybins "`MU`` has $(size(MU,1)) y bins but `yedges` has $nybins"
         ymin, ymax = extrema(yedges)
         δiδy = nybins / (ymax - ymin)
-        if size(MU,1) < nybins
-            @warn "size(MU,1) < nybins; any y bins beyond size(MU,1) will not be filled"
-        end
-        if size(MU,2) < nxbins
-            @warn "size(MU,2) < nxbins; any x bins beyond size(MU,2) will not be filled"
-        end
 
         # Calculate the means for each bin, ignoring NaNs
         fill!(N, 0)
         fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
-            𝑖 = (y[n] - ymin) * δiδy
-            𝑗 = (x[n] - xmin) * δjδx
+            𝑖 = (y[n] - ymin) * δiδy + imin
+            𝑗 = (x[n] - xmin) * δjδx + jmin
             zₙ = z[n]
             if (zₙ==zₙ) && (imin < 𝑖 <= imax) && (jmin < 𝑗 <= jmax)
                 i = ceil(Int, 𝑖)
@@ -170,20 +162,15 @@
 
         # What is the size of each bin?
         nbins = length(xedges) - 1
+        @assert length(MU) == nbins "`MU`` has $(length(MU)) bins but `xedges` has $nbins bins"
         xmin, xmax = extrema(xedges)
         δ𝑖δx = nbins / (xmax - xmin)
-
-        # Make sure we don't have a segfault by filling beyond the length of N
-        # in the @inbounds loop below
-        if length(MU) < nbins
-            @warn "length(MU) < nbins; any bins beyond length(MU) will not be filled"
-        end
 
         # Calculate the means for each bin, ignoring NaNs
         fill!(W, zero(eltype(W)))
         fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
-            𝑖 = (x[n] - xmin) * δ𝑖δx
+            𝑖 = (x[n] - xmin) * δ𝑖δx + imin
             yₙ = y[n]
             if (yₙ==yₙ) && (imin < 𝑖 <= imax)
                 i = ceil(Int, 𝑖)
@@ -205,17 +192,15 @@
         
         # What is the size of each bin?
         nbins = length(xedges) - 1
+        @assert size(MU,1) == nbins "`MU`` has $(size(MU,1)) bins but `xedges` has $nbins bins"
         xmin, xmax = extrema(xedges)
         δ𝑖δx = nbins / (xmax - xmin)
-        if size(MU,1) < nbins
-            @warn "size(MU,1) < nbins; any bins beyond size(MU,1) will not be filled"
-        end
 
         # Calculate the means for each bin, ignoring NaNs
         fill!(W, zero(eltype(W)))
         fill!(MU, zero(eltype(MU))) # Fill the output array with zeros to start
         @inbounds for n ∈ eachindex(x)
-            𝑖 = (x[n] - xmin) * δ𝑖δx
+            𝑖 = (x[n] - xmin) * δ𝑖δx + imin
             if (imin < 𝑖 <= imax)
                 i = ceil(Int, 𝑖)
                 for j ∈ axes(y,2)
