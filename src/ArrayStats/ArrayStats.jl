@@ -477,14 +477,31 @@
     used instead.
     """
     function movsum(x::AbstractVector, n::Number)
-        m = similar(x)
+        out = similar(x)
         δ = ceil(Int, (n-1)/2)
-        @inbounds for i ∈ eachindex(x)
+        iₗ₋ = firstindex(x)
+        iᵤ₋ = min(firstindex(x)+δ, lastindex(x))
+        Σ = nansum(view(x, iₗ₋:iᵤ₋))
+        @inbounds for i ∈ eachindex(out,x)
             iₗ = max(i-δ, firstindex(x))
+            if iₗ > iₗ₋
+                x₋ = x[iₗ₋]
+                if x₋ == x₋
+                    Σ -= x₋
+                end
+                iₗ₋ = iₗ
+            end
             iᵤ = min(i+δ, lastindex(x))
-            m[i] = nansum(view(x, iₗ:iᵤ))
+            if iᵤ > iᵤ₋
+                x₊ = x[iᵤ]
+                if x₊ == x₊
+                    Σ += x₊
+                end
+                iᵤ₋ = iᵤ
+            end
+            out[i] = Σ
         end
-        return m
+        return out
     end
     function movsum(x::AbstractMatrix, n::Number)
         m = similar(x)
@@ -537,11 +554,34 @@
     `allocate_movmean(x)`.
     """
     function movmean!(out::AbstractVector, x::AbstractVector{T}, n::Number) where T
+        @assert eachindex(out) == eachindex(x)
         δ = ceil(Int, (n-1)/2)
+        iₗ₋ = firstindex(x)
+        iᵤ₋ = min(firstindex(x)+δ, lastindex(x))
+        Σ = nansum(view(x, iₗ₋:iᵤ₋))
+        n = count(!isnan, view(x, iₗ₋:iᵤ₋))
         @inbounds for i ∈ eachindex(out,x)
+            # Subtract outgoing leftmost value
             iₗ = max(i-δ, firstindex(x))
+            if iₗ > iₗ₋
+                x₋ = x[iₗ₋]
+                if x₋ == x₋
+                    Σ -= x₋
+                    n -= 1
+                end
+                iₗ₋ = iₗ
+            end
+            # Add incoming rightmost value
             iᵤ = min(i+δ, lastindex(x))
-            out[i] = nanmean(view(x, iₗ:iᵤ))
+            if iᵤ > iᵤ₋
+                x₊ = x[iᵤ]
+                if x₊ == x₊
+                    Σ += x₊
+                    n += 1
+                end
+                iᵤ₋ = iᵤ
+            end
+            out[i] = Σ/n
         end
         return out
     end
@@ -568,26 +608,56 @@
     """
     movmean(x::AbstractVector, win::Tuple{Int, Int}=(1, 1); skip_centre=false) = movmean!(allocate_movmean(x), x, win; skip_centre)
 
-    function movmean!(out::AbstractVector, x::AbstractVector{T}, win::Tuple{Int, Int}=(1, 1);
-        skip_centre=false) where {T<:Real}
+    function movmean!(out::AbstractVector, x::AbstractVector{T}, win::Tuple{Int, Int}=(1, 1); skip_centre=false) where {T<:Real}
+        @assert eachindex(out) == eachindex(x)
         win_left, win_right = win
-        
-        ∑ = ∅ = zero(eltype(out))
-        ∑w = ∅w = 0
-
-        @inbounds @simd for i ∈ eachindex(out,x)
-            ibeg = max(i - win_left, firstindex(x))
-            iend = min(i + win_right, lastindex(x))
-            ∑ = ∅
-            ∑w = ∅w
-            for j = ibeg:iend
-                skip = skip_centre && i==j
-                xᵢ = x[j]
-                notnan = (xᵢ == xᵢ) && !skip
-                ∑ += ifelse(notnan, xᵢ, ∅)
-                ∑w += ifelse(notnan, 1, 0)
+        iₗ₋ = firstindex(x)
+        iᵤ₋ = min(firstindex(x)+win_right, lastindex(x))
+        Σ = nansum(view(x, iₗ₋:iᵤ₋))
+        n = count(!isnan, view(x, iₗ₋:iᵤ₋))
+        # In case we wish to skip the center element
+        xc = x[firstindex(x)]
+        if skip_centre
+            if xc == xc
+                Σ -= xc
+                n -= 1
             end
-            out[i] = ∑ / ∑w
+        end
+        @inbounds for i ∈ eachindex(x)
+            # Subtract outgoing leftmost value
+            iₗ = max(i-win_left, firstindex(x))
+            if iₗ > iₗ₋
+                x₋ = x[iₗ₋]
+                if x₋ == x₋
+                    Σ -= x₋
+                    n -= 1
+                end
+                iₗ₋ = iₗ
+            end
+            # Add incoming rightmost value
+            iᵤ = min(i+win_right, lastindex(x))
+            if iᵤ > iᵤ₋
+                x₊ = x[iᵤ]
+                if x₊ == x₊
+                    Σ += x₊
+                    n += 1
+                end
+                iᵤ₋ = iᵤ
+            end
+            if skip_centre
+                # Re-add last center
+                if xc == xc
+                    Σ += xc
+                    n += 1
+                end
+                xc = x[i]
+                # Subtract current center
+                if xc == xc
+                    Σ -= xc
+                    n -= 1
+                end
+            end
+            out[i] = Σ/n
         end
         return out
     end
