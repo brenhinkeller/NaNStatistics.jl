@@ -6,8 +6,9 @@ Compute the standard error of the mean of all non-`NaN` elements in `A`, optiona
 over dimensions specified by `dims`.
 
 A precomputed `mean` may optionally be provided, which results in a somewhat faster
-calculation. If `corrected` is `true`, then _Bessel's correction_ is applied, such
-that the sum is divided by `n-1` rather than `n`.
+calculation (but must be the same size and ideally shape as the expected result).
+If `corrected` is `true`, then _Bessel's correction_ is applied, such
+that the sum of squared deviations is divided by `n-1` rather than `n`.
 
 As an alternative to `dims`, `nansem` also supports the `dim` keyword, which
 behaves identically to `dims`, but also drops any singleton dimensions that have
@@ -43,7 +44,7 @@ export nansem
 _nansem(μ, corrected::Bool, A, dims::Int) = _nansem(μ, corrected, A, (dims,))
 
 # If the mean isn't known, compute it
-_nansem(::Nothing, corrected::Bool, A, dims::Tuple) = _nansem!(_nanmean(A, dims, NANMEAN_SIZE_THRESHOLD), corrected, A, dims)
+_nansem(::Nothing, corrected::Bool, A, dims::Tuple) = _nansem!(_nanmean(A, dims, DEFAULT_SIZE_THRESHOLD), corrected, A, dims)
 # Reduce all the dims!
 function _nansem(::Nothing, corrected::Bool, A, ::Colon)
   Tₒ = Base.promote_op(/, eltype(A), Int)

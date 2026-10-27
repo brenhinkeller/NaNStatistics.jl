@@ -6,8 +6,9 @@ Compute the standard deviation of all non-`NaN` elements in `A`, optionally over
 As `Statistics.std`, but ignoring `NaN`s.
 
 A precomputed `mean` may optionally be provided, which results in a somewhat faster
-calculation. If `corrected` is `true`, then _Bessel's correction_ is applied, such
-that the sum is divided by `n-1` rather than `n`.
+calculation (but must be the same size and ideally shape as the expected result).
+If `corrected` is `true`, then _Bessel's correction_ is applied, such
+that the sum of squared deviations is divided by `n-1` rather than `n`.
 
 As an alternative to `dims`, `nanstd` also supports the `dim` keyword, which
 behaves identically to `dims`, but also drops any singleton dimensions that have

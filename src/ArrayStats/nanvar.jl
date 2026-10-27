@@ -6,8 +6,9 @@ Compute the variance of all non-`NaN` elements in `A`, optionally over dimension
 As `Statistics.var`, but ignoring `NaN`s.
 
 A precomputed `mean` may optionally be provided, which results in a somewhat faster
-calculation. If `corrected` is `true`, then _Bessel's correction_ is applied, such
-that the sum is divided by `n-1` rather than `n`.
+calculation (but must be the same size and ideally shape as the expected result).
+If `corrected` is `true`, then _Bessel's correction_ is applied, such
+that the sum of squared deviations is divided by `n-1` rather than `n`.
 
 As an alternative to `dims`, `nanvar` also supports the `dim` keyword, which
 behaves identically to `dims`, but also drops any singleton dimensions that have
@@ -43,7 +44,7 @@ export nanvar
 _nanvar(μ, corrected::Bool, A, dims::Int) = _nanvar(μ, corrected, A, (dims,))
 
 # If the mean isn't known, compute it
-_nanvar(::Nothing, corrected::Bool, A, dims::Tuple) = _nanvar!(_nanmean(A, dims, NANMEAN_SIZE_THRESHOLD), corrected, A, dims)
+_nanvar(::Nothing, corrected::Bool, A, dims::Tuple) = _nanvar!(_nanmean(A, dims, DEFAULT_SIZE_THRESHOLD), corrected, A, dims)
 # Reduce all the dims!
 function _nanvar(::Nothing, corrected::Bool, A, ::Colon)
     Tₘ = Base.promote_op(/, eltype(A), Int)

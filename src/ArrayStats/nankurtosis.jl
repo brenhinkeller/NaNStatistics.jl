@@ -6,7 +6,7 @@ Compute the kurtosis of all non-`NaN` elements in `A`, optionally over dimension
 As `StatsBase.kurtosis`, but ignoring `NaN`s.
 
 A precomputed `mean` may optionally be provided, which results in a somewhat faster
-calculation.
+calculation (but must be the same size and ideally shape as the expected result).
 
 As an alternative to `dims`, `nankurtosis` also supports the `dim` keyword, which
 behaves identically to `dims`, but also drops any singleton dimensions that have
@@ -43,7 +43,7 @@ export nankurtosis
 _nankurtosis(μ, corrected::Bool, A, dims::Int) = _nankurtosis(μ, corrected, A, (dims,))
 
 # If the mean isn't known, compute it
-_nankurtosis(::Nothing, corrected::Bool, A, dims::Tuple) = _nankurtosis!(_nanmean(A, dims, NANMEAN_SIZE_THRESHOLD), corrected, A, dims)
+_nankurtosis(::Nothing, corrected::Bool, A, dims::Tuple) = _nankurtosis!(_nanmean(A, dims, DEFAULT_SIZE_THRESHOLD), corrected, A, dims)
 # Reduce all the dims!
 function _nankurtosis(::Nothing, corrected::Bool, A, ::Colon)
     T = eltype(A)

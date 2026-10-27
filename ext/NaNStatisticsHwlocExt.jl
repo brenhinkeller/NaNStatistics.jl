@@ -15,7 +15,6 @@ function __init__()
     # meaningful threshold instead of 0
     L1, L2, L3 = accumulate(max, sizes)
     cache_sizes[] = (; L1, L2, L3)
-    L1 > 0 && (NaNStatistics.NANMEAN_SIZE_THRESHOLD = :L1)
 end
 
 end

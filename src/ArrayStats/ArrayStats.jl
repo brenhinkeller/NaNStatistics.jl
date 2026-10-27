@@ -1,3 +1,19 @@
+## --- Size threshold for generated functions vs maps (i.e., when are we cache-limited)
+
+    const DEFAULT_SIZE_THRESHOLD = :L2
+    get_size_threshold(x::Integer) = x
+    function get_size_threshold(x)
+        if x===:L1
+            65536
+        elseif x===:L2
+            1048576
+        elseif x===:L3
+            16777216
+        else
+            1048576
+        end
+    end
+
 ## --- Transformations of arrays with NaNs
 
     # Dropdims if there are dims to be dropped
@@ -211,7 +227,8 @@
     nanargmin(A)
     ```
     As `argmin` but ignoring `NaN`s: Find the index of the smallest non-`NaN`
-    value (if any) of an indexable collection `A`
+    value (if any) of an indexable collection `A`. In the event of multiple
+    equal minima, the index of the first will be returned.
     """
     function nanargmin(x)
         imin = firstindex(x)
@@ -230,7 +247,8 @@
     nanargmax(A)
     ```
     As `argmax` but ignoring `NaN`s: Find the index of the largest non-`NaN`
-    value (if any) of an indexable collection `A`
+    value (if any) of an indexable collection `A`. In the event of multiple
+    equal maxima, the index of the first will be returned. 
     """
     function nanargmax(x)
         imax = firstindex(x)
@@ -413,7 +431,7 @@
 
     """
     ```julia
-    nanaad(A; dims, size_threshold=NANMEAN_SIZE_THRESHOLD)
+    nanaad(A; dims, size_threshold=DEFAULT_SIZE_THRESHOLD)
     ```
     Mean (average) absolute deviation from the mean, ignoring `NaN`s, of an
     indexable collection `A`, optionally along a dimension specified by `dims`.
@@ -425,7 +443,7 @@
     also drops any singleton dimensions that have been reduced over (as is the
     convention in some other languages).
     """
-    nanaad(A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD) = __nanaad(A, dims, dim, size_threshold)
+    nanaad(A; dims=:, dim=:, size_threshold=DEFAULT_SIZE_THRESHOLD) = __nanaad(A, dims, dim, size_threshold)
     __nanaad(A, dims, dim, size_threshold) = __nanmean(abs.(A .- _nanmean(A, dims, size_threshold)), dims, dim, size_threshold)
     __nanaad(A, ::Colon, dim, size_threshold) = __nanmean(abs.(A .- _nanmean(A, dim, size_threshold)), :, dim, size_threshold)
     export nanaad

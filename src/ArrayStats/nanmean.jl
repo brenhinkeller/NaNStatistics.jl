@@ -1,8 +1,3 @@
-# Default to 1MB
-NANMEAN_SIZE_THRESHOLD::Union{Int, Symbol} = 2^20
-
-get_size_threshold(x::Integer) = x
-
 """
 ```julia
 allocate_nanmean(A::AbstractArray, dims)
@@ -58,7 +53,7 @@ julia> nanmean(A, dims=2)
  3.5
 ```
 """
-nanmean(A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD) = __nanmean(A, dims, dim, size_threshold)
+nanmean(A; dims=:, dim=:, size_threshold=DEFAULT_SIZE_THRESHOLD) = __nanmean(A, dims, dim, size_threshold)
 __nanmean(A, ::Colon, ::Colon, st) = _nanmean(A, :)
 __nanmean(A, region, ::Colon, st) = _nanmean(A, region, st)
 __nanmean(A, ::Colon, region, st) = reducedims(_nanmean(A, region, st), region)
@@ -73,7 +68,7 @@ Same as `nanmean`, except that the result will be written to the array `B`. If
 will be thrown. The returned array may be a different size than `B` depending on
 whether `dims`/`dim` is used, but it will always alias `B`.
 """
-function nanmean!(B, A; dims=:, dim=:, size_threshold=NANMEAN_SIZE_THRESHOLD)
+function nanmean!(B, A; dims=:, dim=:, size_threshold=DEFAULT_SIZE_THRESHOLD)
     if dims isa Colon && dim isa Colon
         throw(ArgumentError("Cannot reduce an entire array into another array, use `nanmean` instead"))
     end

@@ -78,7 +78,7 @@ _nansum(A, dims::Int) = _nansum(A, (dims,))
 _nansum(A::AbstractArray, dims::Tuple) = _nansum!(allocate_nansum(A, dims), A, dims)
 
 function _nansum!(B, A, dims)
-    if 1 in dims || sizeof(A) < get_size_threshold(NANMEAN_SIZE_THRESHOLD)
+    if 1 in dims || sizeof(A) < get_size_threshold(DEFAULT_SIZE_THRESHOLD)
         # The generated-function approach is faster for small arrays and if
         # we're reducing over the first dimension.
         _nansum_generated!(B, A, dims)
