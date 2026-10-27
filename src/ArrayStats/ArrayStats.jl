@@ -231,6 +231,7 @@
     equal minima, the index of the first will be returned.
     """
     function nanargmin(x)
+        @assert length(x) > 0 "Cannot find smallest element of an empty collection"
         imin = firstindex(x)
         @inbounds for i in eachindex(x)
             xᵢ = x[i]
@@ -251,6 +252,7 @@
     equal maxima, the index of the first will be returned. 
     """
     function nanargmax(x)
+        @assert length(x) > 0 "Cannot find largest element of an empty collection"
         imax = firstindex(x)
         @inbounds for i in eachindex(x)
             xᵢ = x[i]

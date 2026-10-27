@@ -131,8 +131,8 @@
     @test isnan(nanquantile(A, 0.9))
     @test isnan(nanskewness(A))
     @test isnan(nankurtosis(A))
-    @test nanargmin(A) === 1
-    @test nanargmax(A) === 1
+    @test_throws AssertionError nanargmin(A)
+    @test_throws AssertionError nanargmax(A)
 
     # Reducing an empty dimension keeps the shape of the non-reduced ones
     A = zeros(0, 2)
