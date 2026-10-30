@@ -245,8 +245,10 @@ export histcounts!
 ```julia
 histmean(counts, bincenters)
 ```
-Estimate the mean of the data represented by a histogram, 
+Estimate the mean of the data or distribution represented by a histogram, 
 specified as `counts` in equally spaced bins centered at `bincenters`.
+
+See also: `histmeanexp`
 
 ## Examples
 ```julia
@@ -285,6 +287,8 @@ If `counts` have been normalized, or represent an analytical estimate of a PDF
 rather than a histogram representing counts of a dataset, Bessel's correction 
 to the variance should likely not be performed - i.e., set the 
 `corrected` keyword argument to `false`. 
+
+See also: `histvarexp`
 
 ## Examples
 ```julia
@@ -330,6 +334,8 @@ If `counts` have been normalized, or represent an analytical estimate of a PDF
 rather than a histogram representing counts of a dataset, Bessel's correction 
 to the standard deviation should likely not be performed - i.e., set the 
 `corrected` keyword argument to `false`. 
+
+See also: `histstdexp`
 
 ## Examples
 ```julia
@@ -434,3 +440,125 @@ function histkurtosis(counts, bincenters; corrected::Bool=false)
     return (μ₄ / N)/σ^4 - 3
 end
 export histkurtosis
+
+## --- Numerically stable versions for log-histograms (or log-probability/likelihood curves)
+
+"""
+```julia
+histmeanexp(logcounts, bincenters)
+```
+Estimate the mean of the data represented by a log-histogram, 
+specified as `logcounts` in equally spaced bins centered at `bincenters`.
+The provided `logcounts` need not be normalized (i.e., log likelihoods will suffice).
+
+See also: `histmean`
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> logcounts = log.(histcounts(randn(10000), binedges));
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+
+julia> histmeanexp(logcounts, bincenters)
+0.028458000000000264
+```
+"""
+function histmeanexp(logcounts, bincenters)
+    N = ∅ₙ = zero(eltype(logcounts))
+    Σ = ∅ = zero(Base.promote_type(float(eltype(logcounts)), eltype(bincenters)))
+    c = nanmaximum(logcounts) - 2 # A point slightly below the maximum, for rescaling
+    @inbounds @simd ivdep for i in eachindex(logcounts, bincenters)
+        countsᵢ = exp(logcounts[i] - c)
+        pᵢ = countsᵢ * bincenters[i]
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        N += ifelse(isnan(pᵢ), ∅ₙ, countsᵢ)
+    end
+    return Σ / N
+end
+export histmeanexp
+
+
+"""
+```julia
+histvarexp(logcounts, bincenters; corrected::Bool=true)
+```
+Estimate the variance of the data represented by a log-histogram, 
+specified as `logcounts` in equally spaced bins centered at `bincenters`.
+The provided `logcounts` need not be normalized (i.e., log likelihoods will suffice).
+
+If `logcounts` have been normalized, or represent an analytical estimate of a PDF 
+rather than a histogram representing logcounts of a dataset, Bessel's correction 
+to the variance should likely not be performed - i.e., set the 
+`corrected` keyword argument to `false`. 
+
+See also: `histvar`
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> logcounts = log.(histcounts(randn(10000), binedges));
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+t
+julia> histvarexp(logcounts, bincenters)
+1.0098512889384792
+```
+"""
+function histvarexp(logcounts, bincenters; corrected::Bool=true)
+    N = ∅ₙ = zero(eltype(logcounts))
+    Σ = ∅ = zero(Base.promote_op(*, eltype(logcounts), eltype(bincenters)))
+    c = nanmaximum(logcounts) - 2 # A point slightly below the maximum, for rescaling
+    @inbounds @simd ivdep for i in eachindex(logcounts, bincenters)
+        countsᵢ = exp(logcounts[i] - c)
+        pᵢ = countsᵢ * bincenters[i]
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+        N += ifelse(isnan(pᵢ), ∅ₙ, countsᵢ)
+    end
+    μ = Σ/N
+    Σ = ∅
+    @inbounds @simd ivdep for i in eachindex(logcounts, bincenters)
+        countsᵢ = exp(logcounts[i] - c)
+        dᵢ = bincenters[i] - μ
+        pᵢ = countsᵢ * dᵢ * dᵢ
+        Σ += ifelse(isnan(pᵢ), ∅, pᵢ)
+    end
+    return Σ / max(N-corrected, ∅ₙ)
+end
+export histvarexp
+
+
+"""
+```julia
+histstdexp(logcounts, bincenters; corrected::Bool=true)
+```
+Estimate the standard deviation of the data represented by a log-histogram, 
+specified as `logcounts` in equally spaced bins centered at `bincenters`.
+The provided `logcounts` need not be normalized (i.e., log likelihoods will suffice).
+
+If `logcounts` have been normalized, or represent an analytical estimate of a PDF 
+rather than a histogram representing logcounts of a dataset, Bessel's correction 
+to the standard deviation should likely not be performed - i.e., set the 
+`corrected` keyword argument to `false`. 
+
+See also: `histstd`
+
+## Examples
+```julia
+julia> binedges = -10:0.01:10;
+
+julia> logcounts = log.(histcounts(randn(10000), binedges));
+
+julia> bincenters = (binedges[1:end-1] + binedges[2:end])/2
+-9.995:0.01:9.995
+
+julia> histstdexp(logcounts, bincenters)
+1.0049135728700649
+```
+"""
+histstdexp(logcounts, bincenters; corrected::Bool=true) = sqrt(histvarexp(logcounts, bincenters; corrected))
+export histstdexp
