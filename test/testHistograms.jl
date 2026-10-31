@@ -44,6 +44,7 @@
     @test nanskewness(a) ≈ skewness(a)
     @test nankurtosis(a) ≈ kurtosis(a)
 
+    # Historam form
     binedges = -10:0.1:10
     bincenters = (binedges[1:end-1] + binedges[2:end])/2        
     h = histcounts(a, binedges)
@@ -57,6 +58,7 @@
     @test histvarexp(lh, bincenters) ≈ var(a) atol = 0.05
     @test histstdexp(lh, bincenters) ≈ std(a) atol = 0.05
 
+    # PDF form
     n = pdf.(Normal(0,1), bincenters)
     @test histmean(n, bincenters) ≈ 0 atol = 1e-6
     @test histstd(n, bincenters, corrected=false) ≈ 1 atol = 1e-6
@@ -64,6 +66,7 @@
     @test histmeanexp(ln, bincenters) ≈ 0 atol = 1e-6
     @test histstdexp(ln, bincenters, corrected=false) ≈ 1 atol = 1e-6
 
+    # PDF form, wider range of bins
     binedges = -20:0.1:20
     bincenters = (binedges[1:end-1] + binedges[2:end])/2
     n = pdf.(Normal(1,2), bincenters)
@@ -76,5 +79,17 @@
     @test histmeanexp(ln, bincenters) ≈ 1 atol = 1e-6
     @test histvarexp(ln, bincenters, corrected=false) ≈ 4 atol = 1e-3
     @test histstdexp(ln, bincenters, corrected=false) ≈ 2 atol = 2e-6
+
+    # Check invariance to rescaling
+    n = pdf.(Normal(1,2), bincenters)
+    @test histmean(n * 1000, bincenters) ≈ 1 atol = 1e-6
+    @test histvar(n * 1000, bincenters, corrected=false) ≈ 4 atol = 1e-3
+    @test histstd(n * 1000, bincenters, corrected=false) ≈ 2 atol = 2e-6
+    @test histskewness(n * 1000, bincenters, corrected=false) ≈ 0 atol = 2e-6
+    @test histkurtosis(n * 1000, bincenters, corrected=false) ≈ 0 atol = 2e-6
+    ln = logpdf.(Normal(1,2), bincenters)
+    @test histmeanexp(ln .+ 1000, bincenters) ≈ 1 atol = 1e-6
+    @test histvarexp(ln .+ 1000, bincenters, corrected=false) ≈ 4 atol = 1e-3
+    @test histstdexp(ln .+ 1000, bincenters, corrected=false) ≈ 2 atol = 2e-6
 
 ## --- End of File
