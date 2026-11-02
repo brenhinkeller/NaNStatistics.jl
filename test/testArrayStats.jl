@@ -648,6 +648,12 @@
     @test nanargmin((1,1,1,2,3,4,5)) === 1
     @test nanargmax((1,2,3,4,5)) === 5
     @test nanargmax((1,2,3,4,5,5,5)) === 5
+    @test nanargmin((NaN,2.,1.,NaN)) === 3
+    @test nanargmax((NaN,1.,2.,NaN)) === 3
+    @test nanargmin([NaN,NaN,2.,1.,1.]) === 4
+    @test nanargmax([NaN,NaN,1.,2.,2.]) === 4
+    @test nanargmin([NaN,NaN]) === 1
+    @test nanargmax([NaN,NaN]) === 1
     @test nanrange((1,2,3,4,5)) === 4
     @test nansum((1,2,3,4,5)) === 15
     @test nanmean((1,2,3,4,5)) === 3.0
