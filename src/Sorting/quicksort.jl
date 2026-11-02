@@ -1,5 +1,10 @@
 # Check for sortedness, assuming no NaNs
 @inline function issortedrange(A, iₗ, iᵤ)
+    # Return early if range has one or fewer elements
+    iₗ >= iᵤ && return true
+    # Otherwise, range must be in bounds
+    @assert firstindex(A) <= iₗ <= lastindex(A)
+    @assert firstindex(A) <= iᵤ <= lastindex(A)
     @inbounds for i = iₗ+1:iᵤ
         if A[i-1] > A[i]
             return false
@@ -10,6 +15,11 @@ end
 
 # Check for anti-sortedness, assuming no NaNs
 @inline function isantisortedrange(A, iₗ, iᵤ)
+    # Return early if range has one or fewer elements
+    iₗ >= iᵤ && return true
+    # Otherwise, range must be in bounds
+    @assert firstindex(A) <= iₗ <= lastindex(A)
+    @assert firstindex(A) <= iᵤ <= lastindex(A)
     @inbounds for i = iₗ+1:iᵤ
         if A[i-1] < A[i]
             return false
@@ -20,6 +30,11 @@ end
 
 # Reverse an array, faster than Base.reverse!
 @inline function vreverse!(A, iₗ, iᵤ)
+    # Return early if range is empty
+    iₗ >= iᵤ && return A, iₗ, iᵤ
+    # Otherwise, range must be in bounds
+    @assert firstindex(A) <= iₗ <= lastindex(A)
+    @assert firstindex(A) <= iᵤ <= lastindex(A)
     N = (iᵤ - iₗ) + 1
     n = (N ÷ 2) - 1
     if N < 32
@@ -44,6 +59,9 @@ end
 function sortnans!(A::AbstractArray, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A))
     # Return early if range is empty
     iₗ >= iᵤ && return A, iₗ, iᵤ
+    # Otherwise, range must be in bounds
+    @assert firstindex(A) <= iₗ <= lastindex(A)
+    @assert firstindex(A) <= iᵤ <= lastindex(A)
 
     # Count up NaNs
     Nₙₐₙ = 0
@@ -71,8 +89,12 @@ function sortnans!(A::AbstractArray, iₗ::Int=firstindex(A), iᵤ::Int=lastinde
     return A, iₗ, iᵤ - Nₙₐₙ
 end
 function argsortnans!(I::AbstractArray, A::AbstractArray, iₗ::Int=firstindex(A), iᵤ::Int=lastindex(A))
+    @assert eachindex(I) == eachindex(A)
     # Return early if range is empty
     iₗ >= iᵤ && return I, A, iₗ, iᵤ
+    # Otherwise, range must be in bounds
+    @assert firstindex(A) <= iₗ <= lastindex(A)
+    @assert firstindex(A) <= iᵤ <= lastindex(A)
     
     # Count up NaNs
     Nₙₐₙ = 0
