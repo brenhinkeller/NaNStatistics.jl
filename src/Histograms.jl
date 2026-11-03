@@ -31,14 +31,15 @@ julia> histcounts(b, 0:1:10)
  10033
 ```
 """
-function histcounts(x, xedges::AbstractRange; T::Type=Int64, normalize::Bool=false)
-    Tᵣ = normalize ? float(T) : T
-    N = fill(zero(Tᵣ), length(xedges)-1)
-    histcounts!(N, x, xedges)
+function histcounts(x, xedges::AbstractRange; T::Type{Tₙ}=Int64, normalize::Bool=false) where {Tₙ}
+    # Separate branches keep the eltype of `N` concrete in each, so the broadcast is inferable
     if normalize
-       N ./= nansum(N) * step(xedges)
+        N = histcounts!(fill(zero(float(Tₙ)), length(xedges)-1), x, xedges)
+        N ./= nansum(N) * step(xedges)
+        return N
+    else
+        return histcounts!(fill(zero(Tₙ), length(xedges)-1), x, xedges)
     end
-    return N
 end
 histcounts(x, xmin::Number, xmax::Number, nbins::Integer;  T::Type=Int64, normalize::Bool=false) = histcounts(x, range(xmin, xmax, length=nbins+1); T=T, normalize=normalize)
 
@@ -61,8 +62,8 @@ julia> N, bin = histcountindices(b, 0:2:10)
 ([20082, 19971, 20049, 19908, 19990], [2, 3, 2, 2, 4, 2, 3, 3, 2, 4  …  1, 3, 3, 3, 3, 5, 2, 3, 3, 1])
 ```
 """
-function histcountindices(x, xedges::AbstractRange; T::Type=Int64)
-    N = fill(zero(T), length(xedges)-1)
+function histcountindices(x, xedges::AbstractRange; T::Type{Tₙ}=Int64) where {Tₙ}
+    N = fill(zero(Tₙ), length(xedges)-1)
     bin = fill(0, size(x))
     histcountindices!(N, bin, x, xedges)
     return N, bin
@@ -110,14 +111,14 @@ julia> N = histcounts(x,y,xedges,yedges)
  0  0  0  0  0  0  0  0  0  1
 ```
 """
-function histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange;  T::Type=Int64, normalize::Bool=false)
-    Tᵣ = normalize ? float(T) : T
-    N = fill(zero(Tᵣ), length(yedges)-1, length(xedges)-1)
-    histcounts!(N, x, y, xedges, yedges)
+function histcounts(x, y, xedges::AbstractRange, yedges::AbstractRange;  T::Type{Tₙ}=Int64, normalize::Bool=false) where {Tₙ}
     if normalize
+        N = histcounts!(fill(zero(float(Tₙ)), length(yedges)-1, length(xedges)-1), x, y, xedges, yedges)
         N ./= nansum(N) * step(xedges) * step(yedges)
-     end
-    return N
+        return N
+    else
+        return histcounts!(fill(zero(Tₙ), length(yedges)-1, length(xedges)-1), x, y, xedges, yedges)
+    end
 end
 export histcounts
 
