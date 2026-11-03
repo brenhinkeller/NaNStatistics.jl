@@ -654,6 +654,9 @@
     @test nanargmax([NaN,NaN,1.,2.,2.]) === 4
     @test nanargmin([NaN,NaN]) === 1
     @test nanargmax([NaN,NaN]) === 1
+    @test nanargmin(Base.IdentityUnitRange(0:1)) === 0
+    @test nanargmax(Base.IdentityUnitRange(-1:0)) === 0
+    @test nanargmax(view([1. 5.; NaN 2.; 9. NaN], 1:2:3, 1:2)) === CartesianIndex(2, 1)
     @test nanrange((1,2,3,4,5)) === 4
     @test nansum((1,2,3,4,5)) === 15
     @test nanmean((1,2,3,4,5)) === 3.0
