@@ -232,8 +232,7 @@
     """
     function nanargmin(x)
         @assert length(x) > 0 "Cannot find smallest element of an empty collection"
-        none = firstindex(x) - 1
-        imin = none
+        imin = none = firstindex(x) - 1
         # Keep this `&&` chain: written as `if`, it compiles to a conditional move and runs several times slower on arm64
         @inbounds for i in eachindex(x)
             xᵢ = x[i]
@@ -253,8 +252,7 @@
     """
     function nanargmax(x)
         @assert length(x) > 0 "Cannot find largest element of an empty collection"
-        none = firstindex(x) - 1
-        imax = none
+        imax = none = firstindex(x) - 1
         # Keep this `&&` chain: written as `if`, it compiles to a conditional move and runs several times slower on arm64
         @inbounds for i in eachindex(x)
             xᵢ = x[i]
