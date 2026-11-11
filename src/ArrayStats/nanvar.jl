@@ -211,7 +211,7 @@ function branches_nanvar_quote(N::Int, M::Int, D)
         n ∈ static_dims && continue
         tc = copy(t)
         push!(tc.args, :(_StaticInt{$n}()))
-        qnew = Expr(ifsym, :(dimm == $n), :(return _nanvar!(B, corrected, A, $tc)))
+        qnew = Expr(ifsym, :(dimm == $n), :(return _nanvar!(B, corrected, A, $tc)::typeof(B)))
         for r ∈ m+1:M
           push!(tc.args, :(dims[$r]))
         end
@@ -224,7 +224,7 @@ function branches_nanvar_quote(N::Int, M::Int, D)
       for r ∈ m+1:M
           push!(tc.args, :(dims[$r]))
       end
-      push!(qold.args, Expr(:block, :(return _nanvar!(B, corrected, A, $tc))))
+      push!(qold.args, Expr(:block, :(return _nanvar!(B, corrected, A, $tc)::typeof(B))))
       return q
     end
   end

@@ -44,12 +44,12 @@ _nancumsum!(A, dims::Int) = _nancumsum!(A, A, (dims,))
 # Accumulate over some dims
 function _nancumsum(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
     B = similar(A)
-    _nancumsum!(B, A, dims)
+    _nancumsum!(B, A, dims)::typeof(B)
 end
 function _nancumsum(A::AbstractArray{T,N}, dims::Tuple) where {T<:Integer,N}
     Tₒ = Base.promote_op(+, T, Int)
     B = similar(A, Tₒ)
-    _nancumsum!(B, A, dims)
+    _nancumsum!(B, A, dims)::typeof(B)
 end
 
 # Reduce all the dims!

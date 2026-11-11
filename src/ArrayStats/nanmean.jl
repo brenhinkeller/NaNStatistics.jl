@@ -92,11 +92,11 @@ function _nanmean!(B, A, dims, st)
     if 1 in dims || sizeof(A) < get_size_threshold(st)
         # The generated-function approach is faster for small arrays and if
         # we're reducing over the first dimension.
-        _nanmean_generated!(B, A, dims)
+        _nanmean_generated!(B, A, dims)::typeof(B)
     else
         # For reducing over the slow axes of large arrays we use the mapreduce
         # approach.
-        _nanmean_mapreduce!(B, A, dims)
+        _nanmean_mapreduce!(B, A, dims)::typeof(B)
     end
 end
 

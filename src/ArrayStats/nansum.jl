@@ -81,10 +81,10 @@ function _nansum!(B, A, dims)
     if 1 in dims || sizeof(A) < get_size_threshold(DEFAULT_SIZE_THRESHOLD)
         # The generated-function approach is faster for small arrays and if
         # we're reducing over the first dimension.
-        _nansum_generated!(B, A, dims)
+        _nansum_generated!(B, A, dims)::typeof(B)
     else
         # Base.sum! is faster at everything else
-        sum!(x -> ifelse(isnan(x), zero(x), x), B, A)
+        sum!(x -> ifelse(isnan(x), zero(x), x), B, A)::typeof(B)
     end
 end
 

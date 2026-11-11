@@ -90,7 +90,7 @@ function _nanmedian!(A::AbstractArray{T,N}, dims::Tuple) where {T,N}
     end
     Tₒ = Base.promote_op(/, T, Int)
     B = similar(A, Tₒ, sₒ)
-    _nanmedian!(B, A, dims)
+    _nanmedian!(B, A, dims)::typeof(B)
 end
 
 # Reduce all the dims!

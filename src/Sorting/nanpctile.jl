@@ -159,7 +159,7 @@ function _nanquantile!(A::AbstractArray{T,N}, q::Real, dims::Tuple) where {T,N}
     end
     Tₒ = Base.promote_op(/, T, Int)
     B = similar(A, Tₒ, sₒ)
-    _nanquantile!(B, A, q, dims)
+    _nanquantile!(B, A, q, dims)::typeof(B)
 end
 
 # Reduce all the dims!
